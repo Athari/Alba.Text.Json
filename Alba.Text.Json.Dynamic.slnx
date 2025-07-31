@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/~/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="License.md" />
+    <File Path="ReadMe.md" />
+  </Folder>
+  <Project Path="Alba.Text.Json.Dynamic.Playground/Alba.Text.Json.Dynamic.Playground.csproj" />
+  <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.csproj" />
+</Solution>

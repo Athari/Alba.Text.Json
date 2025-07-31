@@ -1,0 +1,30 @@
+<Project>
+
+  <PropertyGroup Label="Platform">
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build">
+    <WarningLevel>9999</WarningLevel>
+    <WarningsAsErrors>$(WarningsAsErrors)</WarningsAsErrors>
+    <AnalysisLevel>preview-recommended</AnalysisLevel>
+    <PublishRelease>true</PublishRelease>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/*.dylib;**/*.so</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Artifacts">
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <CurrentSolutionDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Alba.Text.Json.Dynamic.slnx'))\</CurrentSolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' or $(SolutionDir) == '*Undefined*'">$(CurrentSolutionDir)</SolutionDir>
+    <ArtifactsPath>$(SolutionDir)Artifacts/</ArtifactsPath>
+    <!--<BaseOutputPath>$(ArtifactsPath)bin/$(MSBuildProjectName)/</BaseOutputPath>-->
+    <BaseOutputPath>$(ArtifactsPath)</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(ArtifactsPath)Obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <ArtifactsPackageOutputName>nuget</ArtifactsPackageOutputName>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+</Project>

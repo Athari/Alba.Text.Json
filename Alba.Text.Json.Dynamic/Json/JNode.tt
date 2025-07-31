@@ -1,0 +1,71 @@
+﻿<#@   template debug="true" hostspecific="false" language="C#"
+      compilerOptions="-langVersion:preview -nullable:enable -lib:'$(SolutionDir)Dep'"
+#><#@ output extension=".g.cs"
+#><#@ import namespace="System.Text.Json"
+#><#@ import namespace="System.Text.Json.Nodes"
+#><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
+#><#  #nullable enable
+#><#
+
+//Debugger.Launch();
+
+var renames = new Dictionary<string, string> {
+    ["SerializeToNode"] = "From",
+};
+
+var docs = new XmlDoc();
+
+var GetMethods = (Type type, params string[] names) =>
+    type.GetMethods().Where(m => names.Contains(m.Name));
+
+var methods = Enumerable.Empty<MethodInfo>()
+    .Concat(GetMethods(typeof(JsonNode), "Parse", "ParseAsync"))
+    .Concat(GetMethods(typeof(JsonSerializer), "SerializeToNode"))
+    .Select(m => (
+        // we don't properly parse second byte of null-attr for ValueTuple T arg
+        Type: m.DeclaringType.Name,
+        Name: m.Name,
+        NewName: renames.GetOrDefault(m.Name) ?? m.Name,
+        ReturnType: m.FormatReturn().Replace("JsonNode", "dynamic").Replace("<dynamic>", "<dynamic?>"),
+        Attrs: m.CustomAttributes.Select(a => a.Format()).Where(s => s != null).ToList(),
+        Comment: docs.LoadType(m.DeclaringType).GetDoc(m),
+        IsAsync: m.FormatReturn().Contains("Task"),
+        GenericArgs: m.FormatGenericArgs(),
+        Args: m.GetParameters().Select(p => p.FormatArg()).Join(),
+        Params: m.GetParameters().Select(p => p.Format()).Join(),
+        Ext: m.FormatExt()
+    ))
+    .ToList();
+#>
+#nullable enable
+
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+
+namespace Alba.Text.Json.Dynamic;
+
+public partial class JNode
+{
+    private const string <#=nameof(SerializationUnreferencedCodeMessage)#> = <#=SerializationUnreferencedCodeMessage.FormatConst(true)#>;
+    private const string <#=nameof(SerializationRequiresDynamicCodeMessage)#> = <#=SerializationRequiresDynamicCodeMessage.FormatConst(true)#>;
+
+<#foreach (var m in methods) { #>
+<#    if (m.Comment != null) { #>
+<#= docs.FormatDoc(m.Comment, 4) #>
+<#    } #>
+<#    foreach (var a in m.Attrs) { #>
+    [<#=a#>]
+<#    } #>
+<#    if (m.IsAsync) { #>
+    public static async <#=m.ReturnType#> <#=m.NewName#><#=m.GenericArgs#>(<#=m.Ext#><#=m.Params#>) =>
+        (await <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args#>)).ToDynamic();
+<#    } else { #>
+    public static <#=m.ReturnType#> <#=m.NewName#><#=m.GenericArgs#>(<#=m.Ext#><#=m.Params#>) =>
+        <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args#>).ToDynamic();
+<#    } #>
+
+<#} #>
+}<# #nullable disable #>

@@ -1,0 +1,34 @@
+<Project>
+
+  <!-- DOC: UseT4 property: Enable T4 service, include T4 scripts and generated files -->
+  <ItemGroup Condition="'$(UseT4)' == 'true'">
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    <None Update="**\*.tt" Generator="TextTemplatingFileGenerator"
+        LastGenOutput="%(Filename).g.cs" />
+    <Compile Update="**\*.g.cs" DesignTime="True" AutoGen="True"
+        DependentUpon="$([System.String]::Copy('%(Filename)').Split('.')[0]).tt" />
+  </ItemGroup>
+
+  <!-- DOC: UsePolySharp property: Reference PolySharp and include specified types -->
+  <ItemGroup Condition="'$(UsePolySharp)' == 'true'">
+    <PackageReference Include="PolySharp" PrivateAssets="all" IncludeAssets="build; analyzers" />
+    <PolyInclude Include="@(PolySystem)" FullName="System.%(Identity)" />
+    <PolyInclude Include="@(PolyAnalysis)" FullName="System.Diagnostics.CodeAnalysis.%(Identity)" />
+    <PolyInclude Include="@(PolyAnalysisAttributes)" FullName="$([System.String]::Copy('System.Diagnostics.CodeAnalysis.%(Identity)Attribute').Replace('0', 'Null').Replace('1', 'NotNull').Replace('W', 'When'))" />
+    <PolyInclude Include="@(PolyCompiler)" FullName="System.Runtime.CompilerServices.%(Identity)" />
+    <PolyInclude Include="@(PolyCompilerAttributes)" FullName="System.Runtime.CompilerServices.%(Identity)Attribute" />
+  </ItemGroup>
+  <Target Name="ResolvePolySharpIncludeGeneratedTypes" Condition="@(PolyInclude->Count()) != 0"
+      BeforeTargets="ConfigurePolySharpMSBuildProperties">
+    <PropertyGroup>
+      <PolySharpIncludeGeneratedTypes>$(PolySharpIncludeGeneratedTypes);@(PolyInclude-> '%(FullName)', ',')</PolySharpIncludeGeneratedTypes>
+    </PropertyGroup>
+  </Target>
+
+  <!-- DOC: Display configuration items under the Properties project folder -->
+  <ItemGroup>
+    <None Update="**\*.DotSettings;**\*.user" Link="Properties\$([System.String]::Copy(%(Filename)).Replace($(MSBuildProjectName), ''))%(Extension)" />
+    <!--<None Update="*.manifest" Link="Properties\%(Filename)%(Extension)" />-->
+  </ItemGroup>
+
+</Project>

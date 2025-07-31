@@ -1,0 +1,252 @@
+<xs:schema
+    xmlns="urn:nuget"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="urn:nuget" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  
+  <!-- Root -->
+
+  <xs:element name="configuration" type="configurationType" />
+
+  <xs:complexType name="configurationType">
+    <xs:all>
+      <xs:element name="config" type="configType" minOccurs="0" />
+      <xs:element name="bindingRedirects" type="bindingRedirectsType" minOccurs="0" />
+      <xs:element name="packageRestore" type="packageRestoreType" minOccurs="0" />
+      <xs:element name="solution" type="solutionType" minOccurs="0" />
+      <xs:element name="packageSources" type="packageSourcesType" minOccurs="0" />
+      <xs:element name="auditSources" type="auditSourcesType" minOccurs="0" />
+      <xs:element name="packageSourceCredentials" type="packageSourceCredentialsType" minOccurs="0" />
+      <xs:element name="apikeys" type="apiKeysType" minOccurs="0" />
+      <xs:element name="disabledPackageSources" type="disabledPackageSourcesType" minOccurs="0" />
+      <xs:element name="activePackageSource" type="activePackageSourceType" minOccurs="0" />
+      <xs:element name="trustedSigners" type="trustedSignersType" minOccurs="0" />
+      <xs:element name="fallbackPackageFolders" type="fallbackPackageFoldersType" minOccurs="0" />
+      <xs:element name="packageSourceMapping" type="packageSourceMappingType" minOccurs="0" />
+      <xs:element name="packageManagement" type="packageManagementType" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+  
+  <!-- Simple types -->
+
+  <xs:simpleType name="hashAlgorithmType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SHA256" />
+      <xs:enumeration value="SHA384" />
+      <xs:enumeration value="SHA512" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Inner types -->
+
+  <xs:complexType name="addStringBooleanType">
+    <xs:attribute name="key" type="xs:string" use="required" />
+    <xs:attribute name="value" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="addStringStringType">
+    <xs:attribute name="key" type="xs:string" use="required" />
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="addSourceType">
+    <xs:attribute name="key" type="xs:string" use="required" />
+    <xs:attribute name="value" type="xs:anyURI" use="required" />
+    <xs:attribute name="protocolVersion" type="xs:string" use="optional" />
+    <xs:attribute name="allowInsecureConnections" type="xs:boolean" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="addPackageSourceType">
+    <xs:complexContent>
+      <xs:extension base="addSourceType">
+        <xs:attribute name="disableTLSCertificateValidation" type="xs:boolean" use="optional" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="certificateType">
+    <xs:attribute name="fingerprint" type="xs:string" use="required" />
+    <xs:attribute name="hashAlgorithm" type="hashAlgorithmType" use="required" />
+    <xs:attribute name="allowUntrustedRoot" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="authorSignerType">
+    <xs:sequence>
+      <xs:element name="certificate" type="certificateType" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="repositorySignerType">
+    <xs:sequence>
+      <xs:element name="certificate" type="certificateType" maxOccurs="unbounded" />
+      <xs:element name="owners" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="serviceIndex" type="xs:anyURI" use="required" />
+  </xs:complexType>
+  
+  <!-- Sub-root types -->
+  
+  <xs:complexType name="configType">
+    <xs:sequence>
+      <xs:element name="add" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="key" use="required">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="dependencyVersion" />
+                <xs:enumeration value="globalPackagesFolder" />
+                <xs:enumeration value="repositoryPath" />
+                <xs:enumeration value="defaultPushSource" />
+                <xs:enumeration value="http_proxy" />
+                <xs:enumeration value="http_proxy.user" />
+                <xs:enumeration value="http_proxy.password" />
+                <xs:enumeration value="no_proxy" />
+                <xs:enumeration value="maxHttpRequestsPerSource" />
+                <xs:enumeration value="signatureValidationMode" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attribute name="value" type="xs:string" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="bindingRedirectsType">
+    <xs:sequence>
+      <xs:element name="add" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:attribute name="key" type="xs:string" use="required" fixed="skip" />
+          <xs:attribute name="value" type="xs:boolean" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="packageRestoreType">
+    <xs:sequence>
+      <xs:element name="add" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="key" use="required">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="enabled" />
+                <xs:enumeration value="automatic" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attribute name="value" type="xs:boolean" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="solutionType">
+    <xs:sequence>
+      <xs:element name="add" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:attribute name="key" type="xs:string" use="required" fixed="disableSourceControlIntegration" />
+          <xs:attribute name="value" type="xs:boolean" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="packageSourcesType">
+    <xs:sequence>
+      <xs:element name="clear" minOccurs="0" />
+      <xs:element name="add" type="addPackageSourceType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="auditSourcesType">
+    <xs:sequence>
+      <xs:element name="clear" minOccurs="0" />
+      <xs:element name="add" type="addSourceType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="packageSourceCredentialsType">
+    <xs:sequence>
+      <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="apiKeysType">
+    <xs:sequence>
+      <xs:element name="add" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="key" type="xs:anyURI" use="required" />
+          <xs:attribute name="value" type="xs:string" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="disabledPackageSourcesType">
+    <xs:sequence>
+      <xs:element name="clear" minOccurs="0" />
+      <xs:element name="add" type="addStringBooleanType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="activePackageSourceType">
+    <xs:sequence>
+      <xs:element name="add" type="addStringStringType" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="trustedSignersType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="author" type="authorSignerType" />
+        <xs:element name="repository" type="repositorySignerType" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="fallbackPackageFoldersType">
+    <xs:sequence>
+      <xs:element name="clear" minOccurs="0" />
+      <xs:element name="add" type="addStringStringType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="packageSourceMappingType">
+    <xs:sequence>
+      <xs:element name="packageSource" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="package" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:attribute name="pattern" type="xs:string" use="required" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="key" type="xs:string" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="packageManagementType">
+    <xs:sequence>
+      <xs:element name="clear" minOccurs="0" />
+      <xs:element name="add" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="key" use="required">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="format" />
+                <xs:enumeration value="disabled" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attribute name="value" type="xs:string" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

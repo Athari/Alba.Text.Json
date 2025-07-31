@@ -1,0 +1,87 @@
+﻿<#@   template debug="true" hostspecific="false" language="C#"
+      compilerOptions="-langVersion:preview -nullable:enable -lib:'$(SolutionDir)Dep'"
+#><#@ output extension=".g.cs"
+#><#@ assembly name="System.Dynamic"
+#><#@ assembly name="System.Linq.Expressions"
+#><#@ assembly name="System.Text.Json"
+#><#@ import namespace="System.Linq.Expressions"
+#><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
+#><#
+
+//Debugger.Launch();
+
+var renames = new Dictionary<string, string> {
+    ["Constant"] = "Const",
+};
+var excludeMethodsNames = @"^(Block|Dynamic|RuntimeVariables|SymbolDocument|TryGet\w+Type)$";
+var excludeArg0Types = @"^(Type|\w+Info)$";
+
+var docs = new XmlDoc();
+
+var methods = Enumerable.Empty<MethodInfo>()
+    .Concat(typeof(Expression)
+        .GetMethods(BindingFlags.Static | BindingFlags.Public)
+        .Where(m => {
+            if (Regex.IsMatch(m.Name, excludeMethodsNames))
+                return false;
+            var ps = m.GetParameters();
+            if (ps.Length == 0 || ps[0].CustomAttributes.HasAttr(AttrParamArray))
+                return false;
+            if (Regex.IsMatch(ps[0].ParameterType.Name, excludeArg0Types))
+                return false;
+            return true;
+        }))
+    .Select(m => (
+        Type: m.DeclaringType.Name,
+        Name: m.Name,
+        NewName: renames.GetOrDefault(m.Name) ?? m.Name,
+        ReturnType: m.FormatReturn(),
+        Attrs: m.CustomAttributes.Select(a => a.Format()).Where(s => s != null).ToList(),
+        CommentRef: docs.GetXmlNameMethod(m),
+        IsAsync: m.FormatReturn().Contains("Task"),
+        GenericArgs: m.FormatGenericArgs(),
+        GenericParams: m.FormatGenericArgs(),
+        Args: m.GetParameters().Select(p => p.FormatArg()).ToList(),
+        Params: m.GetParameters().Select(p => p.Format()).ToList()
+    ))
+    .Where(m => {
+        return true;
+    })
+    .OrderBy(m => {
+        if (Regex.IsMatch(m.Params[0], @"^\w*Expression "))
+            return $"A{m.Args[0]}|{m.Name}";
+        return $"Z|{m.Name}";
+    })
+    .SelectMany(m => {
+        var itype = m.Params.FindIndex(p => p.StartsWith("Type "));
+        if (itype == -1)
+            return new[] { m };
+        var mt = m;
+        mt.GenericParams = "<T>";
+        mt.Args = m.Args.Select((a, i) => i == itype ? "typeof(T)" : a).ToList();
+        mt.Params = m.Params.Where((_, i) => i != itype).ToList();
+        return new[] { m, mt };
+    })
+    .ToList();
+#>
+#nullable enable
+
+using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+namespace Alba.Text.Json.Dynamic;
+
+internal static partial class ExpressionExts
+{
+<#foreach (var m in methods) { #>
+    /// <inheritdoc cref="<#=m.CommentRef#>" />
+<#    foreach (var a in m.Attrs) { #>
+    [<#=a#>]
+<#    } #>
+    public static <#=m.ReturnType#> E<#=m.NewName#><#=m.GenericParams#>(this <#=m.Params.Join()#>) =>
+        <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args.Join()#>);
+
+<#} #>
+}

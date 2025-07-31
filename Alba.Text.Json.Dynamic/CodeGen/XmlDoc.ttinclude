@@ -1,0 +1,120 @@
+﻿<#@   assembly name="System.Core"
+#><#@ assembly name="System.Xml"
+#><#@ assembly name="System.Xml.Linq"
+#><#+ namespace _ {
+#><#+
+
+// ReSharper disable ConvertTypeCheckPatternToNullCheck
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using System.Xml.XPath;
+using static System.String;
+using static _.Exts;
+
+file class XmlDoc
+{
+    private Dictionary<string, XElement> _members = new();
+    private HashSet<Type> _types = new();
+    private HashSet<string> _docFiles = new();
+
+    public XmlDoc LoadType<T>() => LoadType(typeof(T));
+    public XmlDoc LoadType(Type type)
+    {
+        if (!_types.Add(type))
+            return this;
+        var version = type.Assembly.GetName().Version!;
+        var versionPrefix = $"{version.Major}.{version.Minor}";
+        var dotnetPacksDir = @"C:\Program Files\dotnet\packs";
+        var packName = "Microsoft.NETCore.App.Ref";
+        var versionDir = Directory.EnumerateDirectories(Path.Combine(dotnetPacksDir, packName), $"{versionPrefix}.*").OrderBy(i => i).Last();
+        var refDir = Directory.EnumerateDirectories(Path.Combine(versionDir, "ref"), $"net{versionPrefix}").OrderBy(i => i).Last();
+        var docFileName = Path.ChangeExtension(type.Module.Name, ".xml");
+        if (!_docFiles.Add(docFileName))
+            return this;
+        using var file = File.OpenText(Path.Combine(refDir, docFileName));
+        var doc = XDocument.Load(file);
+        foreach (var el in doc.XPathSelectElements("/doc/members/member"))
+            _members[el.Attribute("name")!.Value] = el;
+        return this;
+    }
+
+    public string FormatDoc(XElement el, int indent = 0, char indentChar = ' ')
+    {
+        var indentStr = new string(indentChar, indent);
+        return el.Elements().Select(i => Regex.Replace($"{i}", @"\s+", " ")).Join("\n")
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => $"{indentStr}/// {s}")
+            .Join(Environment.NewLine);
+    }
+
+    public XElement? GetDoc(MethodInfo m) =>
+        _members.GetOrDefault(GetXmlNameMethod(method: m));
+
+    string GetDocStr(Type type, bool isParam, Map map)
+    {
+        if (type.IsGenericParameter) {
+            var methodIndex = map.Methods.GetOrDefault(type.Name, -1);
+            return methodIndex != -1 ? "``" + methodIndex : "`" + map.Types[type.Name];
+        }
+        else if (type.HasElementType) {
+            string elementTypeString = GetDocStr(type.GetElementType()!, isParam, map);
+            switch (type) {
+                case Type when type.IsPointer:
+                    return elementTypeString + "*";
+                case Type when type.IsByRef:
+                    return elementTypeString + "@";
+                case Type when type.IsArray:
+                    int rank = type.GetArrayRank();
+                    return elementTypeString + (rank > 1 ? $"[{Enumerable.Repeat("0:", rank).Join(",")}]" : "[]");
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+        else {
+            string prefix = type.IsNested ? GetDocStr(type.DeclaringType!, isParam, map) : type.Namespace!;
+            string typeName = isParam ? Regex.Replace(type.Name, @"`\d+", "") : type.Name;
+            string genericArgs = type.IsGenericType && isParam
+                ? "{" + type.GetGenericArguments().Select(a => GetDocStr(a, isParam, map)).Join(",") + "}" : "";
+            return $"{prefix}.{typeName}{genericArgs}";
+        }
+    }
+
+    public string GetXmlNameMethod(MethodInfo? method = null, ConstructorInfo? ctor = null)
+    {
+        if (method is { DeclaringType.IsGenericType: true })
+            method = method.DeclaringType.GetGenericTypeDefinition()
+                .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
+                .First(x => x.MetadataToken == method.MetadataToken);
+
+        MethodBase methodBase = method ?? (MethodBase?)ctor!;
+        var map = new Map(
+            Types: GenericArgsToMap(methodBase.DeclaringType!.GetGenericArguments()),
+            Methods: GenericArgsToMap(method?.GetGenericArguments()));
+        var pars = methodBase.GetParameters();
+
+        string typeName = GetDocStr(methodBase.DeclaringType, isParam: false, map);
+        string methodName = ctor != null ? "#ctor" : methodBase.Name;
+        string genericArgs = map.Methods.Count > 0 ? "``" + map.Methods.Count : "";
+        string paramsStr = pars.Length > 0 ? "(" + pars.Select(x => GetDocStr(x.ParameterType, isParam: true, map)).Join(",") + ")" : "";
+        string key = $"M:{typeName}.{methodName}{genericArgs}{paramsStr}";
+        if (method != null && methodBase.Name is "op_Implicit" or "op_Explicit")
+            key += "~" + GetDocStr(method.ReturnType, isParam: true, map);
+        return key;
+
+        Dictionary<string, int> GenericArgsToMap(Type[]? types) =>
+            types?.Select((t, i) => (t.Name, Index: i)).ToDictionary(p => p.Name, p => p.Index) ?? new();
+    }
+
+    record Map(Dictionary<string, int> Types, Dictionary<string, int> Methods);
+}
+
+#><#+ } #>
