@@ -1,23 +1,16 @@
 ﻿using System.Buffers;
-using CommunityToolkit.Diagnostics;
 
 namespace Alba.Text.Json.Dynamic;
 
-internal sealed class FixedArrayBufferWriter<T> : IBufferWriter<T>
+[InternalAPI]
+internal sealed class FixedArrayBufferWriter<T>(int size) : IBufferWriter<T>
 {
-    private readonly T[] _buffer;
+    private readonly T[] _buffer = new T[Ensure.GreaterThanOrEqualTo(size, 0)];
 
     public int Index { get; private set; }
 
-    public FixedArrayBufferWriter(int size)
-    {
-        Guard.IsGreaterThanOrEqualTo(size, 0);
-        _buffer = new T[size];
-    }
-
     public ReadOnlyMemory<T> WrittenMemory => _buffer.AsMemory(0, Index);
     public ReadOnlySpan<T> WrittenSpan => _buffer.AsSpan(0, Index);
-
     public int Size => _buffer.Length;
     public int Free => _buffer.Length - Index;
 
@@ -34,21 +27,21 @@ internal sealed class FixedArrayBufferWriter<T> : IBufferWriter<T>
 
     public void Advance(int count)
     {
-        Guard.IsGreaterThanOrEqualTo(count, 0);
+        Ensure.GreaterThanOrEqualTo(count, 0);
         if (Index > Size - count)
-            throw new InvalidOperationException($"Buffer advanced past its size of {Size}.");
+            throw new InvalidOperationException($"Buffer advanced past its fixed size of {Size}.");
         Index += count;
     }
 
     public Memory<T> GetMemory(int sizeHint = 0)
     {
-        Guard.IsLessThanOrEqualTo(sizeHint, Size - Index);
+        Ensure.LessThanOrEqualTo(sizeHint, Size - Index);
         return _buffer.AsMemory(Index);
     }
 
     public Span<T> GetSpan(int sizeHint = 0)
     {
-        Guard.IsLessThanOrEqualTo(sizeHint, Size - Index);
+        Ensure.LessThanOrEqualTo(sizeHint, Size - Index);
         return _buffer.AsSpan(Index);
     }
 }

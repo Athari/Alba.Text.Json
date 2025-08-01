@@ -1,15 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Encodings.Web;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Alba.Text.Json.Dynamic;
 
 internal static class JOperations
 {
-    [field: ThreadStatic, MaybeNull]
-    private static Utf8NumberWriter NumberWriter => field ??= new(256);
-
     public static readonly MethodRef JsonObject_GetMember_Method = MethodRef.Of(() =>
         JsonObject_GetMember(null!, null!));
 
@@ -23,13 +18,13 @@ internal static class JOperations
         JsonArray_SetIndex(null!, 0, MethodKey.GetT<string>(0)));
 
     public static object? JsonObject_GetMember(JObject d, string name) =>
-        NodeToDynamicNode(d.Node[name], d.Options);
+        NodeToDynamicNodeOrValue(d.Node[name], d.Options);
 
     public static object? JsonObject_SetMember<T>(JObject d, string name, T value) =>
         (d.Node[name] = ValueToNode(value, d.Node.Options), value).value;
 
     public static object? JsonArray_GetIndex(JArray d, int index) =>
-        NodeToDynamicNode(d.Node[index], d.Options);
+        NodeToDynamicNodeOrValue(d.Node[index], d.Options);
 
     public static object? JsonArray_SetIndex<T>(JArray d, int index, T value) =>
         (d.Node[index] = ValueToNode(value, d.Node.Options), value).value;
@@ -76,44 +71,58 @@ internal static class JOperations
         };
     }
 
-    public static object? NodeToDynamicNode(JsonNode? node, JNodeOptions options)
-    {
-        object? o = node switch {
+    public static object? NodeToDynamicNodeOrValue(JsonNode? node, JNodeOptions options) =>
+        //WriteLine($"{d.GetType().Name}: {node?.GetType().Name} => {o?.GetType().Name}");
+        node switch {
             null => null,
-            // return primitive values directly
             JsonValue v => v.GetValueKind() switch {
-                JsonValueKind.Null or JsonValueKind.Undefined => null,
+                // return primitive values directly
+                JsonValueKind.Undefined => options.UndefinedValue,
+                JsonValueKind.Null => null,
                 JsonValueKind.String => v.GetValue<string>(),
                 JsonValueKind.True => true,
                 JsonValueKind.False => false,
-                // Numbers can be stored as JsonElement pointing to barely parsed binary data
+                // numbers can be stored as JsonElement pointing to barely parsed binary data
                 JsonValueKind.Number => v.GetValue<object>() switch {
                     JsonElement j => JsonElementToNumber(j, options),
                     { } n => n,
                 },
-                // TODO Figure out what to do with raw objects inside JsonValueCustomized<T>
-                JsonValueKind.Object or JsonValueKind.Array => v.GetValue<object>(),
-                _ => throw new InvalidOperationException($"Unexpected JsonValueKind: {v}"),
+                // objects can be JsonElement or an arbitrary user type
+                JsonValueKind.Object or JsonValueKind.Array
+                    or (JsonValueKind)byte.MaxValue => // from JsonNodeExts
+                    v.TryGetValue(out JsonElement? j)
+                        // return value of wrapped JsonElement
+                        ? JsonElementToValue(j.Value, options)
+                        // return raw objects stored inside
+                        : v.GetValue<object>(),
+                //v.TryGetValue<JsonElement>(out var el) ? el. v.GetValue<object>(),
+                _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonNode: {v}"),
             },
             // wrap with dynamic wrappers
             JsonObject v => new JObject(v, options),
             JsonArray v => new JArray(v, options),
             _ => throw new InvalidOperationException($"Unexpected JsonNode: {node.GetType()}"),
         };
-        //WriteLine($"{d.GetType().Name}: {node?.GetType().Name} => {o?.GetType().Name}");
-        return o;
-    }
 
-    private static object JsonElementToNumber(JsonElement j, JNodeOptions options)
-    {
-        var writer = NumberWriter;
-        writer.CopyFrom(j);
-        return writer.DetectFloatingPoint()
-            ? JsonElementToNumberWithAnyTypeCode(j, options.FloatTypes)
-         ?? throw new InvalidOperationException($"Cannot convert {j} to a floating point number.")
-            : JsonElementToNumberWithAnyTypeCode(j, options.IntegerTypes)
-         ?? throw new InvalidOperationException($"Cannot convert {j} to an integer number.");
-    }
+    private static object? JsonElementToValue(in JsonElement j, JNodeOptions options) =>
+        j.ValueKind switch {
+            JsonValueKind.Undefined => options.UndefinedValue,
+            JsonValueKind.Null => null,
+            JsonValueKind.String => j.GetString(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Number => JsonElementToNumber(j, options),
+            JsonValueKind.Object or JsonValueKind.Array =>
+                throw new InvalidOperationException($"{j.ValueKind} JsonElement in JsonValue"),
+            _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonElement: {j.ValueKind}"),
+        };
+
+    private static object JsonElementToNumber(JsonElement j, JNodeOptions options) =>
+        IsFloatingPoint(j.GetRawValueSpan()) ?
+            JsonElementToNumberWithAnyTypeCode(j, options.FloatTypes) ??
+            throw new InvalidOperationException($"Cannot convert {j} to a floating point number.") :
+            JsonElementToNumberWithAnyTypeCode(j, options.IntegerTypes) ??
+            throw new InvalidOperationException($"Cannot convert {j} to an integer number.");
 
     private static object? JsonElementToNumberWithAnyTypeCode(JsonElement j, TypeCode[] types)
     {
@@ -123,9 +132,9 @@ internal static class JOperations
         return null;
     }
 
-    private static object? JsonElementToNumberWithTypeCode(JsonElement j, TypeCode type)
-    {
-        return type switch {
+    [SuppressMessage("ReSharper", "SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault", Justification = "Intentional")]
+    private static object? JsonElementToNumberWithTypeCode(JsonElement j, TypeCode type) =>
+        type switch {
             TypeCode.SByte => j.TryGetSByte(out var v) ? v : null,
             TypeCode.Byte => j.TryGetByte(out var v) ? v : null,
             TypeCode.Int16 => j.TryGetInt16(out var v) ? v : null,
@@ -140,41 +149,13 @@ internal static class JOperations
             TypeCode.String => j.GetString(),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"A number or string TypeCode expected, got {type}"),
         };
-    }
 
-    private class Utf8NumberWriter
-    {
-        private static readonly JsonWriterOptions JsonWriterOptions = new() {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = false,
-            SkipValidation = true,
+    private static bool IsFloatingPoint(ReadOnlySpan<byte> span) =>
+        span.IndexOf((byte)'.') switch {
+            -1 => span.IndexOfAny((byte)'e', (byte)'E') switch {
+                -1 => false,
+                var i => i + 1 < span.Length && span[i + 1] == (byte)'-',
+            },
+            _ => true,
         };
-
-        private readonly FixedArrayBufferWriter<byte> _buffer;
-        private readonly Utf8JsonWriter _writer;
-
-        public Utf8NumberWriter(int size)
-        {
-            _buffer = new(size);
-            _writer = new(_buffer, JsonWriterOptions);
-        }
-
-        public void CopyFrom(JsonElement j)
-        {
-            _buffer.ResetIndex();
-            j.WriteTo(_writer);
-        }
-
-        public bool DetectFloatingPoint()
-        {
-            // match \. | [Ee] \-
-            var span = _buffer.WrittenSpan;
-            for (int i = 0; i < span.Length; i++) {
-                byte b = span[i];
-                if (b == '.' || ((b == 'e' || b == 'E') && i + 1 < span.Length && span[i + 1] == '-'))
-                    return true;
-            }
-            return false;
-        }
-    }
 }

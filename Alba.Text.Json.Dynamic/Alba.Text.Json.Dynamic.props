@@ -1,0 +1,30 @@
+﻿<Project>
+
+  <PropertyGroup Label="Build">
+    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
+    <UseJetBrainsAnnotations>true</UseJetBrainsAnnotations>
+    <UsePolySharp>true</UsePolySharp>
+    <UseT4>true</UseT4>
+    <AllowUnsafeBlocks Condition="$(TargetFramework.StartsWith('netstandard'))">true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup Label="Build">
+    <!--<Using Include="System.Console" Static="true" />-->
+    <Using Include="System.Linq.Expressions.Expression" Alias="E" />
+    <Using Include="System.Dynamic.DynamicMetaObject" Alias="dobject" />
+  </ItemGroup>
+
+  <ItemGroup Label="Polyfills">
+    <!--<PolySystem Include="Range;Index" />-->
+    <PolyAnalysis Include="DynamicallyAccessedMemberTypes" />
+    <PolyAnalysisAttributes Include="Maybe0;1;1If1;1W" />
+    <PolyAnalysisAttributes Include="DynamicallyAccessedMembers;RequiresDynamicCode;RequiresUnreferencedCode;StringSyntax" />
+    <PolyCompilerAttributes Include="CallerArgumentExpression" />
+  </ItemGroup>
+
+  <ItemGroup Label="Packages">
+    <PackageReference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+</Project>

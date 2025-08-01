@@ -14,12 +14,13 @@ dotnet_diagnostic.ca1063.severity = none # Implement IDisposable correctly # Obs
 dotnet_diagnostic.ca1805.severity = none # Do not initialize unnecessarily # Readability
 dotnet_diagnostic.ca1852.severity = none # Seal internal types # Who tf cares
 dotnet_diagnostic.ca1852.severity = none # Seal internal types # Who tf cares
-dotnet_diagnostic.cs8981.severity = none # The type name only contains lower-cased ascii characters # 'dobject' won't become a keyword, trust me bro
 dotnet_diagnostic.ide0022.severity = none # Use expression body for methods
 dotnet_diagnostic.ide0046.severity = none # Use conditional expression for return # We use R#
 dotnet_diagnostic.ide0055.severity = none # Formatting rule # We use R#
 dotnet_diagnostic.ide0130.severity = none # Namespace does not match folder structure # We use R#
 dotnet_diagnostic.ide0305.severity = none # Use collection expression for fluent # Messes up LINQ chains
+
+dotnet_diagnostic.bdbg0001.severity = suggestion
 
 # .NET naming
 
@@ -240,6 +241,11 @@ resharper_separate_local_functions_with_jump_statement_highlighting = none
 resharper_string_literal_typo_highlighting = none
 resharper_xaml_binding_with_context_not_resolved_highlighting = hint
 
+[*.{props,targets,csproj}]
+
+tab_width = 2
+indent_size = 2
+
 [*.{xaml,axaml}]
 
 tab_width = 2
@@ -255,6 +261,10 @@ resharper_redundant_extends_list_entry_highlighting = none # Redundant class or 
 
 dotnet_diagnostic.cs1998.severity = none # This async method lacks await operators # Consistency > minor perf diff
 dotnet_diagnostic.ca2007.severity = none # Do not directly await a Task # Avalonia code cares about Dispatcher
+
+[*.GlobalUsings.g.cs]
+
+dotnet_diagnostic.cs8981.severity = none # The type name only contains lower-cased ascii characters # Those won't become keywords, trust me bro
 
 [*.{cs,vb}]
 

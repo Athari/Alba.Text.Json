@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/~/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="License.md" />
+    <File Path="ReadMe.md" />
+  </Folder>
+  <Folder Name="/Alba.Text.Json.Dynamic/">
+    <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.csproj" />
+    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ6.csproj" />
+    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ8.csproj" />
+    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ9.csproj" />
+  </Folder>
+  <Project Path="Alba.Text.Json.Dynamic.Playground/Alba.Text.Json.Dynamic.Playground.csproj" />
+</Solution>

@@ -9,6 +9,8 @@ public sealed class JNodeOptions
 #pragma t4 copy begin
     public bool IsCaseSensitive { get; set; } = true;
 
+    public object? UndefinedValue { get; set; } = null;
+
     public TypeCode[] IntegerTypes { get; set; } = [ TypeCode.Int32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Decimal ];
 
     public TypeCode[] FloatTypes { get; set; } = [ TypeCode.Single, TypeCode.Double, TypeCode.Decimal ];
@@ -19,6 +21,7 @@ public sealed class JNodeOptions
     internal JNodeOptions(JNodeOptionsAttribute o)
     {
         IsCaseSensitive = o.IsCaseSensitive;
+        UndefinedValue = o.UndefinedValue;
         IntegerTypes = o.IntegerTypes;
         FloatTypes = o.FloatTypes;
     }

@@ -1,12 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Dynamic;
+﻿using System.Dynamic;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using CommunityToolkit.Diagnostics;
-using JetBrains.Annotations;
+using System.Text.Json.Serialization;
 
 namespace Alba.Text.Json.Dynamic;
 
+[JsonConverter(typeof(JNodeConverter))]
 public abstract partial class JNode(JNodeOptions? options = null)
 {
     internal readonly JNodeOptions Options = options ?? JNodeOptions.Default;
@@ -32,11 +31,9 @@ public abstract partial class JNode(JNodeOptions? options = null)
         {
             if (m.Method != null)
                 return m.Method;
-            else if (m.UnboundGenericMethod != null) {
-                Guard.IsNotNull(genericTypes);
-                return CacheGetOrAdd(MethodsCache, m.GenericKey(genericTypes),
+            else if (m.UnboundGenericMethod != null)
+                return CacheGetOrAdd(MethodsCache, m.GenericKey(Ensure.NotNull(genericTypes)),
                     () => m.UnboundGenericMethod.MakeGenericMethod(genericTypes));
-            }
             else
                 throw new InvalidOperationException();
         }
@@ -49,7 +46,7 @@ public abstract partial class JNode(JNodeOptions? options = null)
                 return method;
             if (getMethod == null)
                 return null;
-            WriteLine($"Resolving {key}");
+            //WriteLine($"Resolving {key}");
             method = getMethod() ?? throw new InvalidOperationException($"Method {key} not found.");
             cache.Add(key, method);
             return method;

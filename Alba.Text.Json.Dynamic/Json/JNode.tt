@@ -31,15 +31,21 @@ var methods = Enumerable.Empty<MethodInfo>()
         Comment: docs.LoadType(m.DeclaringType).GetDoc(m),
         IsAsync: m.FormatReturn().Contains("Task"),
         GenericArgs: m.FormatGenericArgs(),
-        Args: m.GetParameters().Select(p => p.FormatArg()).Join(),
-        Params: m.GetParameters().Select(p => p.Format()).Join(),
-        Ext: m.FormatExt()
+        Args: m.GetParameters().Select(p => p.FormatArg()).ToList(),
+        Params: m.GetParameters().Select(p => p.Format()).ToList(),
+        Ext: m.FormatExt(),
+        MinVersion: (int?)null
     ))
+    .Select(m => (
+        m.MinVersion =
+            m.Name == "ParseAsync" ? 8 :
+            m.Name == "SerializeToNode" && m.Params[1].StartsWith("JsonTypeInfo ") ? 8 :
+            null,
+        m).m)
     .ToList();
 #>
 #nullable enable
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -53,6 +59,9 @@ public partial class JNode
     private const string <#=nameof(SerializationRequiresDynamicCodeMessage)#> = <#=SerializationRequiresDynamicCodeMessage.FormatConst(true)#>;
 
 <#foreach (var m in methods) { #>
+<#    if (m.MinVersion != null) { #>
+  #if JSON<#=m.MinVersion#>_0_OR_GREATER
+<#    } #>
 <#    if (m.Comment != null) { #>
 <#= docs.FormatDoc(m.Comment, 4) #>
 <#    } #>
@@ -60,11 +69,14 @@ public partial class JNode
     [<#=a#>]
 <#    } #>
 <#    if (m.IsAsync) { #>
-    public static async <#=m.ReturnType#> <#=m.NewName#><#=m.GenericArgs#>(<#=m.Ext#><#=m.Params#>) =>
-        (await <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args#>)).ToDynamic();
+    public static async <#=m.ReturnType#> <#=m.NewName#><#=m.GenericArgs#>(<#=m.Ext#><#=m.Params.Join()#>) =>
+        (await <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args.Join()#>)).ToDynamic();
 <#    } else { #>
-    public static <#=m.ReturnType#> <#=m.NewName#><#=m.GenericArgs#>(<#=m.Ext#><#=m.Params#>) =>
-        <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args#>).ToDynamic();
+    public static <#=m.ReturnType#> <#=m.NewName#><#=m.GenericArgs#>(<#=m.Ext#><#=m.Params.Join()#>) =>
+        <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args.Join()#>).ToDynamic();
+<#    } #>
+<#    if (m.MinVersion != null) { #>
+  #endif
 <#    } #>
 
 <#} #>

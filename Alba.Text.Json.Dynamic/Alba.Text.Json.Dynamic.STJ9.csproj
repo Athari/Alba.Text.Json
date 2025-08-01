@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="Alba.Text.Json.Dynamic.props" />
+  <PropertyGroup Label="Json">
+    <TargetFrameworks>net9.0;net8.0;netstandard2.1</TargetFrameworks>
+    <TextJsonVersionOverride>9</TextJsonVersionOverride>
+    <AllowVulnerableTextJson>true</AllowVulnerableTextJson>
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
+  </PropertyGroup>
+
+</Project>

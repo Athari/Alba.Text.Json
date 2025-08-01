@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Alba.Text.Json.Dynamic;
 
 [Flags]
-[SuppressMessage("ReSharper", "ShiftExpressionZeroLeftOperand")]
-internal enum MethodKeyKind
+internal enum MethodKeyKind : uint
 {
     Regular = 0x1000_0000,
     UnboundGeneric = 0x2000_0000,
@@ -21,7 +19,7 @@ internal enum MethodKeyKind
     Static = BindingFlags.Static, // 0x0000_0008
     MaskStatic = Instance | Static, // 0x0000_000C
 
-    CaseSensitive = unchecked((int)0x8000_0000),
+    CaseSensitive = 0x8000_0000,
     CaseInsensitive = BindingFlags.IgnoreCase,
     MaskCaseSensitivity = CaseSensitive | CaseInsensitive,
 

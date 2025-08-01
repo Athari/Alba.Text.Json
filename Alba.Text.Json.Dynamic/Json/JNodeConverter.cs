@@ -9,7 +9,7 @@ public class JNodeConverter(JNodeOptions? options = null) : JsonConverter<JNode?
 {
     public JNodeOptions? Options { get; } = options ?? JNodeOptions.Default;
 
-    private static readonly JsonConverter<JsonNode?> NodeConverter = JsonMetadataServices.JsonNodeConverter;
+    private static readonly JsonConverter<JsonNode?> NodeConverter = JsonMetadataServices.JsonNodeConverter!;
 
     public override JNode? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         NodeConverter.Read(ref reader, typeToConvert, options).ToDynamic(Options);

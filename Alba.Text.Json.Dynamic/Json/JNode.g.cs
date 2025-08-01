@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -51,6 +50,7 @@ public partial class JNode
     public static dynamic? Parse(Stream utf8Json, JsonNodeOptions? nodeOptions = default, JsonDocumentOptions documentOptions = default) =>
         JsonNode.Parse(utf8Json, nodeOptions, documentOptions).ToDynamic();
 
+  #if JSON8_0_OR_GREATER
     /// <summary>Parses a <see cref="T:System.IO.Stream" /> as UTF-8 encoded data representing a single JSON value into a <see cref="T:System.Text.Json.Nodes.JsonNode" />. The stream will be read to completion.</summary>
     /// <param name="utf8Json">The JSON text to parse.</param>
     /// <param name="nodeOptions">Options to control the node behavior after parsing.</param>
@@ -61,6 +61,7 @@ public partial class JNode
     /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> to produce either a <see cref="T:System.Text.Json.Nodes.JsonNode" /> representation of the JSON value, or null if the input represents the null JSON value.</returns>
     public static async Task<dynamic?> ParseAsync(Stream utf8Json, JsonNodeOptions? nodeOptions = default, JsonDocumentOptions documentOptions = default, CancellationToken cancellationToken = default) =>
         (await JsonNode.ParseAsync(utf8Json, nodeOptions, documentOptions, cancellationToken)).ToDynamic();
+  #endif
 
     /// <summary>Converts the provided value into a <see cref="T:System.Text.Json.Nodes.JsonNode" />.</summary>
     /// <param name="value">The value to convert.</param>
@@ -96,6 +97,7 @@ public partial class JNode
     public static dynamic? From<TValue>(TValue value, JsonTypeInfo<TValue> jsonTypeInfo) =>
         JsonSerializer.SerializeToNode<TValue>(value, jsonTypeInfo).ToDynamic();
 
+  #if JSON8_0_OR_GREATER
     /// <summary>Converts the provided value into a <see cref="T:System.Text.Json.Nodes.JsonNode" />.</summary>
     /// <param name="value">The value to convert.</param>
     /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
@@ -104,6 +106,7 @@ public partial class JNode
     /// <returns>A <see cref="T:System.Text.Json.Nodes.JsonNode" /> representation of the value.</returns>
     public static dynamic? From(object? value, JsonTypeInfo jsonTypeInfo) =>
         JsonSerializer.SerializeToNode(value, jsonTypeInfo).ToDynamic();
+  #endif
 
     /// <summary>Converts the provided value into a <see cref="T:System.Text.Json.Nodes.JsonNode" />.</summary>
     /// <param name="value">The value to convert.</param>

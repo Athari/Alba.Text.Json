@@ -1,5 +1,4 @@
 ﻿using System.Dynamic;
-using CommunityToolkit.Diagnostics;
 
 namespace Alba.Text.Json.Dynamic;
 
@@ -7,7 +6,8 @@ internal static partial class ExpressionExts
 {
     public static T Single<T>(this T[] @this)
     {
-        Guard.IsEqualTo(@this.Length, 1);
+        if (@this.Length != 1)
+            throw new ArgumentException("Array must contain one element.", nameof(@this));
         return @this[0];
     }
 
