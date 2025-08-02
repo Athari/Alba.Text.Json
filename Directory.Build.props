@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Build">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningLevel>9999</WarningLevel>
     <WarningsAsErrors>$(WarningsAsErrors)</WarningsAsErrors>
     <AnalysisLevel>preview-recommended</AnalysisLevel>
@@ -14,21 +15,50 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.dylib;**/*.so</DefaultItemExcludes>
   </PropertyGroup>
 
+  <!-- DOC: Package metadata -->
+  <PropertyGroup>
+    <Authors>Athari</Authors>
+    <Company>Athari</Company>
+    <!--<Copyright>Copyright © 2024–$([System.DateTime]::Now.ToString(yyyy)) Alexander “Athari” Prokhorov</Copyright>-->
+    <Copyright>Copyright &#169; 2024&#8211;$([System.DateTime]::Now.ToString(yyyy)) Alexander &#8220;Athari&#8221; Prokhorov</Copyright>
+    <PackageProjectUrl>https://github.com/Athari/Alba.Text.Json</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Athari/Alba.Text.Json.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageIconItem Include="$(SolutionDir).nuget\Logo128.png" />
+    <PackageReadmeItem Include="$(SolutionDir)ReadMe.md" />
+    <PackageLicenseItem Include="$(SolutionDir)License.md" />
+    <AssemblyMetadata Include="Awesome" Value="True" />
+  </ItemGroup>
+
+  <!-- DOC: Make IDE-only macros available in non-IDE builds -->
+  <PropertyGroup Label="Solution">
+    <SolutionName Condition="'$(SolutionName)' == '' or '$(SolutionName)' == '*Undefined*'">Alba.Text.Json.Dynamic</SolutionName>
+    <SolutionExt Condition="'$(SolutionExt)' == '' or '$(SolutionExt)' == '*Undefined*'">.slnx</SolutionExt>
+    <SolutionFileName Condition="'$(SolutionFileName)' == '' or '$(SolutionFileName)' == '*Undefined*'">$(SolutionName)$(SolutionExt)</SolutionFileName>
+    <CurrentSolutionDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), '$(SolutionFileName)'))\</CurrentSolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' or $(SolutionDir) == '*Undefined*'">$(CurrentSolutionDir)</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' or $(SolutionPath) == '*Undefined*'">$(SolutionDir)$(SolutionFileName)</SolutionPath>
+  </PropertyGroup>
+
   <PropertyGroup Label="Artifacts">
     <UseArtifactsOutput>true</UseArtifactsOutput>
-    <CurrentSolutionDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Alba.Text.Json.Dynamic.slnx'))\</CurrentSolutionDir>
-    <SolutionDir Condition="$(SolutionDir) == '' or $(SolutionDir) == '*Undefined*'">$(CurrentSolutionDir)</SolutionDir>
-    <ArtifactsPath>$(SolutionDir)Artifacts/</ArtifactsPath>
-    <!--<BaseOutputPath>$(ArtifactsPath)bin/$(MSBuildProjectName)/</BaseOutputPath>-->
+    <UseArtifactsIntermediateOutput>true</UseArtifactsIntermediateOutput>
+    <IncludeProjectNameInArtifactsPaths>true</IncludeProjectNameInArtifactsPaths>
+    <ArtifactsPath>$(SolutionDir)Artifacts\</ArtifactsPath>
+    <ArtifactsPackageOutputName>package</ArtifactsPackageOutputName>
     <BaseOutputPath>$(ArtifactsPath)</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(ArtifactsPath)Obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <ArtifactsPackageOutputName>nuget</ArtifactsPackageOutputName>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <!--<BaseOutputPath>$(ArtifactsPath)$(ArtifactsProjectName)\</BaseOutputPath>-->
+    <AppendPlatformToOutputPath>true</AppendPlatformToOutputPath>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
     <SolutionProjectReference Module="" Type="csproj" />
+    <RemoveXmlDocPrefix />
   </ItemDefinitionGroup>
 
 </Project>

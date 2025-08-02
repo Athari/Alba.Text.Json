@@ -8,6 +8,10 @@
     <File Path="License.md" />
     <File Path="ReadMe.md" />
   </Folder>
+  <Folder Name="/.build/">
+    <File Path="C:/Docs/Projects/Json/.build/Alba.Text.Json.Dynamic.xml" />
+    <File Path="C:/Docs/Projects/Json/.build/FilterXmlDoc.xsl" />
+  </Folder>
   <Folder Name="/Alba.Text.Json.Dynamic/">
     <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.csproj" />
     <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ6.csproj" />

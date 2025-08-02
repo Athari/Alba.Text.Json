@@ -1,0 +1,61 @@
+﻿<Project>
+
+  <PropertyGroup Label="Json">
+    <NoWarn Label="Missing XML comment for publicly visible type or member">$(NoWarn);CS1591</NoWarn>
+    <NoWarn Label="The type name only contains lower-cased ascii characters | .editorconfig fails">$(NoWarn);CS8981</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Label="Build">
+    <!--<Using Include="System.Console" Static="true" />-->
+    <Using Include="System.Linq.Expressions.Expression" Alias="E" />
+    <Using Include="System.Dynamic.DynamicMetaObject" Alias="dobject" />
+    <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.ExpressionExts." />
+    <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.RefImpl." />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TextJsonVersionOverride)' != ''">
+    <Compile Update="@(Compile)" Visible="false" />
+    <Content Update="@(Content)" Visible="false" />
+    <Folder Update="@(Folder)" Visible="false" />
+    <None Update="@(None)" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Label="Polyfills">
+    <!--<PolySystem Include="Range;Index" />-->
+    <PolyAnalysis Include="DynamicallyAccessedMemberTypes" />
+    <PolyAnalysisAttributes Include="Maybe0;1;1If1;1W" />
+    <PolyAnalysisAttributes Include="DynamicallyAccessedMembers;RequiresDynamicCode;RequiresUnreferencedCode;StringSyntax" />
+    <PolyCompilerAttributes Include="CallerArgumentExpression" />
+  </ItemGroup>
+
+  <ItemGroup Label="Packages">
+    <PackageReference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Compile Remove="RefImpl/*.cs" />
+  </ItemGroup>
+
+  <!-- DOC: Package metadata -->
+  <PropertyGroup>
+    <PackageVersion>0.1.0</PackageVersion>
+    <DescriptionPackageShared>
+      Dynamic JsonNode: dynamic json = JNode.Parse("""{ "Hello": { "World": [ 1, 2, 3 ] } }"""); json.Hello.World[2]++.
+    </DescriptionPackageShared>
+    <DescriptionPackageSpecific Condition="'$(TextJsonVersionOverride)' == ''">
+      Alba.Text.Json.Dynamic package supports a System.Text.Json version based on .NET version.
+      To support a specific System.Text.Json version, use Alba.Text.Json.Dynamic.STJ# package.
+    </DescriptionPackageSpecific>
+    <DescriptionPackageSpecific Condition="'$(TextJsonVersionOverride)' != ''">
+      Alba.Text.Json.Dynamic.STJ$(TextJsonVersionOverride) package supports System.Text.Json version $(TextJsonVersionOverride).
+      To support a System.Text.Json version based on .NET version, use Alba.Text.Json.Dynamic package.
+    </DescriptionPackageSpecific>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageTagItem Include="JSON;JsonNode;dynamic;DLR;System.Text.Json;STJ" />
+    <PackageTagItem Condition="'$(TextJsonVersionOverride)' != ''" Include="STJ$(TextJsonVersionOverride)" />
+  </ItemGroup>
+
+</Project>

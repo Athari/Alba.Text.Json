@@ -5,7 +5,7 @@
     <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
     <TextJsonVersionOverride>8</TextJsonVersionOverride>
     <AllowVulnerableTextJson>true</AllowVulnerableTextJson>
-    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
+  <Import Project="Alba.Text.Json.Dynamic.targets" />
 
 </Project>

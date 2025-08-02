@@ -3,6 +3,11 @@ using System.Text.Json.Nodes;
 
 namespace Alba.Text.Json.Dynamic;
 
+/// <summary>
+/// JValue.
+/// </summary>
+/// <param name="source"></param>
+/// <param name="options"></param>
 public class JValue(JsonValue source, JNodeOptions? options = null)
     : JNode<JsonValue>(source, options), IDynamicMetaObjectProvider
 {

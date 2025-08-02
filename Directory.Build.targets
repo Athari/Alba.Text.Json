@@ -1,5 +1,23 @@
 <Project>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
+    <CopyDocumentationFilesFromPackages>false</CopyDocumentationFilesFromPackages>
+  </PropertyGroup>
+
+  <!-- DOC: Package metadata -->
+  <PropertyGroup>
+    <!--<Title>Title</Title>-->
+    <DescriptionPackageShared>$([System.Text.RegularExpressions.Regex]::Replace($(DescriptionPackageShared), @"(?m)\A\s+|\s+\z|^[ \t\r]+|[ \t\r]+$|[ \t\r]+( )", "$1"))</DescriptionPackageShared>
+    <DescriptionPackageSpecific>$([System.Text.RegularExpressions.Regex]::Replace($(DescriptionPackageSpecific), @"(?m)\A\s+|\s+\z|^[ \t\r]+|[ \t\r]+$|[ \t\r]+( )", "$1"))</DescriptionPackageSpecific>
+    <Description>$(DescriptionPackageShared)</Description>
+    <Description Condition="'$(DescriptionPackageSpecific)' != ''">$(Description)&#13;&#13;$(DescriptionPackageSpecific)</Description>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <PackageLicenseFile Condition="'$(PackageLicenseExpression)' == ''">License.md</PackageLicenseFile>
+    <PackageTags>@(PackageTagItem, ' ')</PackageTags>
+  </PropertyGroup>
+
   <!-- DOC: Resolve System.Json.Text version -->
   <ItemGroup>
     <TextJsonVersions Include="6;8;9" />
@@ -35,7 +53,7 @@
         <VersionOverride Condition="'%(Identity)' == 'System.Text.Json'">$(TextJsonVersion)</VersionOverride>
       </PackageReference>
     </ItemGroup>
-    <Warning Text="$(ProjectName) ($(TargetFramework)) = v$(TextJsonVersion)" Code="BDBG0001" />
+    <!--<Warning Text="$(ProjectName) ($(TargetFramework)) = v$(TextJsonVersion)" Code="BDBG0001" />-->
   </Target>
 
   <Target Name="GenerateTextJsonDefineConstants" DependsOnTargets="CalculateTextJsonVersion">
@@ -99,5 +117,58 @@
     <None Update="**\*.DotSettings;**\*.user" Link="Properties\$([System.String]::Copy(%(Filename)).Replace($(MSBuildProjectName), ''))%(Extension)" />
     <!--<None Update="*.manifest" Link="Properties\%(Filename)%(Extension)" />-->
   </ItemGroup>
+
+  <!-- DOC: NuGet package -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GeneratePackageOnBuild)' == 'true'">
+
+    <!-- DOC: Documentation -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- DOC: Symbols package -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludePackageReferencesDuringMarkupCompilation Condition="'$(UseWPF)' == 'true'">true</IncludePackageReferencesDuringMarkupCompilation>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DebugType>portable</DebugType>
+
+    <!-- DOC: Package compatibility validation -->
+    <!--<EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.1.0</PackageValidationBaselineVersion>
+    <EnableStrictModeForCompatibleTfms>true</EnableStrictModeForCompatibleTfms>-->
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <SourceRoot Include="$(ProjectDir)/" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+    <!--<None Include="$(CurrentSolutionDir)*.md" LinkBase=".nuget" Pack="true" PackagePath="/" />-->
+    <None Include="@(PackageIconItem)" LinkBase=".nuget" Pack="true" PackagePath="/$(PackageIcon)" />
+    <None Include="@(PackageReadmeItem)" LinkBase=".nuget" Pack="true" PackagePath="/$(PackageReadme)" />
+    <None Include="@(PackageLicenseItem)" LinkBase=".nuget" Pack="true" PackagePath="/$(PackageLicense)" />
+  </ItemGroup>
+
+  <!-- DOC: Continuous integration -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+  </PropertyGroup>
+
+  <!-- DOC: Documentation cleanup -->
+  <ItemGroup Label="XML Docs">
+    <RemoveXmlDocPrefix Include=":System." />
+  </ItemGroup>
+
+  <Target Name="FilterXmlDocs" AfterTargets="Compile"
+      Condition="'$(GenerateDocumentationFile)' == 'true' or '$(DocumentationFile)' != ''">
+    <XslTransformation
+        XslInputPath="$(SolutionDir).build\FilterXmlDoc.xsl"
+        XmlInputPaths="$(DocumentationFile)" OutputPaths="$(DocumentationFile).out"
+        Parameters="&lt;Parameter Name='remove-prefixes' Value='@(RemoveXmlDocPrefix)' />" />
+    <Move SourceFiles="$(DocumentationFile).out" DestinationFiles="$(DocumentationFile)" />
+    <!--<Warning Text="Prefixes in $(DocumentationFile): @(RemoveXmlDocPrefix)" />-->
+  </Target>
 
 </Project>
