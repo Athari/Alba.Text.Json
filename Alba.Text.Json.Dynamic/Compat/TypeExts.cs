@@ -12,6 +12,10 @@ internal static class TypeExts
   #if !NET5_0_OR_GREATER
     public static bool IsAssignableTo(this Type @this, [NotNullWhen(true)] Type? targetType) =>
         targetType?.IsAssignableFrom(@this) ?? false;
+
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+    public static MethodInfo? GetMethod(this Type @this, string name, BindingFlags bindingAttr, Type[] types) =>
+        @this.GetMethod(name, bindingAttr, binder: null, types, modifiers: null);
   #endif
 
   #if !NET9_0_OR_GREATER

@@ -1,16 +1,10 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Alba.Text.Json.Dynamic;
 
-object? Attempt(Func<object?> f)
-{
-    try {
-        return f();
-    }
-    catch {
-        return "<ERROR>";
-    }
-}
+Trace.Listeners.Add(new ConsoleTraceListener());
+
 var values = new object?[] {
     TimeSpan.FromDays(1, 2),
     new byte[] { 1, 2, 3 },
@@ -40,7 +34,7 @@ var values = new object?[] {
     s: Attempt(() => JsonSerializer.SerializeToNode(o))
 )).ToList();
 
-values.ForEach(WriteLine);
+//values.ForEach(WriteLine);
 
 var jo = JsonNode.Parse("""
     {
@@ -49,6 +43,7 @@ var jo = JsonNode.Parse("""
       "Foo": "Bar",
       "Pos1": { "x": 10, "y": 20 },
       "Pos2": { "x": 50, "y": 60 },
+      "Arr": [ 2, 3, 4 ],
     }
     """,
     new() {
@@ -67,6 +62,7 @@ WriteLine($"Pos1.x = {json.Pos1.x}");
 WriteLine($"(int)Pos1.x + (int)Pos2.x = {(int)json.Pos1.x + (int)json.Pos2.x}");
 WriteLine($"(float)Pos1.y / (float)Pos2.y = {(float)json.Pos1.x / (float)json.Pos2.x}");
 WriteLine($"Pos1.x + Pos2.x = {json.Pos1.x + json.Pos2.x}");
+WriteLine($"Arr[2] = {++json.Arr[2]}");
 
 json.Hi = "Hi";
 json["Hi2"] = "Hi2";
@@ -109,6 +105,16 @@ WriteLine("Done!");
 //o.〵tree = 1;
 //o.ーtree = 1;
 //o.ꘌtree = 1;
+
+object? Attempt(Func<object?> f)
+{
+    try {
+        return f();
+    }
+    catch {
+        return "<ERROR>";
+    }
+}
 
 namespace Alba.Text.Json.Dynamic
 {

@@ -32,7 +32,7 @@
     <PropertyGroup Condition="'$(TextJsonVersionOverride)' == ''">
       <TextJsonVersionOverride Label="Min">%(TextJsonVersionsReverse.Identity)</TextJsonVersionOverride>
       <TextJsonVersionOverride Label="Auto" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">$(TargetFramework.Substring(3).Split('.')[0])</TextJsonVersionOverride>
-      <TextJsonVersionOverride Label="Max" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'">%(TextJsonVersions.Identity)</TextJsonVersionOverride>
+      <TextJsonVersionOverride Label="Max" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' or '$(TargetFrameworkIdentifier)' == '.NETFramework'">%(TextJsonVersions.Identity)</TextJsonVersionOverride>
     </PropertyGroup>
     <ItemGroup>
       <CompatibleTextJsonVersions Include="@(TextJsonVersions)" Condition="'$(TextJsonVersionOverride)' >= '%(Identity)'" />
@@ -164,6 +164,7 @@
   <Target Name="FilterXmlDocs" AfterTargets="Compile"
       Condition="'$(GenerateDocumentationFile)' == 'true' or '$(DocumentationFile)' != ''">
     <XslTransformation
+        ContinueOnError="WarnAndContinue"
         XslInputPath="$(SolutionDir).build\FilterXmlDoc.xsl"
         XmlInputPaths="$(DocumentationFile)" OutputPaths="$(DocumentationFile).out"
         Parameters="&lt;Parameter Name='remove-prefixes' Value='@(RemoveXmlDocPrefix)' />" />

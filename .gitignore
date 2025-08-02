@@ -2,3 +2,5 @@
 /Artifacts
 **/RefImpl/*.cs
 *.user
+*.tmp
+*.tmp.*

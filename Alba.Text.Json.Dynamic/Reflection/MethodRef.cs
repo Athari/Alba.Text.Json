@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -6,6 +7,9 @@ namespace Alba.Text.Json.Dynamic;
 
 internal class MethodRef
 {
+    [field: ThreadStatic, MaybeNull]
+    private static Dictionary<MethodKey, MethodInfo> MethodsCache => field ??= [ ];
+
     public readonly Type Type;
     public readonly string Name;
     public readonly Type[] ParameterTypes;
@@ -16,6 +20,8 @@ internal class MethodRef
 
     public readonly MethodKey? Key;
     public readonly MethodKey? UnboundGenericKey;
+
+    public readonly bool IsVoid;
 
     private MethodRef(LambdaExpression expr)
     {
@@ -32,22 +38,74 @@ internal class MethodRef
         Flags =
             (method.IsPublic ? BindingFlags.Public : BindingFlags.NonPublic)
           | (method.IsStatic ? BindingFlags.Static : BindingFlags.Instance);
-        (Method, Key, UnboundGenericMethod, UnboundGenericKey) = genericCount switch {
-            0 => (
-                method,
-                MethodKey.Regular(Type, Name, Flags, ParameterTypes),
-                (MethodInfo?)null,
-                (MethodKey?)null),
-            _ => (
-                null,
-                null,
-                Type.GetMethod(Name, genericCount, Flags, ParameterTypes),
-                MethodKey.UnboundGeneric(Type, Name, Flags, ParameterTypes)),
+
+        if (genericCount == 0) {
+            Method = method;
+            Key = MethodKey.Regular(Type, Name, Flags, ParameterTypes);
+            (UnboundGenericMethod, UnboundGenericKey) = (null, null);
+        }
+        else {
+            UnboundGenericMethod = method.GetGenericMethodDefinition();
+            UnboundGenericKey = MethodKey.UnboundGeneric(Type, Name, Flags, ParameterTypes);
+            (Method, Key) = (null, null);
+        }
+
+        IsVoid = (Method ?? UnboundGenericMethod)!.ReturnType == typeof(void);
+    }
+
+    private MethodRef(MethodKey key)
+    {
+        Ensure.NotNull(key.ParameterTypes);
+        Type = key.Type;
+        Name = key.Name;
+        ParameterTypes = key.ParameterTypes.ArrayOrEmpty();
+        Flags = key.Kind.ToBindingFlags();
+
+        (Method, Key, UnboundGenericMethod, UnboundGenericKey) = key.GenericTypes.Count switch {
+            0 => (ResolveMethod(), key, (MethodInfo?)null, (MethodKey?)null),
+            _ => (null, null, ResolveMethod(key.GenericTypes.ArrayOrEmpty()), key),
         };
+
+        IsVoid = (Method ?? UnboundGenericMethod)!.ReturnType == typeof(void);
     }
 
     public static MethodRef Of<TResult>(Expression<Func<TResult>> expr) => new(expr); // static method
     public static MethodRef Of<T, TResult>(Expression<Func<T, TResult>> expr) => new(expr); // instance method
+    public static MethodRef Of(MethodKey key) => new(key);
+
+    private MethodInfo ResolveMethod(Type[]? genericTypes = null)
+    {
+        return genericTypes == null
+            ? Type.GetMethod(Name, Flags, ParameterTypes) ?? throw NoMethod()
+            : Type.GetMethod(Name, genericTypes.Length, Flags, ParameterTypes) ?? throw NoMethod();
+
+        InvalidOperationException NoMethod() => new($"Could not resolve method {Name}.");
+    }
+
+    public MethodInfo GetMethod(Type[]? genericTypes = null)
+    {
+        if (Method != null)
+            return Method;
+        else if (UnboundGenericMethod != null)
+            return CacheGetOrAdd(MethodsCache, GenericKey(Ensure.NotNull(genericTypes)),
+                () => UnboundGenericMethod.MakeGenericMethod(genericTypes));
+        else
+            throw new InvalidOperationException();
+    }
+
+    [return: NotNullIfNotNull(nameof(getMethod))]
+    private static MethodInfo? CacheGetOrAdd(Dictionary<MethodKey, MethodInfo> cache,
+        MethodKey key, [InstantHandle] Func<MethodInfo?>? getMethod)
+    {
+        if (cache.TryGetValue(key, out var method))
+            return method;
+        if (getMethod == null)
+            return null;
+        Trace.WriteLine($"Resolving {key}");
+        method = getMethod() ?? throw new InvalidOperationException($"Method {key} not found.");
+        cache.Add(key, method);
+        return method;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public MethodKey GenericKey(Type[] genericTypes) =>

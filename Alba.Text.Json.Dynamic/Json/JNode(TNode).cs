@@ -31,6 +31,9 @@ public class JNode<TNode>(TNode source, JNodeOptions? options = null)
         public override dobject BindInvokeMember(InvokeMemberBinder binder, dobject[] args) =>
             CallNodeMethod(binder, args);
 
+        protected dobject CallMethod(MethodRef m, E[] parameters, Type[]? genericTypes = null) =>
+            new(ExprSelf().ECall(m.GetMethod(genericTypes), parameters).EBlockEmptyIfNeeded(m.IsVoid), GetRestrictions());
+
         protected dobject CallNodeMethod(InvokeMemberBinder binder, dobject[] args) =>
             BindNode().Fallback(binder, args);
     }

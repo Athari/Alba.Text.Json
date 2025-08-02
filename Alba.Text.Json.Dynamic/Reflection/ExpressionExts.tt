@@ -13,8 +13,8 @@
 var renames = new Dictionary<string, string> {
     ["Constant"] = "Const",
 };
-var excludeMethodsNames = @"^(Block|Dynamic|RuntimeVariables|SymbolDocument|TryGet\w+Type)$";
-var excludeArg0Types = @"^(Type|\w+Info)$";
+var excludeMethodsNames = @"^(Dynamic|RuntimeVariables|SymbolDocument|TryGet\w+Type)$";
+var excludeArg0Types = @"^(\w+Info)$";
 
 var docs = new XmlDoc();
 
@@ -54,12 +54,14 @@ var methods = Enumerable.Empty<MethodInfo>()
     })
     .SelectMany(m => {
         var itype = m.Params.FindIndex(p => p.StartsWith("Type "));
-        if (itype == -1)
+        if (itype == -1 || m.Params.Count == 1 || m.Name == "Lambda")
             return new[] { m };
         var mt = m;
         mt.GenericParams = "<T>";
         mt.Args = m.Args.Select((a, i) => i == itype ? "typeof(T)" : a).ToList();
         mt.Params = m.Params.Where((_, i) => i != itype).ToList();
+        if (mt.Params.ElementAtOrDefault(0)?.StartsWith("params ") ?? false)
+            mt.Params[0] = mt.Params[0].Substring(7);
         return new[] { m, mt };
     })
     .ToList();

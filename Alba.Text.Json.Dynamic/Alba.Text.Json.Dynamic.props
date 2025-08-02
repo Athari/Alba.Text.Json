@@ -5,7 +5,6 @@
     <UseJetBrainsAnnotations>true</UseJetBrainsAnnotations>
     <UsePolySharp>true</UsePolySharp>
     <UseT4>true</UseT4>
-    <AllowUnsafeBlocks Condition="$(TargetFramework.StartsWith('netstandard'))">true</AllowUnsafeBlocks>
   </PropertyGroup>
 
 </Project>

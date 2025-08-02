@@ -11,25 +11,13 @@ internal static class JOperations
     public static readonly MethodRef JsonObject_SetMember_Method = MethodRef.Of(() =>
         JsonObject_SetMember(null!, null!, MethodKey.GetT<string>(0)));
 
-    public static readonly MethodRef JsonArray_GetIndex_Method = MethodRef.Of(() =>
-        JsonArray_GetIndex(null!, 0));
-
-    public static readonly MethodRef JsonArray_SetIndex_Method = MethodRef.Of(() =>
-        JsonArray_SetIndex(null!, 0, MethodKey.GetT<string>(0)));
-
     public static object? JsonObject_GetMember(JObject d, string name) =>
         NodeToDynamicNodeOrValue(d.Node[name], d.Options);
 
     public static object? JsonObject_SetMember<T>(JObject d, string name, T value) =>
         (d.Node[name] = ValueToNode(value, d.Node.Options), value).value;
 
-    public static object? JsonArray_GetIndex(JArray d, int index) =>
-        NodeToDynamicNodeOrValue(d.Node[index], d.Options);
-
-    public static object? JsonArray_SetIndex<T>(JArray d, int index, T value) =>
-        (d.Node[index] = ValueToNode(value, d.Node.Options), value).value;
-
-    private static JsonNode? ValueToNode<T>(T value, JsonNodeOptions? opts)
+    public static JsonNode? ValueToNode<T>(T value, JsonNodeOptions? opts)
     {
         return value switch {
             null => null,

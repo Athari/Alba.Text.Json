@@ -8,6 +8,22 @@ namespace Alba.Text.Json.Dynamic;
 
 internal static partial class ExpressionExts
 {
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static BlockExpression EBlock(this Expression arg0, Expression arg1) =>
+        Expression.Block(arg0, arg1);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static BlockExpression EBlock(this Expression arg0, Expression arg1, Expression arg2) =>
+        Expression.Block(arg0, arg1, arg2);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static BlockExpression EBlock(this Expression arg0, Expression arg1, Expression arg2, Expression arg3) =>
+        Expression.Block(arg0, arg1, arg2, arg3);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static BlockExpression EBlock(this Expression arg0, Expression arg1, Expression arg2, Expression arg3, Expression arg4) =>
+        Expression.Block(arg0, arg1, arg2, arg3, arg4);
+
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.ArrayAccess(System.Linq.Expressions.Expression,System.Linq.Expressions.Expression[])" />
     public static IndexExpression EArrayAccess(this Expression array, params Expression[] indexes) =>
         Expression.ArrayAccess(array, indexes);
@@ -832,6 +848,50 @@ internal static partial class ExpressionExts
     public static CatchBlock ECatch(this ParameterExpression variable, Expression body, Expression filter) =>
         Expression.Catch(variable, body, filter);
 
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression},System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static BlockExpression EBlock(this Type type, IEnumerable<ParameterExpression> variables, IEnumerable<Expression> expressions) =>
+        Expression.Block(type, variables, expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression},System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static BlockExpression EBlock<T>(this IEnumerable<ParameterExpression> variables, IEnumerable<Expression> expressions) =>
+        Expression.Block(typeof(T), variables, expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static BlockExpression EBlock(this IEnumerable<Expression> expressions) =>
+        Expression.Block(expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Linq.Expressions.Expression[])" />
+    public static BlockExpression EBlock(this Type type, params Expression[] expressions) =>
+        Expression.Block(type, expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Linq.Expressions.Expression[])" />
+    public static BlockExpression EBlock<T>(this Expression[] expressions) =>
+        Expression.Block(typeof(T), expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static BlockExpression EBlock(this Type type, IEnumerable<Expression> expressions) =>
+        Expression.Block(type, expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static BlockExpression EBlock<T>(this IEnumerable<Expression> expressions) =>
+        Expression.Block(typeof(T), expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression},System.Linq.Expressions.Expression[])" />
+    public static BlockExpression EBlock(this IEnumerable<ParameterExpression> variables, params Expression[] expressions) =>
+        Expression.Block(variables, expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression},System.Linq.Expressions.Expression[])" />
+    public static BlockExpression EBlock(this Type type, IEnumerable<ParameterExpression> variables, params Expression[] expressions) =>
+        Expression.Block(type, variables, expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression},System.Linq.Expressions.Expression[])" />
+    public static BlockExpression EBlock<T>(this IEnumerable<ParameterExpression> variables, params Expression[] expressions) =>
+        Expression.Block(typeof(T), variables, expressions);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Block(System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression},System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static BlockExpression EBlock(this IEnumerable<ParameterExpression> variables, IEnumerable<Expression> expressions) =>
+        Expression.Block(variables, expressions);
+
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Break(System.Linq.Expressions.LabelTarget)" />
     public static GotoExpression EBreak(this LabelTarget target) =>
         Expression.Break(target);
@@ -856,6 +916,30 @@ internal static partial class ExpressionExts
     public static GotoExpression EBreak<T>(this LabelTarget target, Expression value) =>
         Expression.Break(target, value, typeof(T));
 
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Call(System.Type,System.String,System.Type[],System.Linq.Expressions.Expression[])" />
+    public static MethodCallExpression ECall(this Type type, string methodName, Type[] typeArguments, params Expression[] arguments) =>
+        Expression.Call(type, methodName, typeArguments, arguments);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Call(System.Type,System.String,System.Type[],System.Linq.Expressions.Expression[])" />
+    public static MethodCallExpression ECall<T>(this string methodName, Type[] typeArguments, params Expression[] arguments) =>
+        Expression.Call(typeof(T), methodName, typeArguments, arguments);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Catch(System.Type,System.Linq.Expressions.Expression)" />
+    public static CatchBlock ECatch(this Type type, Expression body) =>
+        Expression.Catch(type, body);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Catch(System.Type,System.Linq.Expressions.Expression)" />
+    public static CatchBlock ECatch<T>(this Expression body) =>
+        Expression.Catch(typeof(T), body);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Catch(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static CatchBlock ECatch(this Type type, Expression body, Expression filter) =>
+        Expression.Catch(type, body, filter);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Catch(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static CatchBlock ECatch<T>(this Expression body, Expression filter) =>
+        Expression.Catch(typeof(T), body, filter);
+
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Constant(System.Object)" />
     public static ConstantExpression EConst(this object value) =>
         Expression.Constant(value);
@@ -879,6 +963,10 @@ internal static partial class ExpressionExts
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Continue(System.Linq.Expressions.LabelTarget,System.Type)" />
     public static GotoExpression EContinue<T>(this LabelTarget target) =>
         Expression.Continue(target, typeof(T));
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Default(System.Type)" />
+    public static DefaultExpression EDefault(this Type type) =>
+        Expression.Default(type);
 
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Goto(System.Linq.Expressions.LabelTarget)" />
     public static GotoExpression EGoto(this LabelTarget target) =>
@@ -916,6 +1004,42 @@ internal static partial class ExpressionExts
     public static LabelTarget ELabel(this string name) =>
         Expression.Label(name);
 
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Label(System.Type)" />
+    public static LabelTarget ELabel(this Type type) =>
+        Expression.Label(type);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Label(System.Type,System.String)" />
+    public static LabelTarget ELabel(this Type type, string name) =>
+        Expression.Label(type, name);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Label(System.Type,System.String)" />
+    public static LabelTarget ELabel<T>(this string name) =>
+        Expression.Label(typeof(T), name);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Lambda(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.ParameterExpression[])" />
+    public static LambdaExpression ELambda(this Type delegateType, Expression body, params ParameterExpression[] parameters) =>
+        Expression.Lambda(delegateType, body, parameters);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Lambda(System.Type,System.Linq.Expressions.Expression,System.Boolean,System.Linq.Expressions.ParameterExpression[])" />
+    public static LambdaExpression ELambda(this Type delegateType, Expression body, Boolean tailCall, params ParameterExpression[] parameters) =>
+        Expression.Lambda(delegateType, body, tailCall, parameters);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Lambda(System.Type,System.Linq.Expressions.Expression,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression})" />
+    public static LambdaExpression ELambda(this Type delegateType, Expression body, IEnumerable<ParameterExpression> parameters) =>
+        Expression.Lambda(delegateType, body, parameters);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Lambda(System.Type,System.Linq.Expressions.Expression,System.Boolean,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression})" />
+    public static LambdaExpression ELambda(this Type delegateType, Expression body, Boolean tailCall, IEnumerable<ParameterExpression> parameters) =>
+        Expression.Lambda(delegateType, body, tailCall, parameters);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Lambda(System.Type,System.Linq.Expressions.Expression,System.String,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression})" />
+    public static LambdaExpression ELambda(this Type delegateType, Expression body, string name, IEnumerable<ParameterExpression> parameters) =>
+        Expression.Lambda(delegateType, body, name, parameters);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Lambda(System.Type,System.Linq.Expressions.Expression,System.String,System.Boolean,System.Collections.Generic.IEnumerable{System.Linq.Expressions.ParameterExpression})" />
+    public static LambdaExpression ELambda(this Type delegateType, Expression body, string name, Boolean tailCall, IEnumerable<ParameterExpression> parameters) =>
+        Expression.Lambda(delegateType, body, name, tailCall, parameters);
+
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeBinary(System.Linq.Expressions.ExpressionType,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
     public static BinaryExpression EMakeBinary(this ExpressionType binaryType, Expression left, Expression right) =>
         Expression.MakeBinary(binaryType, left, right);
@@ -928,6 +1052,62 @@ internal static partial class ExpressionExts
     public static BinaryExpression EMakeBinary(this ExpressionType binaryType, Expression left, Expression right, Boolean liftToNull, MethodInfo method, LambdaExpression conversion) =>
         Expression.MakeBinary(binaryType, left, right, liftToNull, method, conversion);
 
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeCatchBlock(System.Type,System.Linq.Expressions.ParameterExpression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static CatchBlock EMakeCatchBlock(this Type type, ParameterExpression variable, Expression body, Expression filter) =>
+        Expression.MakeCatchBlock(type, variable, body, filter);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeCatchBlock(System.Type,System.Linq.Expressions.ParameterExpression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static CatchBlock EMakeCatchBlock<T>(this ParameterExpression variable, Expression body, Expression filter) =>
+        Expression.MakeCatchBlock(typeof(T), variable, body, filter);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression[])" />
+    public static DynamicExpression EMakeDynamic(this Type delegateType, CallSiteBinder binder, params Expression[] arguments) =>
+        Expression.MakeDynamic(delegateType, binder, arguments);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression[])" />
+    public static DynamicExpression EMakeDynamic<T>(this CallSiteBinder binder, params Expression[] arguments) =>
+        Expression.MakeDynamic(typeof(T), binder, arguments);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static DynamicExpression EMakeDynamic(this Type delegateType, CallSiteBinder binder, IEnumerable<Expression> arguments) =>
+        Expression.MakeDynamic(delegateType, binder, arguments);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static DynamicExpression EMakeDynamic<T>(this CallSiteBinder binder, IEnumerable<Expression> arguments) =>
+        Expression.MakeDynamic(typeof(T), binder, arguments);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic(this Type delegateType, CallSiteBinder binder, Expression arg0) =>
+        Expression.MakeDynamic(delegateType, binder, arg0);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic<T>(this CallSiteBinder binder, Expression arg0) =>
+        Expression.MakeDynamic(typeof(T), binder, arg0);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic(this Type delegateType, CallSiteBinder binder, Expression arg0, Expression arg1) =>
+        Expression.MakeDynamic(delegateType, binder, arg0, arg1);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic<T>(this CallSiteBinder binder, Expression arg0, Expression arg1) =>
+        Expression.MakeDynamic(typeof(T), binder, arg0, arg1);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic(this Type delegateType, CallSiteBinder binder, Expression arg0, Expression arg1, Expression arg2) =>
+        Expression.MakeDynamic(delegateType, binder, arg0, arg1, arg2);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic<T>(this CallSiteBinder binder, Expression arg0, Expression arg1, Expression arg2) =>
+        Expression.MakeDynamic(typeof(T), binder, arg0, arg1, arg2);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic(this Type delegateType, CallSiteBinder binder, Expression arg0, Expression arg1, Expression arg2, Expression arg3) =>
+        Expression.MakeDynamic(delegateType, binder, arg0, arg1, arg2, arg3);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeDynamic(System.Type,System.Runtime.CompilerServices.CallSiteBinder,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)" />
+    public static DynamicExpression EMakeDynamic<T>(this CallSiteBinder binder, Expression arg0, Expression arg1, Expression arg2, Expression arg3) =>
+        Expression.MakeDynamic(typeof(T), binder, arg0, arg1, arg2, arg3);
+
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeGoto(System.Linq.Expressions.GotoExpressionKind,System.Linq.Expressions.LabelTarget,System.Linq.Expressions.Expression,System.Type)" />
     public static GotoExpression EMakeGoto(this GotoExpressionKind kind, LabelTarget target, Expression value, Type type) =>
         Expression.MakeGoto(kind, target, value, type);
@@ -935,6 +1115,14 @@ internal static partial class ExpressionExts
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeGoto(System.Linq.Expressions.GotoExpressionKind,System.Linq.Expressions.LabelTarget,System.Linq.Expressions.Expression,System.Type)" />
     public static GotoExpression EMakeGoto<T>(this GotoExpressionKind kind, LabelTarget target, Expression value) =>
         Expression.MakeGoto(kind, target, value, typeof(T));
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeTry(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Collections.Generic.IEnumerable{System.Linq.Expressions.CatchBlock})" />
+    public static TryExpression EMakeTry(this Type type, Expression body, Expression @finally, Expression fault, IEnumerable<CatchBlock> handlers) =>
+        Expression.MakeTry(type, body, @finally, fault, handlers);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeTry(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Collections.Generic.IEnumerable{System.Linq.Expressions.CatchBlock})" />
+    public static TryExpression EMakeTry<T>(this Expression body, Expression @finally, Expression fault, IEnumerable<CatchBlock> handlers) =>
+        Expression.MakeTry(typeof(T), body, @finally, fault, handlers);
 
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeUnary(System.Linq.Expressions.ExpressionType,System.Linq.Expressions.Expression,System.Type)" />
     public static UnaryExpression EMakeUnary(this ExpressionType unaryType, Expression operand, Type type) =>
@@ -951,6 +1139,58 @@ internal static partial class ExpressionExts
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.MakeUnary(System.Linq.Expressions.ExpressionType,System.Linq.Expressions.Expression,System.Type,System.Reflection.MethodInfo)" />
     public static UnaryExpression EMakeUnary<T>(this ExpressionType unaryType, Expression operand, MethodInfo method) =>
         Expression.MakeUnary(unaryType, operand, typeof(T), method);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.New(System.Type)" />
+    public static NewExpression ENew(this Type type) =>
+        Expression.New(type);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayBounds(System.Type,System.Linq.Expressions.Expression[])" />
+    public static NewArrayExpression ENewArrayBounds(this Type type, params Expression[] bounds) =>
+        Expression.NewArrayBounds(type, bounds);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayBounds(System.Type,System.Linq.Expressions.Expression[])" />
+    public static NewArrayExpression ENewArrayBounds<T>(this Expression[] bounds) =>
+        Expression.NewArrayBounds(typeof(T), bounds);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayBounds(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static NewArrayExpression ENewArrayBounds(this Type type, IEnumerable<Expression> bounds) =>
+        Expression.NewArrayBounds(type, bounds);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayBounds(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static NewArrayExpression ENewArrayBounds<T>(this IEnumerable<Expression> bounds) =>
+        Expression.NewArrayBounds(typeof(T), bounds);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayInit(System.Type,System.Linq.Expressions.Expression[])" />
+    public static NewArrayExpression ENewArrayInit(this Type type, params Expression[] initializers) =>
+        Expression.NewArrayInit(type, initializers);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayInit(System.Type,System.Linq.Expressions.Expression[])" />
+    public static NewArrayExpression ENewArrayInit<T>(this Expression[] initializers) =>
+        Expression.NewArrayInit(typeof(T), initializers);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayInit(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static NewArrayExpression ENewArrayInit(this Type type, IEnumerable<Expression> initializers) =>
+        Expression.NewArrayInit(type, initializers);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.NewArrayInit(System.Type,System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression})" />
+    public static NewArrayExpression ENewArrayInit<T>(this IEnumerable<Expression> initializers) =>
+        Expression.NewArrayInit(typeof(T), initializers);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Parameter(System.Type)" />
+    public static ParameterExpression EParameter(this Type type) =>
+        Expression.Parameter(type);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Parameter(System.Type,System.String)" />
+    public static ParameterExpression EParameter(this Type type, string name) =>
+        Expression.Parameter(type, name);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Parameter(System.Type,System.String)" />
+    public static ParameterExpression EParameter<T>(this string name) =>
+        Expression.Parameter(typeof(T), name);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Rethrow(System.Type)" />
+    public static UnaryExpression ERethrow(this Type type) =>
+        Expression.Rethrow(type);
 
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Return(System.Linq.Expressions.LabelTarget)" />
     public static GotoExpression EReturn(this LabelTarget target) =>
@@ -975,5 +1215,33 @@ internal static partial class ExpressionExts
     /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Return(System.Linq.Expressions.LabelTarget,System.Linq.Expressions.Expression,System.Type)" />
     public static GotoExpression EReturn<T>(this LabelTarget target, Expression value) =>
         Expression.Return(target, value, typeof(T));
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Switch(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Reflection.MethodInfo,System.Linq.Expressions.SwitchCase[])" />
+    public static SwitchExpression ESwitch(this Type type, Expression switchValue, Expression defaultBody, MethodInfo comparison, params SwitchCase[] cases) =>
+        Expression.Switch(type, switchValue, defaultBody, comparison, cases);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Switch(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Reflection.MethodInfo,System.Linq.Expressions.SwitchCase[])" />
+    public static SwitchExpression ESwitch<T>(this Expression switchValue, Expression defaultBody, MethodInfo comparison, params SwitchCase[] cases) =>
+        Expression.Switch(typeof(T), switchValue, defaultBody, comparison, cases);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Switch(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Reflection.MethodInfo,System.Collections.Generic.IEnumerable{System.Linq.Expressions.SwitchCase})" />
+    public static SwitchExpression ESwitch(this Type type, Expression switchValue, Expression defaultBody, MethodInfo comparison, IEnumerable<SwitchCase> cases) =>
+        Expression.Switch(type, switchValue, defaultBody, comparison, cases);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Switch(System.Type,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Reflection.MethodInfo,System.Collections.Generic.IEnumerable{System.Linq.Expressions.SwitchCase})" />
+    public static SwitchExpression ESwitch<T>(this Expression switchValue, Expression defaultBody, MethodInfo comparison, IEnumerable<SwitchCase> cases) =>
+        Expression.Switch(typeof(T), switchValue, defaultBody, comparison, cases);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Variable(System.Type)" />
+    public static ParameterExpression EVariable(this Type type) =>
+        Expression.Variable(type);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Variable(System.Type,System.String)" />
+    public static ParameterExpression EVariable(this Type type, string name) =>
+        Expression.Variable(type, name);
+
+    /// <inheritdoc cref="M:System.Linq.Expressions.Expression.Variable(System.Type,System.String)" />
+    public static ParameterExpression EVariable<T>(this string name) =>
+        Expression.Variable(typeof(T), name);
 
 }

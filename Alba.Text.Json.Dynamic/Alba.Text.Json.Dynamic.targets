@@ -28,7 +28,8 @@
     <PolyCompilerAttributes Include="CallerArgumentExpression" />
   </ItemGroup>
 
-  <ItemGroup Label="Packages">
+  <ItemGroup Label="References">
+    <Reference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <PackageReference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
@@ -44,7 +45,7 @@
       Dynamic JsonNode: dynamic json = JNode.Parse("""{ "Hello": { "World": [ 1, 2, 3 ] } }"""); json.Hello.World[2]++.
     </DescriptionPackageShared>
     <DescriptionPackageSpecific Condition="'$(TextJsonVersionOverride)' == ''">
-      Alba.Text.Json.Dynamic package supports a System.Text.Json version based on .NET version.
+      Alba.Text.Json.Dynamic package supports a System.Text.Json version based on .NET version (or latest compatible for .NET Standard and .NET Framework).
       To support a specific System.Text.Json version, use Alba.Text.Json.Dynamic.STJ# package.
     </DescriptionPackageSpecific>
     <DescriptionPackageSpecific Condition="'$(TextJsonVersionOverride)' != ''">

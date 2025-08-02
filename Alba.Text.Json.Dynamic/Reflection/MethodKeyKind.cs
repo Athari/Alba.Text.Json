@@ -24,10 +24,20 @@ internal enum MethodKeyKind : uint
     MaskCaseSensitivity = CaseSensitive | CaseInsensitive,
 
     MaskBindingFlags = MaskVisibility | MaskStatic | MaskCaseSensitivity,
+    MaskAll = MaskGeneric | MaskBindingFlags,
 }
 
 internal static class MethodKeyKindExts
 {
+    public static BindingFlags ToBindingFlags(this MethodKeyKind @this)
+    {
+        Debug.Assert((@this & ~MethodKeyKind.MaskAll) == 0);
+        return
+            (BindingFlags)(@this & (MethodKeyKind.MaskVisibility | MethodKeyKind.MaskStatic))
+          | ((@this & MethodKeyKind.MaskCaseSensitivity) == MethodKeyKind.CaseInsensitive
+                ? BindingFlags.IgnoreCase : BindingFlags.Default);
+    }
+
     public static MethodKeyKind ToMethodKeyKind(this BindingFlags @this)
     {
         var kind = (MethodKeyKind)@this;

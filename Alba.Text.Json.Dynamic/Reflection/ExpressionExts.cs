@@ -25,6 +25,8 @@ internal static partial class ExpressionExts
 
     public static E EConvertIfNeeded(this E @this, Type type) => @this.Type == type ? @this : @this.EConvert(type);
     public static E EConvertIfNeeded<T>(this E @this) => @this.EConvertIfNeeded(typeof(T));
+    public static E EBlockEmptyIfNeeded(this E @this, bool isVoid) => isVoid ? E.Block(typeof(object), @this, E.Constant(null)) : @this;
+    public static E EBlockEmptyIfNeeded(this E @this) => @this.EBlockEmptyIfNeeded(@this.Type == typeof(void));
 
     public static dobject Fallback(this dobject @this, InvokeMemberBinder binder, dobject[] args) =>
         binder.FallbackInvokeMember(@this, args);
