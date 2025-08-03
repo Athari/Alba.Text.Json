@@ -5,24 +5,14 @@ namespace Alba.Text.Json.Dynamic;
 
 internal static class JOperations
 {
-    public static readonly MethodRef JsonObject_GetMember_Method = MethodRef.Of(() =>
-        JsonObject_GetMember(null!, null!));
+    private static readonly JsonValue NoJsonValue = JsonValue.Create("<NOVALUE>");
 
-    public static readonly MethodRef JsonObject_SetMember_Method = MethodRef.Of(() =>
-        JsonObject_SetMember(null!, null!, MethodKey.GetT<string>(0)));
-
-    public static object? JsonObject_GetMember(JObject d, string name) =>
-        NodeToDynamicNodeOrValue(d.Node[name], d.Options);
-
-    public static object? JsonObject_SetMember<T>(JObject d, string name, T value) =>
-        (d.Node[name] = ValueToNode(value, d.Node.Options), value).value;
-
-    public static JsonNode? ValueToNode<T>(T value, JsonNodeOptions? opts)
+    public static bool ValueToValueNode<T>(T value, out JsonValue? valueNode, JsonNodeOptions? opts)
     {
-        return value switch {
+        valueNode = value switch {
             null => null,
-            // already JsonNode
-            JsonNode v => v,
+            // already JsonValue
+            JsonValue v => v,
             // types stored as JsonValuePrimitive<T> (explicit ctor)
             bool v => JsonValue.Create(v, opts),
             char v => JsonValue.Create(v, opts),
@@ -51,48 +41,68 @@ internal static class JOperations
           #if NET7_0_OR_GREATER
             Int128 or UInt128 => JsonValue.Create(value, opts),
           #endif
-            // element is always stored as JsonValueOfElement
-            JsonElement => JsonValue.Create(value, opts),
-            // serialize everything else into node
-            JsonDocument => JsonSerializer.SerializeToNode(value),
-            _ => JsonSerializer.SerializeToNode(value),
+            // convert to JsonValueOfElement if it's a value
+            JsonElement j => j.ValueKind is not (JsonValueKind.Object or JsonValueKind.Array)
+                ? JsonValue.Create(j, opts)
+                : NoJsonValue,
+            // everything else isn't a value
+            _ => NoJsonValue,
         };
+        return !ReferenceEquals(valueNode, NoJsonValue);
     }
 
+    public static JsonNode? ValueToNewNode<T>(T value, JsonNodeOptions? opts) =>
+        ValueToValueNode(value, out var valueNode, opts)
+            ? valueNode
+            : value switch {
+                // already JNode, clone if used within another tree
+                JNode { NodeUntyped: var v } => v.Parent == null ? v : DeepClone(v),
+                // already JsonNode
+                JsonNode v => v,
+                // element is always stored as JsonValueOfElement
+                JsonElement j => JsonValue.Create(j, opts),
+                // serialize everything else into node
+                JsonDocument d => JsonSerializer.SerializeToNode(d),
+                _ => JsonSerializer.SerializeToNode(value),
+            };
+
+    [return: NotNullIfNotNull(nameof(node))]
     public static object? NodeToDynamicNodeOrValue(JsonNode? node, JNodeOptions options) =>
         //WriteLine($"{d.GetType().Name}: {node?.GetType().Name} => {o?.GetType().Name}");
         node switch {
             null => null,
-            JsonValue v => v.GetValueKind() switch {
-                // return primitive values directly
-                JsonValueKind.Undefined => options.UndefinedValue,
-                JsonValueKind.Null => null,
-                JsonValueKind.String => v.GetValue<string>(),
-                JsonValueKind.True => true,
-                JsonValueKind.False => false,
-                // numbers can be stored as JsonElement pointing to barely parsed binary data
-                JsonValueKind.Number => v.GetValue<object>() switch {
-                    JsonElement j => JsonElementToNumber(j, options),
-                    { } n => n,
-                },
-                // objects can be JsonElement or an arbitrary user type
-                JsonValueKind.Object or JsonValueKind.Array
-                    or (JsonValueKind)byte.MaxValue => // from JsonNodeExts
-                    v.TryGetValue(out JsonElement? j)
-                        // return value of wrapped JsonElement
-                        ? JsonElementToValue(j.Value, options)
-                        // return raw objects stored inside
-                        : v.GetValue<object>(),
-                //v.TryGetValue<JsonElement>(out var el) ? el. v.GetValue<object>(),
-                _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonNode: {v}"),
-            },
-            // wrap with dynamic wrappers
+            JsonValue v => NodeToValue(v, options),
             JsonObject v => new JObject(v, options),
             JsonArray v => new JArray(v, options),
             _ => throw new InvalidOperationException($"Unexpected JsonNode: {node.GetType()}"),
         };
 
-    private static object? JsonElementToValue(in JsonElement j, JNodeOptions options) =>
+    private static object? NodeToValue(JsonValue v, JNodeOptions options) =>
+        v.GetValueKind() switch {
+            // return primitive values directly
+            JsonValueKind.Undefined => options.UndefinedValue,
+            JsonValueKind.Null => null,
+            JsonValueKind.String => v.GetValue<string>(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            // numbers can be stored as JsonElement pointing to barely parsed binary data
+            JsonValueKind.Number => v.GetValue<object>() switch {
+                JsonElement j => JsonElementToNumber(j, options),
+                { } n => n,
+            },
+            // objects can be JsonElement or an arbitrary user type
+            JsonValueKind.Object or JsonValueKind.Array
+                or (JsonValueKind)byte.MaxValue => // from JsonNodeExts
+                v.TryGetValue(out JsonElement? j)
+                    // return value of wrapped JsonElement
+                    ? JsonElementToValue(j.Value, options)
+                    // return raw objects stored inside
+                    : v.GetValue<object>(),
+            //v.TryGetValue<JsonElement>(out var el) ? el. v.GetValue<object>(),
+            _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonNode: {v}"),
+        };
+
+    private static object? JsonElementToValue(JsonElement j, JNodeOptions options) =>
         j.ValueKind switch {
             JsonValueKind.Undefined => options.UndefinedValue,
             JsonValueKind.Null => null,
@@ -146,4 +156,111 @@ internal static class JOperations
             },
             _ => true,
         };
+
+    [return: NotNullIfNotNull(nameof(node))]
+    public static JsonNode? DeepClone(JsonNode? node)
+    {
+      #if JSON8_0_OR_GREATER
+        return node?.DeepClone();
+      #else
+        return node.Deserialize<JsonNode?>();
+      #endif
+    }
+
+    public static bool DeepEquals(JsonNode? n1, JsonNode? n2, JNodeOptions options)
+    {
+      #if JSON8_0_OR_GREATER
+        return JsonNode.DeepEquals(n1, n2);
+      #else
+        return (n1, n2) switch {
+            (null, null) =>
+                true,
+            (JsonObject o1, JsonObject o2) =>
+                o1.Count == o2.Count &&
+                o1.Concat(o2)
+                    .GroupBy(p => p.Key)
+                    .Select(g => g.ToList())
+                    .All(g => g.Count == 2 && DeepEquals(g[0].Value, g[1].Value, options)),
+            (JsonArray a1, JsonArray a2) =>
+                a1.Count == a2.Count &&
+                a1.Zip(a2)
+                    .All(p => DeepEquals(p.First, p.Second, options)),
+            (JsonValue v1, JsonValue v2) =>
+                ValueEquals(v1, v2, options),
+            _ => false,
+        };
+      #endif
+    }
+
+    public static bool ShallowEquals(JsonNode? n1, JsonNode? n2, JNodeOptions options) =>
+        (n1, n2) switch {
+            (null, _) or (_, null) or (JsonArray, JsonArray) or (JsonObject, JsonObject) =>
+                ReferenceEquals(n1, n2),
+            (JsonValue v1, JsonValue v2) =>
+                ValueEquals(v1, v2, options),
+            _ => false,
+        };
+
+    public static bool ValueEquals(JsonValue va, JsonValue vb, JNodeOptions options)
+    {
+      #if JSON8_0_OR_GREATER
+        return JsonNode.DeepEquals(va, vb);
+      #else
+        var (ka, kb) = (va.GetValueKind(), vb.GetValueKind());
+        return ka == kb && ka switch {
+            JsonValueKind.Null or JsonValueKind.Undefined or JsonValueKind.True or JsonValueKind.False =>
+                true,
+            JsonValueKind.String =>
+                string.Equals(va.GetValue<string>(), vb.GetValue<string>(), StringComparison.Ordinal),
+            JsonValueKind.Number =>
+                Equals(NodeToValue(va, options), NodeToValue(vb, options)),
+            _ =>
+                throw new InvalidOperationException($"Unexpected JsonValueKind of JsonNode: {ka}"),
+        };
+      #endif
+    }
+
+    public static int GetDeepHashCode(this JsonNode node, int maxCount = int.MaxValue, int maxDepth = int.MaxValue)
+    {
+        var hash = 0;
+        var count = 0;
+        GetHashCodeProc(node, depth: 0);
+        return hash;
+
+        bool Add(object? value)
+        {
+            if (count >= maxCount)
+                return false;
+            else
+                count++;
+            hash = unchecked(hash * 397 ^ (value?.GetHashCode() ?? 0));
+            return true;
+        }
+
+        void GetHashCodeProc(JsonNode? n, int depth)
+        {
+            if (n == null || !Add(n.GetType()))
+                return;
+            switch (n) {
+                case JsonArray a:
+                    if (depth < maxDepth)
+                        foreach (var item in a)
+                            GetHashCodeProc(item, depth + 1);
+                    else
+                        Add(a.Count);
+                    break;
+                case JsonObject o:
+                    foreach (var (name, value) in o.OrderBy(p => p.Key, StringComparer.Ordinal)) {
+                        if (!Add(name))
+                            return;
+                        if (depth < maxDepth)
+                            GetHashCodeProc(value, depth + 1);
+                    }
+                    break;
+                case JsonValue value:
+                    Add(NodeToValue(value, JNodeOptions.Default));
+                    break;
+            }
+        }
+    }
 }

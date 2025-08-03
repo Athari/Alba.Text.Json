@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Alba.Text.Json.Dynamic;
 
-internal class MethodRef
+internal sealed class MethodRef
 {
     [field: ThreadStatic, MaybeNull]
     private static Dictionary<MethodKey, MethodInfo> MethodsCache => field ??= [ ];
@@ -69,8 +69,10 @@ internal class MethodRef
         IsVoid = (Method ?? UnboundGenericMethod)!.ReturnType == typeof(void);
     }
 
-    public static MethodRef Of<TResult>(Expression<Func<TResult>> expr) => new(expr); // static method
-    public static MethodRef Of<T, TResult>(Expression<Func<T, TResult>> expr) => new(expr); // instance method
+    public static MethodRef Of(Expression<Action> expr) => new(expr);
+    public static MethodRef Of<T>(Expression<Action<T>> expr) => new(expr);
+    public static MethodRef Of<TResult>(Expression<Func<TResult>> expr) => new(expr);
+    public static MethodRef Of<T, TResult>(Expression<Func<T, TResult>> expr) => new(expr);
     public static MethodRef Of(MethodKey key) => new(key);
 
     private MethodInfo ResolveMethod(Type[]? genericTypes = null)

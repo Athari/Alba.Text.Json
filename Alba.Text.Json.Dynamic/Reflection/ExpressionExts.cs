@@ -19,8 +19,8 @@ internal static partial class ExpressionExts
         return ret;
     }
 
-    public static dobject ToDObject(this E @this, object value) => dobject.Create(value, @this);
-    public static dobject ToDObject(this E @this, object value, BindingRestrictions? r) => new(@this, r ?? BindingRestrictions.Empty, value);
+    public static dobject ToDObject(this E @this, object? value) => dobject.Create(value!, @this);
+    public static dobject ToDObject(this E @this, object? value, BindingRestrictions? r) => new(@this, r ?? BindingRestrictions.Empty, value!);
     public static dobject ToDObject(this E @this, BindingRestrictions r) => new(@this, r);
 
     public static E EConvertIfNeeded(this E @this, Type type) => @this.Type == type ? @this : @this.EConvert(type);
@@ -30,6 +30,12 @@ internal static partial class ExpressionExts
 
     public static dobject Fallback(this dobject @this, InvokeMemberBinder binder, dobject[] args) =>
         binder.FallbackInvokeMember(@this, args);
+
+    public static dobject Fallback(this dobject @this, BinaryOperationBinder binder, dobject arg) =>
+        binder.FallbackBinaryOperation(@this, arg);
+
+    public static E GetTypedExpression(this dobject @this) =>
+        @this.Expression.EConvertIfNeeded(@this.LimitType);
 
     public static E[] SelectExpressions(this dobject[] objects) => objects.SelectArray(o => o.Expression);
     public static Type[] SelectTypes(this dobject[] objects) => objects.SelectArray(o => o.LimitType);

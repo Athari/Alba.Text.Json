@@ -13,6 +13,7 @@
 var renames = new Dictionary<string, string> {
     ["Constant"] = "Const",
 };
+var includeMethodsNames = @"^(ArrayIndex|Assign|Call|Constant|Convert|Field|Not|Property)$";
 var excludeMethodsNames = @"^(Dynamic|RuntimeVariables|SymbolDocument|TryGet\w+Type)$";
 var excludeArg0Types = @"^(\w+Info)$";
 
@@ -29,7 +30,9 @@ var methods = Enumerable.Empty<MethodInfo>()
                 return false;
             if (Regex.IsMatch(ps[0].ParameterType.Name, excludeArg0Types))
                 return false;
-            return true;
+            if (Regex.IsMatch(m.Name, includeMethodsNames))
+                return true;
+            return false;
         }))
     .Select(m => (
         Type: m.DeclaringType.Name,
@@ -66,7 +69,7 @@ var methods = Enumerable.Empty<MethodInfo>()
     })
     .ToList();
 #>
-#nullable enable
+#nullable disable
 
 using System.Linq.Expressions;
 using System.Reflection;
@@ -81,6 +84,7 @@ internal static partial class ExpressionExts
 <#    foreach (var a in m.Attrs) { #>
     [<#=a#>]
 <#    } #>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static <#=m.ReturnType#> E<#=m.NewName#><#=m.GenericParams#>(this <#=m.Params.Join()#>) =>
         <#=m.Type#>.<#=m.Name#><#=m.GenericArgs#>(<#=m.Args.Join()#>);
 

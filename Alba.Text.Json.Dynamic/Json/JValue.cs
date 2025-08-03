@@ -3,17 +3,19 @@ using System.Text.Json.Nodes;
 
 namespace Alba.Text.Json.Dynamic;
 
-/// <summary>
-/// JValue.
-/// </summary>
-/// <param name="source"></param>
-/// <param name="options"></param>
-public class JValue(JsonValue source, JNodeOptions? options = null)
-    : JNode<JsonValue>(source, options), IDynamicMetaObjectProvider
+public sealed class JValue(JsonValue source, JNodeOptions? options = null)
+    : JNode<JsonValue>(source, options), IDynamicMetaObjectProvider, IEquatable<JValue>
 {
-    public dobject GetMetaObject(E expression) => new MetaJValue(expression, this);
+    public new JValue Clone() =>
+        (JValue)base.Clone();
 
-    private class MetaJValue(E expression, JValue dynamicValue)
+    public bool Equals(JValue? other) =>
+        base.Equals(other);
+
+    public dobject GetMetaObject(E expression) =>
+        new MetaJValue(expression, this);
+
+    private sealed class MetaJValue(E expression, JValue dynamicValue)
         : MetaJNode<JValue>(expression, dynamicValue)
     {
         public override dobject BindConvert(ConvertBinder binder)

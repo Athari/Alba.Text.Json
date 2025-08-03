@@ -9,6 +9,10 @@ public sealed class JNodeOptions
 #pragma t4 copy begin
     public bool IsCaseSensitive { get; set; } = true;
 
+    public int MaxHashCodeValueCount { get; set; } = 32;
+
+    public int MaxHashCodeDepth { get; set; } = 4;
+
     public object? UndefinedValue { get; set; } = null;
 
     public TypeCode[] IntegerTypes { get; set; } = [ TypeCode.Int32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Decimal ];
@@ -21,6 +25,8 @@ public sealed class JNodeOptions
     internal JNodeOptions(JNodeOptionsAttribute o)
     {
         IsCaseSensitive = o.IsCaseSensitive;
+        MaxHashCodeValueCount = o.MaxHashCodeValueCount;
+        MaxHashCodeDepth = o.MaxHashCodeDepth;
         UndefinedValue = o.UndefinedValue;
         IntegerTypes = o.IntegerTypes;
         FloatTypes = o.FloatTypes;

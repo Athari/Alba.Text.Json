@@ -7,7 +7,7 @@ public class JNode<TNode>(TNode source, JNodeOptions? options = null)
     : JNode(options)
     where TNode : JsonNode
 {
-    private static readonly FieldRef DynamicJsonNodeOfTNode_Node_Field = FieldRef.Of((JNode<TNode> o) => o.Node);
+    private static readonly FieldRef PNode = FieldRef.Of((JNode<TNode> o) => o.Node);
 
     internal readonly TNode Node = source ?? throw new ArgumentNullException(nameof(source));
 
@@ -17,24 +17,35 @@ public class JNode<TNode>(TNode source, JNodeOptions? options = null)
         : MetaJsonNodeBase(expression, dynamicValue)
         where TDynamicNode : JNode<TNode>
     {
-        protected new TDynamicNode Value => (TDynamicNode)base.Value!;
+        protected new TDynamicNode Value => (TDynamicNode)base.Value;
 
-        protected E ExprSelf() => Expression.EConvertIfNeeded<TDynamicNode>();
+        protected sealed override E ExprSelf() =>
+            Expression.EConvertIfNeeded<TDynamicNode>();
 
-        protected E ExprNode() => ExprSelf().EField(DynamicJsonNodeOfTNode_Node_Field.Field);
+        protected sealed override dobject BindSelf() =>
+            ExprSelf().ToDObject(Value);
 
-        protected dobject BindNode() => ExprNode().ToDObject(Value.Node);
+        protected sealed override E ExprNode() =>
+            ExprSelf().EField(PNode.Field);
+
+        protected sealed override dobject BindNode() =>
+            ExprNode().ToDObject(Value.Node);
 
         public override dobject BindInvoke(InvokeBinder binder, dobject[] args) =>
             BindNode();
 
-        public override dobject BindInvokeMember(InvokeMemberBinder binder, dobject[] args) =>
-            CallNodeMethod(binder, args);
+        protected sealed override dobject CallSelfMethod(MethodRef m,
+            E[] parameters, Type[]? genericTypes = null, Func<E, E>? wrap = null) =>
+            CallMethod(ExprSelf(), m, parameters, genericTypes, wrap);
 
-        protected dobject CallMethod(MethodRef m, E[] parameters, Type[]? genericTypes = null) =>
-            new(ExprSelf().ECall(m.GetMethod(genericTypes), parameters).EBlockEmptyIfNeeded(m.IsVoid), GetRestrictions());
+        protected sealed override dobject CallSelfMethod(InvokeMemberBinder binder, dobject[] args) =>
+            BindSelf().Fallback(binder, args);
 
-        protected dobject CallNodeMethod(InvokeMemberBinder binder, dobject[] args) =>
+        protected sealed override dobject CallNodeMethod(MethodRef m,
+            E[] parameters, Type[]? genericTypes = null, Func<E, E>? wrap = null) =>
+            CallMethod(ExprNode(), m, parameters, genericTypes, wrap);
+
+        protected sealed override dobject CallNodeMethod(InvokeMemberBinder binder, dobject[] args) =>
             BindNode().Fallback(binder, args);
     }
 }

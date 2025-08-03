@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Alba.Text.Json.Dynamic;
 
-internal class FieldRef
+internal sealed class FieldRef
 {
     public readonly Type Type;
     public readonly string Name;

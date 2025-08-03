@@ -43,6 +43,7 @@ var jo = JsonNode.Parse("""
       "Foo": "Bar",
       "Pos1": { "x": 10, "y": 20 },
       "Pos2": { "x": 50, "y": 60 },
+      "Pos3": { "x": 50, "y": 60 },
       "Arr": [ 2, 3, 4 ],
     }
     """,
@@ -62,8 +63,16 @@ WriteLine($"Pos1.x = {json.Pos1.x}");
 WriteLine($"(int)Pos1.x + (int)Pos2.x = {(int)json.Pos1.x + (int)json.Pos2.x}");
 WriteLine($"(float)Pos1.y / (float)Pos2.y = {(float)json.Pos1.x / (float)json.Pos2.x}");
 WriteLine($"Pos1.x + Pos2.x = {json.Pos1.x + json.Pos2.x}");
-WriteLine($"Arr[2] = {++json.Arr[2]}");
+WriteLine($"Pos1 == Pos2 = {json.Pos1 == json.Pos2}");
+WriteLine($"Pos2 == Pos3 = {json.Pos2 == json.Pos3}");
+WriteLine($"Arr[1] = {json.Arr[1]}");
 
+json.Arr[1]++;
+json.Arr[1] += 10;
+json.Arr[^1]++;
+json.Arr[0]++;
+json.Arr.RemoveAt(^1);
+json.Arr.RemoveAt(0);
 json.Hi = "Hi";
 json["Hi2"] = "Hi2";
 //json.Hi3 = new { Hi3 = 3 };
@@ -75,6 +84,9 @@ json.Pos1.Clear();
 json.Pos1.Add("null", null);
 json.Pos2.Add("null", null);
 json.Pos2.Add("10", 10);
+json.Pos4 = json.Pos3;
+json.Points = new object[] { json.Pos1, json.Pos2, json.Pos1 };
+json.Points.Remove(json.Points[0]);
 WriteLine($"{json.Hi} {json.World}!");
 WriteLine(jo.ToJsonString(new() { WriteIndented = true }));
 

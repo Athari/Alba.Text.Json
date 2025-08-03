@@ -5,11 +5,13 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Alba.Text.Json.Dynamic;
 
-public class JNodeConverter(JNodeOptions? options = null) : JsonConverter<JNode?>
+public sealed class JNodeConverter(JNodeOptions? options) : JsonConverter<JNode?>
 {
+    private static readonly JsonConverter<JsonNode?> NodeConverter = JsonMetadataServices.JsonNodeConverter!;
+
     public JNodeOptions? Options { get; } = options ?? JNodeOptions.Default;
 
-    private static readonly JsonConverter<JsonNode?> NodeConverter = JsonMetadataServices.JsonNodeConverter!;
+    public JNodeConverter() : this(null) { }
 
     public override JNode? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         NodeConverter.Read(ref reader, typeToConvert, options).ToDynamic(Options);

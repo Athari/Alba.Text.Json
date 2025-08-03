@@ -33,7 +33,7 @@ internal static class Ensure
     {
         if (param >= value)
             return param;
-        throw new ArgumentOutOfRangeException(paramName, param, $"Argument {paramName} must be greater than our equal to ${value}");
+        throw new ArgumentOutOfRangeException(paramName, param, $"Argument {paramName} must be greater than our equal to ${value}.");
     }
 
     [Method(Inline)]
@@ -42,6 +42,15 @@ internal static class Ensure
     {
         if (param <= value)
             return param;
-        throw new ArgumentOutOfRangeException(paramName, param, $"Argument {paramName} must be less than our equal to ${value}");
+        throw new ArgumentOutOfRangeException(paramName, param, $"Argument {paramName} must be less than our equal to ${value}.");
+    }
+
+    [Method(Inline)]
+    public static T[] Count<T>(T[] param, int value,
+        [InvokerParameterName, CallerArgumentExpression(nameof(param))] string? paramName = null)
+    {
+        if (param.Length == value)
+            return param;
+        throw new ArgumentOutOfRangeException(paramName, param, $"Argument {paramName} must contain ${value} elements.");
     }
 }

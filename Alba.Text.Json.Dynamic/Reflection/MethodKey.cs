@@ -2,7 +2,7 @@
 
 namespace Alba.Text.Json.Dynamic;
 
-internal class MethodKey : IEquatable<MethodKey>
+internal sealed class MethodKey : IEquatable<MethodKey>
 {
     public static readonly Type[] ArgT = Enumerable.Range(0, 1).Select(GetGenericMethodParameter).ToArray();
 
@@ -71,7 +71,7 @@ internal class MethodKey : IEquatable<MethodKey>
 
     private static Type GetGenericMethodParameter(int i)
     {
-      #if NETFRAMEWORK
+      #if NETFRAMEWORK || NETSTANDARD2_0
         //return GenericMethodParameters[i];
         return typeof(object);
       #else

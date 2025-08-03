@@ -3,7 +3,7 @@
 namespace Alba.Text.Json.Dynamic;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-public partial class JNodeOptionsAttribute : JsonConverterAttribute
+public sealed partial class JNodeOptionsAttribute : JsonConverterAttribute
 {
     public override JsonConverter CreateConverter(Type type)
     {

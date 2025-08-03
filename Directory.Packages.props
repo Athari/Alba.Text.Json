@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup Label="Main">
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
+    <PackageVersion Include="Microsoft.Bcl.Memory" Version="9.0.0" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageVersion Include="System.Text.Json" Version="6.0.0" />
   </ItemGroup>
