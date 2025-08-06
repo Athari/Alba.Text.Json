@@ -37,6 +37,12 @@ internal static class JsonElementExts
       #endif
     }
 
+    public static string GetName(in this ObjectEnumerator @this) =>
+        @this.Current.Name;
+
+    public static JsonElement GetValue(in this ObjectEnumerator @this) =>
+        @this.Current.Value;
+
   #if !JSON9_0_OR_GREATER
     [field: ThreadStatic, MaybeNull]
     private static Utf8JsonElementWriter JsonElementWriter => field ??= new(256);

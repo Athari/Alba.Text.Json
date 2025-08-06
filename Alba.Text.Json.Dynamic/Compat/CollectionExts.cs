@@ -3,6 +3,7 @@
 internal static class CollectionExts
 {
   #if !NETCOREAPP2_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+    [SuppressMessage("ReSharper", "ReturnTypeCanBeNotNullable", Justification = "No it can't")]
     public static TValue? GetValueOrDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> @this, TKey key) =>
         @this.GetValueOrDefault(key, default!);
 

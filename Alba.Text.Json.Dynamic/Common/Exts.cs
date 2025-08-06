@@ -5,8 +5,10 @@ using System.Runtime.InteropServices;
 
 namespace Alba.Text.Json.Dynamic;
 
+[InternalAPI]
 internal static class Exts
 {
+    [SuppressMessage("ReSharper", "ReturnTypeCanBeNotNullable", Justification = "No it can't")]
     public static T? GetOrDefault<TKey, T>(this Dictionary<TKey, T> @this, TKey key) where TKey : notnull =>
         @this.GetValueOrDefault(key, default!);
 
@@ -36,7 +38,7 @@ internal static class Exts
     }
 
   #if NET6_0_OR_GREATER
-    [SuppressMessage("ReSharper", "NotAccessedField.Local", Justification = "Discard `out _` doesn't work")]
+    [SuppressMessage("CodeQuality", "IDE0052:Remove unread private member", Justification = "Discard `out _` doesn't work"), SuppressMessage("ReSharper", "NotAccessedField.Local")]
     private static bool _discardExists;
 
     public static ref T? GetValueRefOrAddDefault<TKey, T>(this Dictionary<TKey, T> @this, TKey key, [UnscopedRef] out bool exists)

@@ -266,6 +266,10 @@ dotnet_diagnostic.ca2007.severity = none # Do not directly await a Task # Avalon
 
 dotnet_diagnostic.cs8981.severity = none # The type name only contains lower-cased ascii characters # Those won't become keywords, trust me bro
 
+[**/{Polyfill,Polyfills,Compat}/**/*.cs]
+
+resharper_check_namespace_highlighting = none
+
 [*.{cs,vb}]
 
 # Symbol specifications

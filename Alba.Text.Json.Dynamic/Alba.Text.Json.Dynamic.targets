@@ -2,8 +2,10 @@
 
   <ItemGroup Label="Build">
     <!--<Using Include="System.Console" Static="true" />-->
-    <Using Include="System.Linq.Expressions.Expression" Alias="E" />
     <Using Include="System.Dynamic.DynamicMetaObject" Alias="dobject" />
+    <Using Include="System.Linq.Expressions.Expression" Alias="E" />
+    <Using Include="System.Text.Json.JsonElement.ObjectEnumerator" Alias="ObjectEnumerator" />
+    <Using Include="System.Text.Json.JsonElement.ArrayEnumerator" Alias="ArrayEnumerator" />
     <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.ExpressionExts." />
     <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.RefImpl." />
   </ItemGroup>

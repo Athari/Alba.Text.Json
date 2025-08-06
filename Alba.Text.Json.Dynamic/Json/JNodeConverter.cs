@@ -5,6 +5,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Alba.Text.Json.Dynamic;
 
+[PublicAPI]
 public sealed class JNodeConverter(JNodeOptions? options) : JsonConverter<JNode?>
 {
     private static readonly JsonConverter<JsonNode?> NodeConverter = JsonMetadataServices.JsonNodeConverter!;
