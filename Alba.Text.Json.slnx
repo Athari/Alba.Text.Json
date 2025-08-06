@@ -12,6 +12,13 @@
     <File Path="C:/Docs/Projects/Json/.build/Alba.Text.Json.Dynamic.xml" />
     <File Path="C:/Docs/Projects/Json/.build/FilterXmlDoc.xsl" />
   </Folder>
+  <Folder Name="/.nuget/">
+    <File Path=".nuget/Logo.svg" />
+    <File Path=".nuget/Logo128.png" />
+    <File Path=".nuget/Logo512.png" />
+    <File Path=".nuget/NuGet.config" />
+    <File Path=".nuget/NuGet.xsd" />
+  </Folder>
   <Folder Name="/Alba.Text.Json.Dynamic/">
     <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.csproj" />
     <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ6.csproj" />

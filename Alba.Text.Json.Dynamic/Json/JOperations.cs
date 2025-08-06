@@ -115,7 +115,7 @@ internal static partial class JOperations
         };
 
     private static object JsonElementToNumber(in JsonElement el, JNodeOptions options) =>
-        IsFloatingPoint(el.GetRawValueSpan()) ?
+        IsFloatingPoint(el.RawValueSpan) ?
             JsonElementToNumberType(el, options.FloatTypes) ??
             throw new InvalidOperationException($"Cannot convert {el} to a floating point number.") :
             JsonElementToNumberType(el, options.IntegerTypes) ??
@@ -139,16 +139,16 @@ internal static partial class JOperations
             NumberType.Double => el.TryGetDouble(out var v) ? v : null,
             NumberType.Decimal => el.TryGetDecimal(out var v) ? v : null,
           #if NET8_0_OR_GREATER
-            NumberType.Half => Half.TryParse(el.GetRawValueSpan(), Invariant, out var v) ? v : null,
+            NumberType.Half => Half.TryParse(el.RawValueSpan, Invariant, out var v) ? v : null,
           #elif NET5_0_OR_GREATER
-            NumberType.Half => Half.TryParse(el.GetRawText(), NumberStyles.Float | NumberStyles.AllowThousands, Invariant, out var v) ? v : null,
+            NumberType.Half => Half.TryParse(el.RawText, NumberStyles.Float | NumberStyles.AllowThousands, Invariant, out var v) ? v : null,
           #endif
           #if NET8_0_OR_GREATER
-            NumberType.Int128 => Int128.TryParse(el.GetRawValueSpan(), Invariant, out var v) ? v : null,
-            NumberType.UInt128 => UInt128.TryParse(el.GetRawValueSpan(), Invariant, out var v) ? v : null,
+            NumberType.Int128 => Int128.TryParse(el.RawValueSpan, Invariant, out var v) ? v : null,
+            NumberType.UInt128 => UInt128.TryParse(el.RawValueSpan, Invariant, out var v) ? v : null,
           #elif NET7_0_OR_GREATER
-            NumberType.Int128 => Int128.TryParse(el.GetRawText(), Invariant, out var v) ? v : null,
-            NumberType.UInt128 => UInt128.TryParse(el.GetRawText(), Invariant, out var v) ? v : null,
+            NumberType.Int128 => Int128.TryParse(el.RawText, Invariant, out var v) ? v : null,
+            NumberType.UInt128 => UInt128.TryParse(el.RawText, Invariant, out var v) ? v : null,
           #endif
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"A number or string NumberKind expected, got {type}"),
         };

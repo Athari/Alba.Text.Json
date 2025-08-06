@@ -11,7 +11,7 @@ internal readonly struct EquatableArray<T>(T[] array) : IEquatable<EquatableArra
 
     public int Count => Array?.Length ?? 0;
 
-    public T[] ArrayOrEmpty() => Array ?? [ ];
+    public T[] ArrayOrEmpty => Array ?? [ ];
 
     public ReadOnlySpan<T> AsSpan() => Array.AsSpan();
 

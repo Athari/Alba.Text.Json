@@ -65,7 +65,7 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
             CallSelfMethod(PGet, [ indexes.Single().Expression ]);
 
         public override dobject BindSetIndex(SetIndexBinder binder, dobject[] indexes, dobject value) =>
-            CallSelfMethod(PSet, [ indexes.Single().Expression, value.GetTypedExpression() ], [ value.LimitType ]);
+            CallSelfMethod(PSet, [ indexes.Single().Expression, value.TypedExpression ], [ value.LimitType ]);
 
         public override dobject BindDeleteIndex(DeleteIndexBinder binder, dobject[] indexes) =>
             CallNodeMethod(PNodeRemove, [ indexes.Single().Expression ]);
@@ -74,7 +74,7 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
             CallSelfMethod(PGet, [ binder.Name.EConst() ]);
 
         public override dobject BindSetMember(SetMemberBinder binder, dobject value) =>
-            CallSelfMethod(PSet, [ binder.Name.EConst(), value.GetTypedExpression() ], [ value.LimitType ]);
+            CallSelfMethod(PSet, [ binder.Name.EConst(), value.TypedExpression ], [ value.LimitType ]);
 
         public override dobject BindDeleteMember(DeleteMemberBinder binder) =>
             CallNodeMethod(PNodeRemove, [ binder.Name.EConst() ]);

@@ -66,27 +66,27 @@ internal static partial class JOperations
             var d2 = new Dictionary<string, ValueQueue<JsonElement>>(StringComparer.Ordinal);
           #if NET6_0_OR_GREATER
             do {
-                d2.GetValueRefOrAddDefault(it2.GetName()).Enqueue(it2.GetValue());
+                d2.GetRefOrAdd(it2.Name).Enqueue(it2.Value);
             } while (it2.MoveNext());
             do {
-                ref var values = ref d2.GetValueRefOrNullRef(it1.GetName(), out var exists);
+                ref var values = ref d2.GetRefOrNull(it1.Name, out var exists);
                 if (!exists ||
                     !values.TryDequeue(out var value) ||
-                    !JsonElementDeepEquals(it1.GetValue(), value, options))
+                    !JsonElementDeepEquals(it1.Value, value, options))
                     return false;
             } while (it1.MoveNext());
           #else
             do {
-                d2.TryGetValue(it2.GetName(), out var values);
-                values.Enqueue(it2.GetValue());
-                d2[it2.GetName()] = values;
+                d2.TryGetValue(it2.Name, out var values);
+                values.Enqueue(it2.Value);
+                d2[it2.Name] = values;
             } while (it2.MoveNext());
             do {
-                if (!d2.TryGetValue(it1.GetName(), out var values) ||
+                if (!d2.TryGetValue(it1.Name, out var values) ||
                     !values.TryDequeue(out var value) ||
-                    !JsonElementDeepEquals(it1.GetValue(), value, options))
+                    !JsonElementDeepEquals(it1.Value, value, options))
                     return false;
-                d2[it1.GetName()] = values;
+                d2[it1.Name] = values;
             } while (it1.MoveNext());
           #endif
             return true;
@@ -102,7 +102,7 @@ internal static partial class JOperations
 
     [SuppressMessage("Style", "IDE0060:Remove unused parameter"), SuppressMessage("ReSharper", "UnusedParameter.Local")]
     private static bool JsonElementReferenceEquals(in JsonElement el1, in JsonElement el2, JNodeOptions options) =>
-        JsonElementExts.DocumentOffsetEquals(el1, el2);
+        JsonElement.DocumentOffsetEquals(el1, el2);
 
     private static bool JsonElementValueEquals(in JsonElement el1, in JsonElement el2, JNodeOptions options)
     {

@@ -6,6 +6,14 @@ tab_width = 4
 indent_size = 4
 end_of_line = crlf
 
+# .NET pre-release bugs
+
+dotnet_diagnostic.ca1822.severity = none
+
+# R# pre-release bugs
+
+resharper_unused_member_in_super_global_highlighting = none
+
 # .NET diagnostic
 
 dotnet_remove_unnecessary_suppression_exclusions = category:ReSharper, category:AvaloniaProperty, category:Reliability, category:Performance, category:Design, category:Unknown # Bugged af for categories disabled by default
@@ -168,7 +176,7 @@ resharper_csharp_wrap_ternary_expr_style = wrap_if_long
 resharper_empty_block_style = together_same_line
 resharper_event_handler_pattern_long = $object$_On$event$
 resharper_force_attribute_style = join
-resharper_for_built_in_types = use_var_when_evident
+resharper_for_built_in_types = use_var
 resharper_html_blank_line_after_pi = false
 resharper_indent_nested_foreach_stmt = true
 resharper_indent_nested_for_stmt = true

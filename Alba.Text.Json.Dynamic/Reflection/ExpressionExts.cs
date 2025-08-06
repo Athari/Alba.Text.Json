@@ -19,32 +19,38 @@ internal static partial class ExpressionExts
         return ret;
     }
 
-    public static dobject ToDObject(this E @this, object? value) =>
-        dobject.Create(value!, @this);
+    extension(E @this)
+    {
+        public dobject ToDObject(object? value) =>
+            dobject.Create(value!, @this);
 
-    public static dobject ToDObject(this E @this, object? value, BindingRestrictions? r) =>
-        new(@this, r ?? BindingRestrictions.Empty, value!);
+        public dobject ToDObject(object? value, BindingRestrictions? r) =>
+            new(@this, r ?? BindingRestrictions.Empty, value!);
 
-    public static dobject ToDObject(this E @this, BindingRestrictions r) =>
-        new(@this, r);
+        public dobject ToDObject(BindingRestrictions r) =>
+            new(@this, r);
 
-    public static E EConvertIfNeeded(this E @this, Type type) =>
-        @this.Type == type ? @this : @this.EConvert(type);
+        public E EConvertIfNeeded(Type type) =>
+            @this.Type == type ? @this : @this.EConvert(type);
 
-    public static E EConvertIfNeeded<T>(this E @this) =>
-        @this.EConvertIfNeeded(typeof(T));
+        public E EConvertIfNeeded<T>() =>
+            @this.EConvertIfNeeded(typeof(T));
+    }
 
-    public static dobject Fallback(this dobject @this, InvokeMemberBinder binder, dobject[] args) =>
-        binder.FallbackInvokeMember(@this, args);
+    extension(dobject @this)
+    {
+        public E TypedExpression =>
+            @this.Expression.EConvertIfNeeded(@this.LimitType);
 
-    public static dobject Fallback(this dobject @this, BinaryOperationBinder binder, dobject arg) =>
-        binder.FallbackBinaryOperation(@this, arg);
+        public dobject Fallback(InvokeMemberBinder binder, dobject[] args) =>
+            binder.FallbackInvokeMember(@this, args);
 
-    public static E GetTypedExpression(this dobject @this) =>
-        @this.Expression.EConvertIfNeeded(@this.LimitType);
+        public dobject Fallback(BinaryOperationBinder binder, dobject arg) =>
+            binder.FallbackBinaryOperation(@this, arg);
+    }
 
     public static E[] SelectExpressions(this dobject[] objects) => objects.SelectArray(o => o.Expression);
-    public static E[] SelectTypedExpressions(this dobject[] objects) => objects.SelectArray(o => o.GetTypedExpression());
+    public static E[] SelectTypedExpressions(this dobject[] objects) => objects.SelectArray(o => o.TypedExpression);
     public static Type[] SelectTypes(this dobject[] objects) => objects.SelectArray(o => o.LimitType);
     public static Type[] SelectType(this dobject[] objects, int i1) => [ objects[i1].LimitType ];
 }

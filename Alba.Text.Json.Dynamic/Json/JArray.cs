@@ -93,7 +93,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
 
         public override dobject BindSetIndex(SetIndexBinder binder, dobject[] indexes, dobject value) =>
             CallSelfMethod(SelectIndexMethod(indexes, 1, PSetInt, PSetIndex),
-                [ indexes[0].Expression, value.GetTypedExpression() ], [ value.LimitType ]);
+                [ indexes[0].Expression, value.TypedExpression ], [ value.LimitType ]);
 
         public override dobject BindDeleteIndex(DeleteIndexBinder binder, dobject[] indexes) =>
             CallSelfMethod(SelectIndexMethod(indexes, 1, PRemoveAtInt, PRemoveAtIndex),
@@ -108,7 +108,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
                 nameof(Insert) =>
                     CallSelfMethod(
                         SelectIndexMethod(args, 2, PInsertInt, PInsertIndex),
-                        [ args[0].Expression, args[1].GetTypedExpression() ], args.SelectType(1)),
+                        [ args[0].Expression, args[1].TypedExpression ], args.SelectType(1)),
                 nameof(Remove) =>
                     CallSelfMethod(PRemove, args.SelectTypedExpressions(), args.SelectTypes()),
                 nameof(RemoveAt) =>

@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "Alba.Text.Json.slnx",
+    "projects": [
+      "Alba.Text.Json.Dynamic.Playground\\Alba.Text.Json.Dynamic.Playground.csproj",
+      "Alba.Text.Json.Dynamic\\Alba.Text.Json.Dynamic.csproj"
+    ]
+  }
+}

@@ -8,57 +8,58 @@ namespace Alba.Text.Json.Dynamic;
 [InternalAPI]
 internal static class Exts
 {
-    [SuppressMessage("ReSharper", "ReturnTypeCanBeNotNullable", Justification = "No it can't")]
-    public static T? GetOrDefault<TKey, T>(this Dictionary<TKey, T> @this, TKey key) where TKey : notnull =>
-        @this.GetValueOrDefault(key, default!);
-
-    public static T GetOrDefault<TKey, T>(this Dictionary<TKey, T> @this, TKey key, T def) where TKey : notnull =>
-        @this.GetValueOrDefault(key, def);
-
-    public static bool All<T>(this IEnumerable<T> @this, Func<T, int, bool> predicate)
-    {
-        int i = 0;
-        using var it = @this.GetEnumerator();
-        while (it.MoveNext())
-            if (!predicate(it.Current, i++))
-                return false;
-        return true;
-    }
-
-    public static int IndexOf<T>(this IEnumerable<T> @this, Func<T, bool> predicate)
-    {
-        int i = 0;
-        using var it = @this.GetEnumerator();
-        while (it.MoveNext()) {
-            if (predicate(it.Current))
-                return i;
-            i++;
-        }
-        return -1;
-    }
-
-  #if NET6_0_OR_GREATER
-    [SuppressMessage("CodeQuality", "IDE0052:Remove unread private member", Justification = "Discard `out _` doesn't work"), SuppressMessage("ReSharper", "NotAccessedField.Local")]
+  #pragma warning disable // Discard `out _` doesn't work
     private static bool _discardExists;
+  #pragma warning restore
 
-    public static ref T? GetValueRefOrAddDefault<TKey, T>(this Dictionary<TKey, T> @this, TKey key, [UnscopedRef] out bool exists)
-        where TKey : notnull
-        => ref CollectionsMarshal.GetValueRefOrAddDefault(@this, key, out exists);
-
-    public static ref T? GetValueRefOrAddDefault<TKey, T>(this Dictionary<TKey, T> @this, TKey key)
-        where TKey : notnull
-        => ref @this.GetValueRefOrAddDefault(key, out _discardExists);
-
-    public static ref T GetValueRefOrNullRef<TKey, T>(this Dictionary<TKey, T> @this, TKey key)
-        where TKey : notnull =>
-        ref CollectionsMarshal.GetValueRefOrNullRef(@this, key);
-
-    public static ref T GetValueRefOrNullRef<TKey, T>(this Dictionary<TKey, T> @this, TKey key, out bool exists)
-        where TKey : notnull
+    extension<TKey, T>(Dictionary<TKey, T> @this) where TKey : notnull
     {
-        ref var value = ref @this.GetValueRefOrNullRef(key);
-        exists = Unsafe.IsNullRef(ref value);
-        return ref value!;
+        [SuppressMessage("ReSharper", "CanSimplifyDictionaryTryGetValueWithGetValueOrDefault")]
+        public T? GetOrDefault(TKey key) => @this.TryGetValue(key, out var value) ? value : default;
+
+        public T GetOrDefault(TKey key, T def) => @this.GetValueOrDefault(key, def);
+
+      #if NET6_0_OR_GREATER
+        public ref T? GetRefOrAdd(TKey key, [UnscopedRef] out bool exists) =>
+            ref CollectionsMarshal.GetValueRefOrAddDefault(@this, key, out exists);
+
+        public ref T? GetRefOrAdd(TKey key) =>
+            ref @this.GetRefOrAdd(key, out _discardExists);
+
+        public ref T GetRefOrNull(TKey key) =>
+            ref CollectionsMarshal.GetValueRefOrNullRef(@this, key);
+
+        public ref T GetRefOrNull(TKey key, out bool exists)
+        {
+            ref var value = ref @this.GetRefOrNull(key);
+            exists = Unsafe.IsNullRef(ref value);
+            return ref value!;
+        }
+      #endif
     }
-  #endif
+
+    extension<T>(IEnumerable<T> @this)
+    {
+        public bool All(Func<T, int, bool> predicate)
+        {
+            int i = 0;
+            using var it = @this.GetEnumerator();
+            while (it.MoveNext())
+                if (!predicate(it.Current, i++))
+                    return false;
+            return true;
+        }
+
+        public int IndexOf(Func<T, bool> predicate)
+        {
+            int i = 0;
+            using var it = @this.GetEnumerator();
+            while (it.MoveNext()) {
+                if (predicate(it.Current))
+                    return i;
+                i++;
+            }
+            return -1;
+        }
+    }
 }

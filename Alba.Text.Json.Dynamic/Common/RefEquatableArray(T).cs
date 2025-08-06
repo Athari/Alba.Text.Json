@@ -10,7 +10,7 @@ internal readonly struct RefEquatableArray<T>(T[] array) : IEquatable<RefEquatab
 
     public int Count => Array?.Length ?? 0;
 
-    public T[] ArrayOrEmpty() => Array ?? [ ];
+    public T[] ArrayOrEmpty => Array ?? [ ];
 
     public ReadOnlySpan<T> AsSpan() => Array.AsSpan();
 
