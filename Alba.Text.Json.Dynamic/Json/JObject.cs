@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Dynamic;
+﻿using System.Dynamic;
 using System.Text.Json.Nodes;
+using static Alba.Text.Json.Dynamic.JOperations;
 
 namespace Alba.Text.Json.Dynamic;
 
-public sealed class JObject(JsonObject source, JNodeOptions? options = null)
-    : JNode<JsonObject>(source, options), IDynamicMetaObjectProvider,
-        IEnumerable<KeyValuePair<string, object?>>, IEquatable<JObject>
+public sealed partial class JObject(JsonObject source, JNodeOptions? options = null)
+    : JNode<JsonObject>(source, options), IDynamicMetaObjectProvider
 {
     private static readonly MethodRef PGet = MethodRef.Of((JObject o) => o.Get(""));
     private static readonly MethodRef PSet = MethodRef.Of((JObject o) => o.Set("", MethodKey.GetT<object?>(0)));
@@ -18,17 +17,27 @@ public sealed class JObject(JsonObject source, JNodeOptions? options = null)
     private static readonly MethodRef PNodeContainsKey = MethodRef.Of((JsonObject o) => o.ContainsKey(""));
     private static readonly MethodRef PNodeRemove = MethodRef.Of((JsonObject o) => o.Remove(""));
 
-    public int Count() =>
+    public object? this[string key] {
+        get => Get(key);
+        set => Set(key, value);
+    }
+
+    public int Count =>
         Node.Count;
 
-    public object? Get(string name) =>
-        JOperations.NodeToDynamicNodeOrValue(Node[name], Options);
+    private object? Get(string name) =>
+        JsonNodeToJNodeOrValue(Node[name], Options);
 
-    public void Set<T>(string name, T value) =>
-        Node[name] = JOperations.ValueToNewNode(value, Node.Options);
+    public bool TryGet(string name, out object? value) =>
+        Node.TryGetPropertyValue(name, out var node) switch {
+            var r => (value = r ? JsonNodeToJNodeOrValue(node, Options) : null, r).r,
+        };
+
+    private void Set<T>(string name, T value) =>
+        Node[name] = ValueToNewJsonNode(value, Node.Options);
 
     public void Add<T>(string name, T value) =>
-        Node.Add(name, JOperations.ValueToNewNode(value, Node.Options));
+        Node.Add(name, ValueToNewJsonNode(value, Node.Options));
 
     public bool Remove(string name) =>
         Node.Remove(name);
@@ -42,15 +51,9 @@ public sealed class JObject(JsonObject source, JNodeOptions? options = null)
     public new JObject Clone() =>
         (JObject)base.Clone();
 
-    public bool Equals(JObject? other) =>
-        base.Equals(other);
-
     public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() =>
-        Node.Select(p => new KeyValuePair<string, object?>(p.Key, JOperations.NodeToDynamicNodeOrValue(p.Value, Options)))
+        Node.Select(p => new KeyValuePair<string, object?>(p.Key, JsonNodeToJNodeOrValue(p.Value, Options)))
             .GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() =>
-        GetEnumerator();
 
     public dobject GetMetaObject(E expression) =>
         new MetaJObject(expression, this);
@@ -81,15 +84,15 @@ public sealed class JObject(JsonObject source, JNodeOptions? options = null)
                 nameof(Count) =>
                     ExprNode().EProperty(PNodeCount.Getter).ToDObject(Value.Node.Count),
                 nameof(Add) =>
-                    CallSelfMethod(PAdd, args.SelectExpressions(), [ args[1].LimitType ]),
+                    CallSelfMethod(PAdd, args.SelectTypedExpressions(), args.SelectType(1)),
                 nameof(Remove) =>
-                    CallNodeMethod(PNodeRemove, args.SelectExpressions(), wrap: e => e.EConvert<object>()),
+                    CallNodeMethod(PNodeRemove, args.SelectExpressions()),
                 nameof(Clear) =>
                     CallNodeMethod(PNodeClear, [ ]),
                 nameof(ContainsKey) =>
-                    CallNodeMethod(PNodeContainsKey, args.SelectExpressions(), wrap: e => e.EConvert<object>()),
+                    CallNodeMethod(PNodeContainsKey, args.SelectExpressions()),
                 nameof(GetEnumerator) =>
-                    CallSelfMethod(PGetEnumerator, [ ], wrap: e => e.EConvert<object>()),
+                    CallSelfMethod(PGetEnumerator, [ ]),
                 _ =>
                     base.BindInvokeMember(binder, args),
             };

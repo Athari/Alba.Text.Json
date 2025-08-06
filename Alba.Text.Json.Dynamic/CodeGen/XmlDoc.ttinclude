@@ -27,17 +27,22 @@ file class XmlDoc
     private HashSet<string> _docFiles = new();
 
     public XmlDoc LoadType<T>() => LoadType(typeof(T));
-    public XmlDoc LoadType(Type type)
+    public XmlDoc LoadType(Type type, string? versionOverride = null)
     {
         if (!_types.Add(type))
             return this;
         var version = type.Assembly.GetName().Version!;
-        var versionPrefix = $"{version.Major}.{version.Minor}";
+        var versionPrefix = versionOverride ?? $"{version.Major}.{version.Minor}";
+        return LoadModule(Path.GetFileNameWithoutExtension(type.Module.Name), versionPrefix);
+    }
+
+    public XmlDoc LoadModule(string moduleName, string versionPrefix)
+    {
         var dotnetPacksDir = @"C:\Program Files\dotnet\packs";
         var packName = "Microsoft.NETCore.App.Ref";
-        var versionDir = Directory.EnumerateDirectories(Path.Combine(dotnetPacksDir, packName), $"{versionPrefix}.*").OrderBy(i => i).Last();
-        var refDir = Directory.EnumerateDirectories(Path.Combine(versionDir, "ref"), $"net{versionPrefix}").OrderBy(i => i).Last();
-        var docFileName = Path.ChangeExtension(type.Module.Name, ".xml");
+        var versionDir = TryGetDir(Path.Combine(dotnetPacksDir, packName), $"{versionPrefix}.*");
+        var refDir = TryGetDir(Path.Combine(versionDir, "ref"), $"net{versionPrefix}");
+        var docFileName = moduleName + ".xml";
         if (!_docFiles.Add(docFileName))
             return this;
         using var file = File.OpenText(Path.Combine(refDir, docFileName));
@@ -45,6 +50,15 @@ file class XmlDoc
         foreach (var el in doc.XPathSelectElements("/doc/members/member"))
             _members[el.Attribute("name")!.Value] = el;
         return this;
+
+        static string TryGetDir(string dir, string mask) {
+            try {
+                return Directory.EnumerateDirectories(dir, mask).OrderBy(i => i).Last();
+            }
+            catch {
+                throw new DirectoryNotFoundException($"Directory {dir}\\{mask} not found.");
+            }
+        }
     }
 
     public string FormatDoc(XElement el, int indent = 0, char indentChar = ' ')
@@ -56,8 +70,25 @@ file class XmlDoc
             .Join(Environment.NewLine);
     }
 
-    public XElement? GetDoc(MethodInfo m) =>
-        _members.GetOrDefault(GetXmlNameMethod(method: m));
+    public XElement? GetDoc(TypeInfo m) => _members.GetOrDefault(GetName(m));
+    public XElement? GetDoc(MethodInfo m) => _members.GetOrDefault(GetName(m));
+    public XElement? GetDoc(ConstructorInfo m) => _members.GetOrDefault(GetName(m));
+    public XElement? GetDoc(FieldInfo m) => _members.GetOrDefault(GetName(m));
+    public XElement? GetDoc(PropertyInfo m) => _members.GetOrDefault(GetName(m));
+    public XElement? GetDoc(EventInfo m) => _members.GetOrDefault(GetName(m));
+
+    public string GetName(TypeInfo m) => "T:" + GetNameCore(m);
+    public string GetName(MethodInfo m) => GetNameCore(method: m);
+    public string GetName(ConstructorInfo m) => GetNameCore(ctor: m);
+    public string GetName(FieldInfo m) => GetNameCore("F", m);
+    public string GetName(PropertyInfo m) => GetNameCore("P", m);
+    public string GetName(EventInfo m) => GetNameCore("E", m);
+
+    string GetNameCore(Type m) =>
+        m.FullName.ReReplace(@"\[.*\]", "").Replace('+', '.');
+
+    string GetNameCore(string prefix, MemberInfo m) =>
+        $"{prefix}:{GetNameCore(m.DeclaringType!)}.{m.Name}";
 
     string GetDocStr(Type type, bool isParam, Map map)
     {
@@ -88,7 +119,7 @@ file class XmlDoc
         }
     }
 
-    public string GetXmlNameMethod(MethodInfo? method = null, ConstructorInfo? ctor = null)
+    string GetNameCore(MethodInfo? method = null, ConstructorInfo? ctor = null)
     {
         if (method is { DeclaringType.IsGenericType: true })
             method = method.DeclaringType.GetGenericTypeDefinition()

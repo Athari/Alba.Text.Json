@@ -3,46 +3,48 @@ using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using static Alba.Text.Json.Dynamic.JOperations;
 
 namespace Alba.Text.Json.Dynamic;
 
 [JsonConverter(typeof(JNodeConverter))]
-public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<JNode>, ICloneable
+public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<object?>, ICloneable
 {
     private static readonly MethodRef PClone = MethodRef.Of((JNode o) => o.Clone());
     private static readonly MethodRef PEquals = MethodRef.Of((JNode o) => o.Equals(null));
     private static readonly MethodRef PGetHashCode = MethodRef.Of((JNode o) => o.GetHashCode());
-    private static readonly MethodRef PToJsonString = MethodRef.Of((JNode o) => o.ToJsonString(null));
 
     private static readonly PropertyRef PNodeUntyped = PropertyRef.Of((JNode o) => o.NodeUntyped);
+    private static readonly MethodRef PNodeToJsonString = MethodRef.Of((JsonNode o) => o.ToJsonString(null));
 
     internal readonly JNodeOptions Options = options ?? JNodeOptions.Default;
 
     internal abstract JsonNode NodeUntyped { get; }
 
     public JNode Clone() =>
-        (JNode)JOperations.NodeToDynamicNodeOrValue(JOperations.DeepClone(NodeUntyped), Options);
+        (JNode)JsonNodeToJNodeOrValue(JsonNodeDeepClone(NodeUntyped), Options);
 
     object ICloneable.Clone() =>
         Clone();
 
-    public bool Equals(JNode? o) =>
-        JOperations.DeepEquals(NodeUntyped, o?.NodeUntyped, Options);
-
-    public sealed override bool Equals(object? obj) =>
-        obj is JNode o && Equals(o);
+    public sealed override bool Equals(object? o) =>
+        JsonNodeEquals(NodeUntyped, o, Options.DirectEquality, Options);
 
     public sealed override int GetHashCode() =>
-        JOperations.GetDeepHashCode(Options.MaxHashCodeValueCount, Options.MaxHashCodeDepth);
+        JsonNodeToHashCode(NodeUntyped, Options.DirectEquality, Options);
 
     public string ToJsonString(JsonSerializerOptions? opts) =>
         NodeUntyped.ToJsonString(opts);
 
-    public static bool operator ==(JNode? a, JNode? b) =>
-        JOperations.DeepEquals(a?.NodeUntyped, b?.NodeUntyped, a?.Options ?? b?.Options ?? JNodeOptions.Default);
+    public static bool operator ==(JNode? a, object? b)
+    {
+        var options = a?.Options ?? (b as JNode)?.Options ?? JNodeOptions.Default;
+        return JsonNodeEquals(a?.NodeUntyped, b, options.DirectEquality, options);
+    }
 
-    public static bool operator !=(JNode? a, JNode? b) =>
-        !(a == b);
+    public static bool operator ==(object? b, JNode? a) => a == b;
+    public static bool operator !=(JNode? a, object? b) => !(a == b);
+    public static bool operator !=(object? b, JNode? a) => !(a == b);
 
     private protected abstract class MetaJsonNodeBase(E expression, JNode value)
         : dobject(expression, BindingRestrictions.Empty, value)
@@ -57,17 +59,17 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<J
 
         protected abstract dobject BindNode();
 
-        protected E ExprOther(dobject other) =>
+        protected static E ExprOther(dobject other) =>
             other.Expression.EConvertIfNeeded<JNode>();
 
-        protected dobject BindOther(dobject other) =>
-            ExprOther(other).ToDObject(Value);
+        protected static dobject BindOther(dobject other) =>
+            ExprOther(other).ToDObject((JNode?)other.Value);
 
-        protected E ExprOtherNode(dobject other) =>
+        protected static E ExprOtherNode(dobject other) =>
             other.Expression.EConvertIfNeeded<JNode>().EProperty(PNodeUntyped.Getter);
 
-        protected dobject BindOtherNode(dobject other) =>
-            ExprOtherNode(other).ToDObject((other.Value as JNode)?.NodeUntyped);
+        protected static dobject BindOtherNode(dobject other) =>
+            ExprOtherNode(other).ToDObject(((JNode?)other.Value)?.NodeUntyped);
 
         protected BindingRestrictions GetRestrictions() =>
             BindingRestrictions.GetTypeRestriction(Expression, LimitType);
@@ -81,7 +83,7 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<J
                 nameof(GetHashCode) =>
                     CallSelfMethod(PGetHashCode, [ ]),
                 nameof(ToJsonString) =>
-                    CallSelfMethod(PToJsonString, args.SelectExpressions()),
+                    CallNodeMethod(PNodeToJsonString, args.SelectExpressions()),
                 _ =>
                     CallSelfMethod(binder, args),
             };
@@ -89,9 +91,9 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<J
         public override dobject BindBinaryOperation(BinaryOperationBinder binder, dobject arg) =>
             binder.Operation switch {
                 ExpressionType.Equal =>
-                    CallSelfMethod(PEquals, [ ExprOther(arg) ], wrap: e => e.EConvert<object>()),
+                    CallSelfMethod(PEquals, [ ExprOther(arg) ]),
                 ExpressionType.NotEqual =>
-                    CallSelfMethod(PEquals, [ ExprOther(arg) ], wrap: e => e.ENot().EConvert<object>()),
+                    CallSelfMethod(PEquals, [ ExprOther(arg) ], wrap: e => e.ENot()),
                 _ =>
                     BindSelf().Fallback(binder, BindOther(arg)),
             };
@@ -99,8 +101,10 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<J
         protected dobject CallMethod(E? instance, MethodRef m,
             E[] parameters, Type[]? genericTypes = null, Func<E, E>? wrap = null)
         {
-            var expr = instance.ECall(m.GetMethod(genericTypes), parameters).EBlockEmptyIfNeeded(m.IsVoid);
-            return new(wrap?.Invoke(expr) ?? expr, GetRestrictions());
+            E expr = instance.ECall(m.GetMethod(genericTypes), parameters);
+            expr = wrap?.Invoke(expr) ?? expr;
+            expr = m.IsVoid ? E.Block(typeof(object), expr, E.Constant(null)) : expr.EConvertIfNeeded<object>();
+            return new(expr, GetRestrictions());
         }
 
         protected dobject CallStaticMethod(MethodRef m,

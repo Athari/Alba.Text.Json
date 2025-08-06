@@ -40,7 +40,7 @@ var methods = Enumerable.Empty<MethodInfo>()
         NewName: renames.GetOrDefault(m.Name) ?? m.Name,
         ReturnType: m.FormatReturn(),
         Attrs: m.CustomAttributes.Select(a => a.Format()).Where(s => s != null).ToList(),
-        CommentRef: docs.GetXmlNameMethod(m),
+        CommentRef: docs.GetName(m),
         IsAsync: m.FormatReturn().Contains("Task"),
         GenericArgs: m.FormatGenericArgs(),
         GenericParams: m.FormatGenericArgs(),

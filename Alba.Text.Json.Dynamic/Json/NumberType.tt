@@ -1,0 +1,57 @@
+﻿<#@   template debug="true" hostspecific="false" language="C#"
+      compilerOptions="-langVersion:preview -nullable:enable -lib:'$(SolutionDir)Dep'"
+#><#@ output extension=".g.cs"
+#><#@ import namespace="System.Text.Json"
+#><#@ import namespace="System.Text.Json.Nodes"
+#><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
+#><#  #nullable enable
+#><#
+
+//Debugger.Launch();
+
+var renames = new Dictionary<string, string> {
+    ["SerializeToNode"] = "From",
+};
+
+var docs = new XmlDoc();
+
+var fields = typeof(TypeCode)
+    .GetFields(BindingFlags.Static | BindingFlags.Public)
+    .Select(f => (
+        Value: (TypeCode)f.GetValue(null),
+        Name: f.Name,
+        Comment: docs.LoadModule("System.Runtime", "9.0").GetDoc(f)
+    ))
+    .Where(f => f.Value is >= TypeCode.SByte and <= TypeCode.Decimal)
+    .ToList();
+#>
+#nullable enable
+
+namespace Alba.Text.Json.Dynamic;
+
+#if NET7_0_OR_GREATER
+/// <summary>Numeric codes of <see cref="TypeCode"/> with support for <see cref="System.Half"/>, <see cref="System.Int128"/> and <see cref="System.UInt128"/>.</summary>
+#elif NET5_0_OR_GREATER
+/// <summary>Numeric codes of <see cref="TypeCode"/> with support for <see cref="System.Half"/>, Int128 and UInt128 (.NET 7.0+).</summary>
+#else
+/// <summary>Numeric codes of <see cref="TypeCode"/> with support for Half (.NET 5.0+), Int128 and UInt128 (.NET 7.0+).</summary>
+#endif
+public enum NumberType
+{
+<#foreach (var f in fields) { #>
+<#    if (f.Comment != null) { #>
+<#= docs.FormatDoc(f.Comment, 4).ReReplace(@" x 10 (-?\d+)", "×10<sup>$1</sup>") #>
+<#    } #>
+    <#=f.Name#> = TypeCode.<#=f.Name#>,
+<#} #>
+  #if NET5_0_OR_GREATER
+    /// <summary>A floating point type representing values ranging from approximately 5.96 x 10<sup>-8</sup> to 6.55 x 10<sup>4</sup> with a precision of 3-4 digits.</summary>
+    Half = 101,
+  #endif
+  #if NET7_0_OR_GREATER
+    /// <summary>An integral type representing signed 128-bit integers with values between -170141183460469231731687303715884105728 and 170141183460469231731687303715884105727.</summary>
+    Int128 = 102,
+    /// <summary>An integral type representing unsigned 128-bit integers with values between 0 and 340282366920938463463374607431768211455.</summary>
+    UInt128 = 103,
+  #endif
+}<# #nullable disable #>

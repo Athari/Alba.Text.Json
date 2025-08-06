@@ -19,14 +19,20 @@ internal static partial class ExpressionExts
         return ret;
     }
 
-    public static dobject ToDObject(this E @this, object? value) => dobject.Create(value!, @this);
-    public static dobject ToDObject(this E @this, object? value, BindingRestrictions? r) => new(@this, r ?? BindingRestrictions.Empty, value!);
-    public static dobject ToDObject(this E @this, BindingRestrictions r) => new(@this, r);
+    public static dobject ToDObject(this E @this, object? value) =>
+        dobject.Create(value!, @this);
 
-    public static E EConvertIfNeeded(this E @this, Type type) => @this.Type == type ? @this : @this.EConvert(type);
-    public static E EConvertIfNeeded<T>(this E @this) => @this.EConvertIfNeeded(typeof(T));
-    public static E EBlockEmptyIfNeeded(this E @this, bool isVoid) => isVoid ? E.Block(typeof(object), @this, E.Constant(null)) : @this;
-    public static E EBlockEmptyIfNeeded(this E @this) => @this.EBlockEmptyIfNeeded(@this.Type == typeof(void));
+    public static dobject ToDObject(this E @this, object? value, BindingRestrictions? r) =>
+        new(@this, r ?? BindingRestrictions.Empty, value!);
+
+    public static dobject ToDObject(this E @this, BindingRestrictions r) =>
+        new(@this, r);
+
+    public static E EConvertIfNeeded(this E @this, Type type) =>
+        @this.Type == type ? @this : @this.EConvert(type);
+
+    public static E EConvertIfNeeded<T>(this E @this) =>
+        @this.EConvertIfNeeded(typeof(T));
 
     public static dobject Fallback(this dobject @this, InvokeMemberBinder binder, dobject[] args) =>
         binder.FallbackInvokeMember(@this, args);
@@ -38,5 +44,7 @@ internal static partial class ExpressionExts
         @this.Expression.EConvertIfNeeded(@this.LimitType);
 
     public static E[] SelectExpressions(this dobject[] objects) => objects.SelectArray(o => o.Expression);
+    public static E[] SelectTypedExpressions(this dobject[] objects) => objects.SelectArray(o => o.GetTypedExpression());
     public static Type[] SelectTypes(this dobject[] objects) => objects.SelectArray(o => o.LimitType);
+    public static Type[] SelectType(this dobject[] objects, int i1) => [ objects[i1].LimitType ];
 }

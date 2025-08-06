@@ -33,6 +33,8 @@
       <TextJsonVersionOverride Label="Min">%(TextJsonVersionsReverse.Identity)</TextJsonVersionOverride>
       <TextJsonVersionOverride Label="Auto" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">$(TargetFramework.Substring(3).Split('.')[0])</TextJsonVersionOverride>
       <TextJsonVersionOverride Label="Max" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' or '$(TargetFrameworkIdentifier)' == '.NETFramework'">%(TextJsonVersions.Identity)</TextJsonVersionOverride>
+      <!-- HACK Temporary -->
+      <TextJsonVersionOverride Label="Max" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' or '$(TargetFrameworkIdentifier)' == '.NETFramework'">6</TextJsonVersionOverride>
     </PropertyGroup>
     <ItemGroup>
       <CompatibleTextJsonVersions Include="@(TextJsonVersions)" Condition="'$(TextJsonVersionOverride)' >= '%(Identity)'" />
@@ -114,7 +116,8 @@
 
   <!-- DOC: Display configuration items under the Properties project folder -->
   <ItemGroup>
-    <None Update="**\*.DotSettings;**\*.user" Link="Properties\$([System.String]::Copy(%(Filename)).Replace($(MSBuildProjectName), ''))%(Extension)" />
+    <None Update="**\*.DotSettings;**\*.user;**\*.props;**\*.targets"
+        Link="Properties\$([System.String]::Copy(%(Filename)).Replace($(MSBuildProjectName), ''))%(Extension)" />
     <!--<None Update="*.manifest" Link="Properties\%(Filename)%(Extension)" />-->
   </ItemGroup>
 

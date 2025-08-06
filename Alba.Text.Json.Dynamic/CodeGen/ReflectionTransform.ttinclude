@@ -59,6 +59,15 @@ file static partial class Exts
     public static T GetOrDefault<TKey, T>(this Dictionary<TKey, T> @this, TKey key, T def) where TKey : notnull =>
         @this.TryGetValue(key, out var v) ? v : def;
 
+    public static GroupCollection? ReMatch(this string @this, string regex) =>
+        Regex.Match(@this, regex)?.Groups;
+
+    public static string? ReMatchOne(this string @this, string regex, int index = 1) =>
+        @this.ReMatch(regex)?[index].ToString();
+
+    public static string ReReplace(this string @this, string regex, string replace) =>
+        Regex.Replace(@this, regex, replace);
+
     public static string FormatReturn(this MethodInfo m)
     {
         return m.ReturnType.Format(m.ReturnTypeCustomAttributes.GetAttrs(), m);

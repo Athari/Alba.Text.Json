@@ -18,8 +18,8 @@
   <ItemGroup Label="Polyfills">
     <!--<PolySystem Include="Range;Index" />-->
     <PolyAnalysis Include="DynamicallyAccessedMemberTypes" />
-    <PolyAnalysisAttributes Include="Maybe0;1;1If1;1W" />
-    <PolyAnalysisAttributes Include="DynamicallyAccessedMembers;RequiresDynamicCode;RequiresUnreferencedCode;StringSyntax" />
+    <PolyAnalysisAttributes Include="Maybe0;Maybe0W;1;1If1;1W" />
+    <PolyAnalysisAttributes Include="DynamicallyAccessedMembers;RequiresDynamicCode;RequiresUnreferencedCode;StringSyntax;UnscopedRef" />
     <PolyCompilerAttributes Include="CallerArgumentExpression" />
   </ItemGroup>
 

@@ -3,11 +3,18 @@
 #><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
 #><#  #nullable enable
 #><#
-
 var path = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), "JNodeOptions.cs");
 var text = File.ReadAllText(Host.ResolvePath(path), Encoding.UTF8);
-var code = Regex.Match(text, @"(?s)#pragma t4 copy begin\s+(.*)\s+#pragma t4 copy end").Groups[1].ToString().TrimEnd();
-
+var props = text.ReMatchOne(@"(?s)#pragma t4 copy begin\s+(.*)\s+#pragma t4 copy end")!
+    .Replace("\r", "").Split('\n')
+    .Select(s => s.Trim())
+    .Where(s => s != "" && !s.StartsWith("//"))
+    .Select(s => (
+        Def: s.ReMatchOne(@"(^.* {[^}]+})")!,
+        Name: s.ReMatchOne(@"([\w\d]+) {")!,
+        Copy: s.Contains("[") ? ".ToArray()" : ""
+    ))
+    .ToList();
 #>
 #nullable enable
 
@@ -15,5 +22,15 @@ namespace Alba.Text.Json.Dynamic;
 
 public partial class JNodeOptionsAttribute
 {
-    <#= code #>
+<# foreach (var p in props) { #>
+    /// <inheritdoc cref="JNodeOptions.<#=p.Name#>" />
+    <#=p.Def#> = JNodeOptions.Default.<#=p.Name#><#=p.Copy#>;
+
+<# } #>
+    /// <summary>Convert to a <see cref="JNodeOptions"/> instance by copying all property values.</summary>
+    public JNodeOptions ToOptions() => new() {
+<# foreach (var p in props) { #>
+        <#=p.Name#> = <#=p.Name#><#=p.Copy#>,
+<# } #>
+    };
 }<# #nullable disable #>

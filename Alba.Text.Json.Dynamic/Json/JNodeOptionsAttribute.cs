@@ -9,6 +9,6 @@ public sealed partial class JNodeOptionsAttribute : JsonConverterAttribute
     {
         if (!type.IsAssignableTo(typeof(JNode)))
             throw new ArgumentException($"{nameof(JNodeOptionsAttribute)} can only be applied to {nameof(JNode)} properties and fields.");
-        return new JNodeConverter(new(this));
+        return new JNodeConverter(ToOptions());
     }
 }
