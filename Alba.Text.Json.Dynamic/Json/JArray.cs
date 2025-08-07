@@ -59,7 +59,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
         Node.Insert(index.GetOffset(Node.Count), ValueToNewJsonNode(value, Node.Options));
 
     public bool Remove<T>(T item) =>
-        JsonNodeListRemove(Node, item, Options);
+        JsonNodeList.Remove(Node, item, Options);
 
     public void RemoveAt(int index) =>
         Node.RemoveAt(index);
@@ -71,10 +71,10 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
         Node.Clear();
 
     public bool Contains<T>(T item) =>
-        JsonNodeListContains(Node, item, Options);
+        JsonNodeList.Contains(Node, item, Options);
 
     public int IndexOf<T>(T item) =>
-        JsonNodeListIndexOf(Node, item, Options);
+        JsonNodeList.IndexOf(Node, item, Options);
 
     public new JArray Clone() =>
         (JArray)base.Clone();

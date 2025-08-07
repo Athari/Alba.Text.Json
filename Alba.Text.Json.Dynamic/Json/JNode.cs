@@ -22,16 +22,16 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<o
     internal abstract JsonNode NodeUntyped { get; }
 
     public JNode Clone() =>
-        (JNode)JsonNodeToJNodeOrValue(JsonNodeDeepClone(NodeUntyped), Options);
+        (JNode)JsonNodeToJNodeOrValue(JsonNode.DeepClone(NodeUntyped), Options);
 
     object ICloneable.Clone() =>
         Clone();
 
     public sealed override bool Equals(object? o) =>
-        JsonNodeEquals(NodeUntyped, o, Options.DirectEquality, Options);
+        JsonNode.Equals(NodeUntyped, o, Options.DirectEquality, Options);
 
     public sealed override int GetHashCode() =>
-        JsonNodeToHashCode(NodeUntyped, Options.DirectEquality, Options);
+        JsonNode.ToHashCode(NodeUntyped, Options.DirectEquality, Options);
 
     public string ToJsonString(JsonSerializerOptions? opts) =>
         NodeUntyped.ToJsonString(opts);
@@ -39,7 +39,7 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<o
     public static bool operator ==(JNode? a, object? b)
     {
         var options = a?.Options ?? (b as JNode)?.Options ?? JNodeOptions.Default;
-        return JsonNodeEquals(a?.NodeUntyped, b, options.DirectEquality, options);
+        return JsonNode.Equals(a?.NodeUntyped, b, options.DirectEquality, options);
     }
 
     public static bool operator ==(object? b, JNode? a) => a == b;

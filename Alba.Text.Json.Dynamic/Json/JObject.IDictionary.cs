@@ -69,7 +69,7 @@ public sealed partial class JObject
         public bool IsReadOnly => true;
 
         public bool Contains(object? item) =>
-            JsonNodeListContains(source.Node.Select(p => p.Value), item, source.Options);
+            JsonNodeList.Contains(source.Node.Select(p => p.Value), item, source.Options);
 
         public IEnumerator<object?> GetEnumerator() =>
             source.Select(p => p.Value).GetEnumerator();

@@ -58,12 +58,12 @@ internal sealed class MethodRef
         Ensure.NotNull(key.ParameterTypes);
         Type = key.Type;
         Name = key.Name;
-        ParameterTypes = key.ParameterTypes.ArrayOrEmpty();
+        ParameterTypes = key.ParameterTypes.ArrayOrEmpty;
         Flags = key.Kind.ToBindingFlags();
 
         (Method, Key, UnboundGenericMethod, UnboundGenericKey) = key.GenericTypes.Count switch {
             0 => (ResolveMethod(), key, (MethodInfo?)null, (MethodKey?)null),
-            _ => (null, null, ResolveMethod(key.GenericTypes.ArrayOrEmpty()), key),
+            _ => (null, null, ResolveMethod(key.GenericTypes.ArrayOrEmpty), key),
         };
 
         IsVoid = (Method ?? UnboundGenericMethod)!.ReturnType == typeof(void);

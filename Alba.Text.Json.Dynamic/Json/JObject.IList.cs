@@ -38,7 +38,7 @@ public sealed partial class JObject
         }
 
         public int IndexOf(object? item) =>
-            JsonNodeListIndexOf(source.Node.Select(p => p.Value), item, source.Options);
+            JsonNodeList.IndexOf(source.Node.Select(p => p.Value), item, source.Options);
 
         void IList<object?>.Insert(int index, object? item) => throw ReadOnly();
         void IList<object?>.RemoveAt(int index) => throw ReadOnly();
