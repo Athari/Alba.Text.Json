@@ -1,4 +1,8 @@
-﻿<Project>
+<Project>
+
+  <PropertyGroup>
+    <!--<AllowUnsafeBlocks Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFrameworkIdentifier)' == '.NETFramework'">true</AllowUnsafeBlocks>-->
+  </PropertyGroup>
 
   <ItemGroup Label="Build">
     <!--<Using Include="System.Console" Static="true" />-->

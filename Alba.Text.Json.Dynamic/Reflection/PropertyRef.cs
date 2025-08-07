@@ -7,24 +7,24 @@ internal sealed class PropertyRef
 {
     public readonly Type Type;
     public readonly string Name;
-    //public readonly BindingFlags Flags;
     public readonly PropertyInfo Property;
-    public readonly MethodInfo Getter;
-    public readonly MethodInfo? Setter;
+    public readonly MethodRef Getter;
+    public readonly MethodRef? Setter;
 
     private PropertyRef(LambdaExpression expr)
     {
         var member = (MemberExpression)expr.Body;
         var property = (PropertyInfo)member.Member;
+        if (property.GetMethod == null)
+            throw new ArgumentException($"Property {Name} has no getter.");
 
         Type = property.DeclaringType!;
         Name = property.Name;
-        //Flags =
-        //    (property.IsPublic ? BindingFlags.Public : BindingFlags.NonPublic)
-        //  | (property.IsStatic ? BindingFlags.Static : BindingFlags.Instance);
         Property = property;
-        Getter = property.GetMethod ?? throw new ArgumentException($"Property {Name} has no getter.");
-        Setter = property.SetMethod;
+
+        Getter = new(property.GetMethod, [ member.Expression! ]);
+        Setter = property.SetMethod != null
+            ? new(property.SetMethod, [ member.Expression!, E.Default(property.PropertyType) ]) : null;
     }
 
     public static PropertyRef Of<TResult>(Expression<Func<TResult>> expr) => new(expr);

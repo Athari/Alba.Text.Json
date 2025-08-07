@@ -1,6 +1,10 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.InteropServices;
+using System.Text.Json;
 #if NET5_0_OR_GREATER
 using System.Globalization;
+#endif
+#if !NET9_0_OR_GREATER
+using System.Text.Encodings.Web;
 #endif
 
 namespace Alba.Text.Json.Dynamic;
@@ -14,6 +18,18 @@ internal static class JsonElementExts
     extension(in JsonElement @this)
     {
         public string RawText => @this.GetRawText();
+
+        public ReadOnlySpan<byte> RawValueSpan {
+            get {
+              #if JSON9_0_OR_GREATER
+                return JsonMarshal.GetRawUtf8Value(@this);
+              #else
+                var writer = JsonElementWriter;
+                writer.CopyFrom(@this);
+                return writer.WrittenSpan;
+              #endif
+            }
+        }
 
         public static object? ToValue(in JsonElement el, JNodeOptions options) =>
             el.ValueKind switch {
@@ -181,6 +197,9 @@ internal static class JsonElementExts
           #endif
         }
 
+        public static bool DocumentOffsetEquals(in JsonElement el1, in JsonElement el2) =>
+            MemoryMarshal.CreateReadOnlyByteSpan(el1).SequenceEqual(MemoryMarshal.CreateReadOnlyByteSpan(el2));
+
         public static bool IsNull(in JsonElement el, JNodeOptions options) =>
             el.ValueKind switch {
                 JsonValueKind.Null => true,
@@ -203,4 +222,35 @@ internal static class JsonElementExts
         public string Name => @this.Current.Name;
         public JsonElement Value => @this.Current.Value;
     }
+
+  #if !JSON9_0_OR_GREATER
+    [field: ThreadStatic, MaybeNull]
+    private static Utf8JsonElementWriter JsonElementWriter => field ??= new(256);
+
+    private class Utf8JsonElementWriter
+    {
+        private static readonly JsonWriterOptions JsonWriterOptions = new() {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Indented = false,
+            SkipValidation = true,
+        };
+
+        private readonly FixedArrayBufferWriter<byte> _buffer;
+        private readonly Utf8JsonWriter _writer;
+
+        public Utf8JsonElementWriter(int size)
+        {
+            _buffer = new(size);
+            _writer = new(_buffer, JsonWriterOptions);
+        }
+
+        public ReadOnlySpan<byte> WrittenSpan => _buffer.WrittenSpan;
+
+        public void CopyFrom(in JsonElement j)
+        {
+            _buffer.ResetIndex();
+            j.WriteTo(_writer);
+        }
+    }
+  #endif
 }

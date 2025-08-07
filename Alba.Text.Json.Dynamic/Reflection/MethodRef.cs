@@ -24,16 +24,20 @@ internal sealed class MethodRef
     public readonly bool IsVoid;
 
     private MethodRef(LambdaExpression expr)
+        : this(
+            ((MethodCallExpression)expr.Body).Method,
+            ((MethodCallExpression)expr.Body).Arguments
+        ) { }
+
+    internal MethodRef(MethodInfo method, IEnumerable<E> arguments)
     {
-        var call = (MethodCallExpression)expr.Body;
-        var method = call.Method;
         int genericCount = 0;
 
         Type = method.DeclaringType!;
         Name = method.Name;
         ParameterTypes = method.GetParameters()
             .Select(p => p.ParameterType)
-            .Zip(call.Arguments, (t, a) => TryGetGenericArgIndex(a, ref genericCount) ?? t)
+            .Zip(arguments, (t, a) => TryGetGenericArgIndex(a, ref genericCount) ?? t)
             .ToArray();
         Flags =
             (method.IsPublic ? BindingFlags.Public : BindingFlags.NonPublic)

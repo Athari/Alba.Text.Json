@@ -7,6 +7,7 @@ internal sealed class MethodKey : IEquatable<MethodKey>
     public static readonly Type[] ArgT = Enumerable.Range(0, 1).Select(GetGenericMethodParameter).ToArray();
 
     public static T GetT<T>(int _) => throw new NotSupportedException();
+    public static object GetT(int _) => throw new NotSupportedException();
 
     public MethodKeyKind Kind;
     public Type Type;
@@ -16,7 +17,7 @@ internal sealed class MethodKey : IEquatable<MethodKey>
 
     private readonly int _hashCode;
 
-    private MethodKey(MethodKeyKind kind, Type type, string name, Type[]? parameterTypes = null, Type[]? genericTypes = null)
+    internal MethodKey(MethodKeyKind kind, Type type, string name, Type[]? parameterTypes = null, Type[]? genericTypes = null)
     {
         (Kind, Type, Name, ParameterTypes, GenericTypes) =
             (kind, type, name, parameterTypes.AsRefEquatable(), genericTypes.AsRefEquatable());

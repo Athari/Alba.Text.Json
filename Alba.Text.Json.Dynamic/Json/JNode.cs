@@ -66,7 +66,7 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<o
             ExprOther(other).ToDObject((JNode?)other.Value);
 
         protected static E ExprOtherNode(dobject other) =>
-            other.Expression.EConvertIfNeeded<JNode>().EProperty(PNodeUntyped.Getter);
+            other.Expression.EConvertIfNeeded<JNode>().EProperty(PNodeUntyped.Getter.Method);
 
         protected static dobject BindOtherNode(dobject other) =>
             ExprOtherNode(other).ToDObject(((JNode?)other.Value)?.NodeUntyped);

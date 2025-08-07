@@ -9,16 +9,16 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
 {
     private static readonly MethodRef PGetInt = MethodRef.Of((JArray o) => o.Get(0));
     private static readonly MethodRef PGetIndex = MethodRef.Of((JArray o) => o.Get(Index.Start));
-    private static readonly MethodRef PSetInt = MethodRef.Of((JArray o) => o.Set(0, MethodKey.GetT<object?>(0)));
-    private static readonly MethodRef PSetIndex = MethodRef.Of((JArray o) => o.Set(Index.Start, MethodKey.GetT<object?>(0)));
-    private static readonly MethodRef PAdd = MethodRef.Of((JArray o) => o.Add(MethodKey.GetT<object?>(0)));
-    private static readonly MethodRef PInsertInt = MethodRef.Of((JArray o) => o.Insert(0, MethodKey.GetT<object?>(0)));
-    private static readonly MethodRef PInsertIndex = MethodRef.Of((JArray o) => o.Insert(Index.Start, MethodKey.GetT<object?>(0)));
-    private static readonly MethodRef PRemove = MethodRef.Of((JArray o) => o.Remove(MethodKey.GetT<object?>(0)));
+    private static readonly MethodRef PSetInt = MethodRef.Of((JArray o) => o.Set(0, MethodKey.GetT(0)));
+    private static readonly MethodRef PSetIndex = MethodRef.Of((JArray o) => o.Set(Index.Start, MethodKey.GetT(0)));
+    private static readonly MethodRef PAdd = MethodRef.Of((JArray o) => o.Add(MethodKey.GetT(0)));
+    private static readonly MethodRef PInsertInt = MethodRef.Of((JArray o) => o.Insert(0, MethodKey.GetT(0)));
+    private static readonly MethodRef PInsertIndex = MethodRef.Of((JArray o) => o.Insert(Index.Start, MethodKey.GetT(0)));
+    private static readonly MethodRef PRemove = MethodRef.Of((JArray o) => o.Remove(MethodKey.GetT(0)));
     private static readonly MethodRef PRemoveAtInt = MethodRef.Of((JArray o) => o.RemoveAt(0));
     private static readonly MethodRef PRemoveAtIndex = MethodRef.Of((JArray o) => o.RemoveAt(Index.Start));
-    private static readonly MethodRef PContains = MethodRef.Of((JArray o) => o.Contains(MethodKey.GetT<object?>(0)));
-    private static readonly MethodRef PIndexOf = MethodRef.Of((JArray o) => o.IndexOf(MethodKey.GetT<object?>(0)));
+    private static readonly MethodRef PContains = MethodRef.Of((JArray o) => o.Contains(MethodKey.GetT(0)));
+    private static readonly MethodRef PIndexOf = MethodRef.Of((JArray o) => o.IndexOf(MethodKey.GetT(0)));
     private static readonly MethodRef PGetEnumerator = MethodRef.Of((JArray o) => o.GetEnumerator());
 
     private static readonly PropertyRef PNodeCount = PropertyRef.Of((JsonArray o) => o.Count);
@@ -102,7 +102,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
         public override dobject BindInvokeMember(InvokeMemberBinder binder, dobject[] args) =>
             binder.Name switch {
                 nameof(Count) =>
-                    ExprNode().EProperty(PNodeCount.Getter).ToDObject(Value.Node.Count),
+                    ExprNode().EProperty(PNodeCount.Getter.Method).ToDObject(Value.Node.Count),
                 nameof(Add) =>
                     CallSelfMethod(PAdd, args.SelectTypedExpressions(), args.SelectTypes()),
                 nameof(Insert) =>

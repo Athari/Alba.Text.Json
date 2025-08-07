@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <PropertyGroup Label="Build">
     <RootNamespace>Alba.Text.Json.Dynamic</RootNamespace>

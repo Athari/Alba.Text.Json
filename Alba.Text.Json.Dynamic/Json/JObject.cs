@@ -8,8 +8,8 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
     : JNode<JsonObject>(source, options), IDynamicMetaObjectProvider
 {
     private static readonly MethodRef PGet = MethodRef.Of((JObject o) => o.Get(""));
-    private static readonly MethodRef PSet = MethodRef.Of((JObject o) => o.Set("", MethodKey.GetT<object?>(0)));
-    private static readonly MethodRef PAdd = MethodRef.Of((JObject o) => o.Add("", MethodKey.GetT<object?>(0)));
+    private static readonly MethodRef PSet = MethodRef.Of((JObject o) => o.Set("", MethodKey.GetT(0)));
+    private static readonly MethodRef PAdd = MethodRef.Of((JObject o) => o.Add("", MethodKey.GetT(0)));
     private static readonly MethodRef PGetEnumerator = MethodRef.Of((JObject o) => o.GetEnumerator());
 
     private static readonly PropertyRef PNodeCount = PropertyRef.Of((JsonObject o) => o.Count);
@@ -82,7 +82,7 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
         public override dobject BindInvokeMember(InvokeMemberBinder binder, dobject[] args) =>
             binder.Name switch {
                 nameof(Count) =>
-                    ExprNode().EProperty(PNodeCount.Getter).ToDObject(Value.Node.Count),
+                    ExprNode().EProperty(PNodeCount.Getter.Method).ToDObject(Value.Node.Count),
                 nameof(Add) =>
                     CallSelfMethod(PAdd, args.SelectTypedExpressions(), args.SelectType(1)),
                 nameof(Remove) =>

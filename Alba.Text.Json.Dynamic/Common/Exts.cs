@@ -50,6 +50,16 @@ internal static class Exts
             return true;
         }
 
+        public bool Any(Func<T, int, bool> predicate)
+        {
+            int i = 0;
+            using var it = @this.GetEnumerator();
+            while (it.MoveNext())
+                if (predicate(it.Current, i++))
+                    return true;
+            return false;
+        }
+
         public int IndexOf(Func<T, bool> predicate)
         {
             int i = 0;
