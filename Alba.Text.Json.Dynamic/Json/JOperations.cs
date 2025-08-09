@@ -1,8 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
-#if NET5_0_OR_GREATER && !NET8_0_OR_GREATER
-using System.Globalization;
-#endif
 
 namespace Alba.Text.Json.Dynamic;
 

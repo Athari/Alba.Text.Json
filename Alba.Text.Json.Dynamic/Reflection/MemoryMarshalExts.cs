@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Alba.Text.Json.Dynamic;
 
+[InternalAPI]
 #if UNSAFE
 internal static unsafe class MemoryMarshalExts
 #else

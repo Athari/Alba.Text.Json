@@ -208,12 +208,9 @@ internal static class JsonElementExts
             };
 
         private static bool IsFloatingPoint(ReadOnlySpan<byte> span) =>
-            span.IndexOf((byte)'.') switch {
-                -1 => span.IndexOfAny((byte)'e', (byte)'E') switch {
-                    -1 => false,
-                    var i => i + 1 < span.Length && span[i + 1] == (byte)'-',
-                },
-                _ => true,
+            span.IndexOfAny((byte)'.', (byte)'e', (byte)'E') switch {
+                -1 => false,
+                var i => span[i] == (byte)'.' || i + 1 < span.Length && span[i + 1] == (byte)'-',
             };
     }
 
