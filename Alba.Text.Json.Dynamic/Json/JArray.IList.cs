@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using static Alba.Text.Json.Dynamic.JOperations;
+using System.Text.Json.Nodes;
 
 namespace Alba.Text.Json.Dynamic;
 
@@ -13,7 +13,7 @@ public sealed partial class JArray
         Ensure.Count(array, Count + index);
         int i = index;
         foreach (var item in Node)
-            array[i++] = JsonNodeToJNodeOrValue(item, Options);
+            array[i++] = JsonNode.ToJNodeOrValue(item, Options);
     }
 
     void ICollection<object?>.Add(object? item) =>

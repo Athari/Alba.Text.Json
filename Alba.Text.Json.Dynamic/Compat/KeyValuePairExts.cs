@@ -8,6 +8,7 @@ using System.ComponentModel;
 
 namespace System.Collections.Generic;
 
+[ExcludeFromCodeCoverage]
 internal static class KeyValuePairExts
 {
     [EditorBrowsable(EditorBrowsableState.Never)]

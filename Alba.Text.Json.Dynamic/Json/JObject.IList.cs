@@ -1,7 +1,6 @@
 ﻿#if JSON9_0_OR_GREATER
 
 using System.Text.Json.Nodes;
-using static Alba.Text.Json.Dynamic.JOperations;
 
 namespace Alba.Text.Json.Dynamic;
 
@@ -13,9 +12,9 @@ public sealed partial class JObject
     KeyValuePair<string, object?> IList<KeyValuePair<string, object?>>.this[int index] {
         get {
             var p = NodeList[index];
-            return new(p.Key, JsonNodeToJNodeOrValue(p.Value, Options));
+            return new(p.Key, JsonNode.ToJNodeOrValue(p.Value, Options));
         }
-        set => NodeList[index] = new(value.Key, ValueToNewJsonNode(value.Value, Node.Options));
+        set => NodeList[index] = new(value.Key, ValueTypeExts.ToNewJsonNode(value.Value, Node.Options));
     }
 
     int IList<KeyValuePair<string, object?>>.IndexOf(KeyValuePair<string, object?> item) =>
@@ -33,7 +32,7 @@ public sealed partial class JObject
     private partial class ValueCollection : IList<object?>, IReadOnlyList<object?>
     {
         public object? this[int index] {
-            get => JsonNodeToJNodeOrValue(source.NodeList[index].Value, source.Options);
+            get => JsonNode.ToJNodeOrValue(source.NodeList[index].Value, source.Options);
             set => throw ReadOnly();
         }
 

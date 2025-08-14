@@ -1,6 +1,5 @@
 ﻿using System.Dynamic;
 using System.Text.Json.Nodes;
-using static Alba.Text.Json.Dynamic.JOperations;
 
 namespace Alba.Text.Json.Dynamic;
 
@@ -30,33 +29,33 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
     }
 
     public object? this[Index index] {
-        get => JsonNodeToJNodeOrValue(Node[index], Options);
-        set => Node[index] = ValueToNewJsonNode(value, Node.Options);
+        get => JsonNode.ToJNodeOrValue(Node[index], Options);
+        set => Node[index] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
     }
 
     public int Count =>
         Node.Count;
 
     private object? Get(int index) =>
-        JsonNodeToJNodeOrValue(Node[index], Options);
+        JsonNode.ToJNodeOrValue(Node[index], Options);
 
     private object? Get(Index index) =>
-        JsonNodeToJNodeOrValue(Node[index], Options);
+        JsonNode.ToJNodeOrValue(Node[index], Options);
 
     private void Set<T>(int index, T value) =>
-        Node[index] = ValueToNewJsonNode(value, Node.Options);
+        Node[index] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
 
     private void Set<T>(Index index, T value) =>
-        Node[index] = ValueToNewJsonNode(value, Node.Options);
+        Node[index] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
 
     public void Add<T>(T value) =>
-        Node.Add(ValueToNewJsonNode(value, Node.Options));
+        Node.Add(ValueTypeExts.ToNewJsonNode(value, Node.Options));
 
     public void Insert<T>(int index, T value) =>
-        Node.Insert(index, ValueToNewJsonNode(value, Node.Options));
+        Node.Insert(index, ValueTypeExts.ToNewJsonNode(value, Node.Options));
 
     public void Insert<T>(Index index, T value) =>
-        Node.Insert(index.GetOffset(Node.Count), ValueToNewJsonNode(value, Node.Options));
+        Node.Insert(index.GetOffset(Node.Count), ValueTypeExts.ToNewJsonNode(value, Node.Options));
 
     public bool Remove<T>(T item) =>
         JsonNodeList.Remove(Node, item, Options);
@@ -80,7 +79,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
         (JArray)base.Clone();
 
     public IEnumerator<object?> GetEnumerator() =>
-        Node.Select(p => JsonNodeToJNodeOrValue(p, Options)).GetEnumerator();
+        Node.Select(n => JsonNode.ToJNodeOrValue(n, Options)).GetEnumerator();
 
     public dobject GetMetaObject(E expression) => new MetaJArray(expression, this);
 
@@ -123,6 +122,12 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
                     CallNodeMethod(PNodeClear, [ ]),
                 nameof(GetEnumerator) =>
                     CallSelfMethod(PGetEnumerator, [ ]),
+              #if JSON10_0_OR_GREATER
+                nameof(RemoveAll) =>
+                    CallSelfMethod(PRemoveAll, args.SelectExpressions()),
+                nameof(RemoveRange) =>
+                    CallNodeMethod(PNodeRemoveRange, args.SelectExpressions()),
+              #endif
                 _ =>
                     base.BindInvokeMember(binder, args),
             };
@@ -131,7 +136,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
         {
             var count = Value.Node.Count;
             for (int i = 0; i < count; i++)
-                yield return i.ToString();
+                yield return $"{i}";
         }
 
         private static MethodRef SelectIndexMethod(dobject[] indexes, int count,

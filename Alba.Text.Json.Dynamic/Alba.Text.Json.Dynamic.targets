@@ -1,7 +1,8 @@
 <Project>
 
   <PropertyGroup>
-    <!--<AllowUnsafeBlocks Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFrameworkIdentifier)' == '.NETFramework'">true</AllowUnsafeBlocks>-->
+    <!--<AllowUnsafeBlocks Condition="'$(Tfm)' == 'netstandard2.0' or '$(TfmId)' == '.NETFramework'">true</AllowUnsafeBlocks>-->
+    <TargetTextJsonVersion Condition="'$(TargetTextJsonVersion)' == ''">$(TargetTextJsonVersionFallback)</TargetTextJsonVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Build">
@@ -10,11 +11,12 @@
     <Using Include="System.Linq.Expressions.Expression" Alias="E" />
     <Using Include="System.Text.Json.JsonElement.ObjectEnumerator" Alias="ObjectEnumerator" />
     <Using Include="System.Text.Json.JsonElement.ArrayEnumerator" Alias="ArrayEnumerator" />
+    <InternalsVisibleTo Include="$(RootNamespace).Tests" />
     <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.ExpressionExts." />
     <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.RefImpl." />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TextJsonVersionOverride)' != ''">
+  <ItemGroup Condition="'$(IsTextJsonVersionSpecific)' == 'true'">
     <Compile Update="@(Compile)" Visible="false" />
     <Content Update="@(Content)" Visible="false" />
     <Folder Update="@(Folder)" Visible="false" />
@@ -30,10 +32,10 @@
   </ItemGroup>
 
   <ItemGroup Label="References">
-    <Reference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
-    <PackageReference Include="Microsoft.Bcl.Memory" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' or '$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Bcl.Memory"
+        Condition="'$(TfmId)' == '.NETFramework' or '$(Tfm)' == 'netstandard2.0'" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(TargetTextJsonVersion).0.0"
+        Condition="'$(Tfm)' != 'net$(TargetTextJsonVersion).0'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
@@ -42,23 +44,24 @@
 
   <!-- DOC: Package metadata -->
   <PropertyGroup>
-    <PackageVersion>0.1.0</PackageVersion>
+    <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.1.0</VersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''">alpha</VersionSuffix>
     <DescriptionPackageShared>
       Dynamic JsonNode: dynamic json = JNode.Parse("""{ "Hello": { "World": [ 1, 2, 3 ] } }"""); json.Hello.World[2]++.
     </DescriptionPackageShared>
-    <DescriptionPackageSpecific Condition="'$(TextJsonVersionOverride)' == ''">
-      Alba.Text.Json.Dynamic package supports a System.Text.Json version based on .NET version (or latest compatible for .NET Standard and .NET Framework).
+    <DescriptionPackageSpecific Condition="'$(IsTextJsonVersionSpecific)' != 'true'">
+      Alba.Text.Json.Dynamic package supports a System.Text.Json version bundled with the .NET version (or latest compatible for .NET Standard and .NET Framework).
       To support a specific System.Text.Json version, use Alba.Text.Json.Dynamic.STJ# package.
     </DescriptionPackageSpecific>
-    <DescriptionPackageSpecific Condition="'$(TextJsonVersionOverride)' != ''">
-      Alba.Text.Json.Dynamic.STJ$(TextJsonVersionOverride) package supports System.Text.Json version $(TextJsonVersionOverride).
+    <DescriptionPackageSpecific Condition="'$(IsTextJsonVersionSpecific)' == 'true'">
+      Alba.Text.Json.Dynamic.STJ$(TargetTextJsonVersion) package supports System.Text.Json version $(TargetTextJsonVersion).
       To support a System.Text.Json version based on .NET version, use Alba.Text.Json.Dynamic package.
     </DescriptionPackageSpecific>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageTagItem Include="JSON;JsonNode;dynamic;DLR;System.Text.Json;STJ" />
-    <PackageTagItem Condition="'$(TextJsonVersionOverride)' != ''" Include="STJ$(TextJsonVersionOverride)" />
+    <PackageTagItem Condition="'$(TargetTextJsonVersion)' != ''" Include="STJ$(TargetTextJsonVersion)" />
   </ItemGroup>
 
 </Project>

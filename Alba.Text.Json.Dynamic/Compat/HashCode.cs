@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 
 namespace System;
 
+[ExcludeFromCodeCoverage]
 public struct HashCode
 {
     private static readonly uint s_seed = 0;
@@ -309,6 +310,7 @@ public struct HashCode
     public override bool Equals(object? obj) => throw new NotSupportedException("HashCode_EqualityNotSupported");
 }
 
+[ExcludeFromCodeCoverage]
 file static class BitOperations
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

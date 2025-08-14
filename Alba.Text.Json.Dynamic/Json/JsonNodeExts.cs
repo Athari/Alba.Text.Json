@@ -1,13 +1,62 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using C = System.TypeCode;
 
 namespace Alba.Text.Json.Dynamic;
 
-internal static partial class JOperations
+internal static class JsonNodeExts
 {
-    extension(JsonNode)
+    extension(JsonNode @this)
     {
+        public JsonValueKind DataValueKind
+        {
+            get
+            {
+                switch (@this) {
+                    case null:
+                        return JsonValueKind.Null;
+                    case JsonObject:
+                        return JsonValueKind.Object;
+                    case JsonArray:
+                        return JsonValueKind.Array;
+                    case JsonValue value: {
+                        if (value.TryGetValue(out JsonElement el))
+                            return el.ValueKind;
+                        object obj = value.GetValue<object>();
+                        switch (Convert.GetTypeCode(obj)) {
+                            case C.Empty:
+                                return JsonValueKind.Null;
+                            case C.Boolean:
+                                return (bool)obj ? JsonValueKind.True : JsonValueKind.False;
+                            case C.String:
+                                return JsonValueKind.String;
+                            case C.SByte or C.Byte
+                                or C.Int16 or C.UInt16 or C.Int32 or C.UInt32 or C.Int64 or C.UInt64
+                                or C.Single or C.Double or C.Decimal:
+                                return JsonValueKind.Number;
+                        }
+                        switch (obj) {
+                          #if NET5_0_OR_GREATER
+                            case Half:
+                                return JsonValueKind.Number;
+                          #endif
+                          #if NET7_0_OR_GREATER
+                            case Int128 or UInt128:
+                                return JsonValueKind.Number;
+                          #endif
+                            default:
+                                break;
+                        }
+                        // Wrapped object or array
+                        return (JsonValueKind)byte.MaxValue;
+                    }
+                    default:
+                        throw new ArgumentException($"Unexpected JsonNode type: {@this.GetType().Name}");
+                }
+            }
+        }
+
         [return: NotNullIfNotNull(nameof(node))]
         public static JsonNode? DeepClone(JsonNode? node)
         {
@@ -46,7 +95,7 @@ internal static partial class JOperations
                 JNode n2 => JsonNode.Equals(n1, n2.NodeUntyped, equality, options),
                 JsonElement el2 => JsonNode.EqualsJsonElement(n1, el2, equality, options),
                 JsonDocument doc2 => JsonNode.EqualsJsonElement(n1, doc2.RootElement, equality, options),
-                not null => JsonNode.Equals(n1, ValueToNewJsonNode(v2, n1?.Options ?? options.JsonNodeOptions), equality, options),
+                not null => JsonNode.Equals(n1, ValueTypeExts.ToNewJsonNode(v2, n1?.Options ?? options.JsonNodeOptions), equality, options),
             };
 
         private static bool Equals(JsonNode? n1, JsonNode? n2, Equality equality, JNodeOptions options)
@@ -106,7 +155,7 @@ internal static partial class JOperations
           #if JSON8_0_OR_GREATER
             return JsonNode.DeepEquals(v1, v2);
           #else
-            var (k1, k2) = (v1.GetValueKind(), v2.GetValueKind());
+            var (k1, k2) = (v1.DataValueKind, v2.DataValueKind);
             return k1 == k2 && k1 switch {
                 JsonValueKind.Null or JsonValueKind.Undefined or JsonValueKind.True or JsonValueKind.False =>
                     true,
@@ -121,12 +170,13 @@ internal static partial class JOperations
         }
 
         private static bool IsNull(JsonNode node, JNodeOptions options) =>
-            node.GetValueKind() switch {
+            node.DataValueKind switch {
                 JsonValueKind.Null => true,
                 JsonValueKind.Undefined => options.UndefinedValue == null,
                 _ => false,
             };
 
+        [SuppressMessage("Style", "IDE0051", Justification = "C #14 Bug")]
         private static bool WithNullCheck(Func<JsonNode, JsonNode, JNodeOptions, bool> equalsFn,
             JsonNode? n1, JsonNode? n2, JNodeOptions options)
         {
@@ -206,7 +256,7 @@ internal static partial class JOperations
             RuntimeHelpers.GetHashCode(node);
 
         [return: NotNullIfNotNull(nameof(node))]
-        public static object? JsonNodeToJNodeOrValue(JsonNode? node, JNodeOptions options) =>
+        public static object? ToJNodeOrValue(JsonNode? node, JNodeOptions options) =>
             node switch {
                 null => null,
                 JsonValue v => JsonValue.ToValue(v, options),
@@ -219,7 +269,7 @@ internal static partial class JOperations
     extension(JsonValue)
     {
         private static object? ToValue(JsonValue v, JNodeOptions options) =>
-            v.GetValueKind() switch {
+            v.DataValueKind switch {
                 // return primitive values directly
                 JsonValueKind.Undefined => options.UndefinedValue,
                 JsonValueKind.Null => null,

@@ -1,9 +1,9 @@
 ﻿using System.Dynamic;
 using System.Text.Json.Nodes;
-using static Alba.Text.Json.Dynamic.JOperations;
 
 namespace Alba.Text.Json.Dynamic;
 
+[SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "This is not a collection")]
 public sealed partial class JObject(JsonObject source, JNodeOptions? options = null)
     : JNode<JsonObject>(source, options), IDynamicMetaObjectProvider
 {
@@ -26,18 +26,18 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
         Node.Count;
 
     private object? Get(string name) =>
-        JsonNodeToJNodeOrValue(Node[name], Options);
+        JsonNode.ToJNodeOrValue(Node[name], Options);
 
     public bool TryGet(string name, out object? value) =>
         Node.TryGetPropertyValue(name, out var node) switch {
-            var r => (value = r ? JsonNodeToJNodeOrValue(node, Options) : null, r).r,
+            var r => (value = r ? JsonNode.ToJNodeOrValue(node, Options) : null, r).r,
         };
 
     private void Set<T>(string name, T value) =>
-        Node[name] = ValueToNewJsonNode(value, Node.Options);
+        Node[name] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
 
     public void Add<T>(string name, T value) =>
-        Node.Add(name, ValueToNewJsonNode(value, Node.Options));
+        Node.Add(name, ValueTypeExts.ToNewJsonNode(value, Node.Options));
 
     public bool Remove(string name) =>
         Node.Remove(name);
@@ -52,7 +52,7 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
         (JObject)base.Clone();
 
     public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() =>
-        Node.Select(p => new KeyValuePair<string, object?>(p.Key, JsonNodeToJNodeOrValue(p.Value, Options)))
+        Node.Select(p => new KeyValuePair<string, object?>(p.Key, JsonNode.ToJNodeOrValue(p.Value, Options)))
             .GetEnumerator();
 
     public dobject GetMetaObject(E expression) =>

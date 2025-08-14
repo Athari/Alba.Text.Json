@@ -2,9 +2,9 @@
 
   <Import Project="Alba.Text.Json.Dynamic.props" />
   <PropertyGroup Label="Json">
-    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;net462</TargetFrameworks>
-    <TextJsonVersionOverride>6</TextJsonVersionOverride>
-    <AllowVulnerableTextJson>true</AllowVulnerableTextJson>
+    <TargetFrameworks>net6.0;netstandard2.1;netstandard2.0;net462</TargetFrameworks>
+    <TargetTextJsonVersion>6</TargetTextJsonVersion>
+    <IsTextJsonVersionSpecific>true</IsTextJsonVersionSpecific>
   </PropertyGroup>
   <Import Project="Alba.Text.Json.Dynamic.targets" />
 

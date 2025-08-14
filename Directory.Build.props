@@ -1,5 +1,13 @@
 <Project>
 
+  <PropertyGroup Label="Tfm">
+    <Tfm>$(TargetFramework)</Tfm>
+    <TfmId>$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)'))</TfmId>
+    <TfmVersion>$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)'))</TfmVersion>
+    <TpmId>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</TpmId>
+    <TpmVersion>$([MSBuild]::GetTargetPlatformVersion('$(TargetFramework)'))</TpmVersion>
+  </PropertyGroup>
+
   <PropertyGroup Label="Platform">
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -47,9 +55,10 @@
     <UseArtifactsIntermediateOutput>true</UseArtifactsIntermediateOutput>
     <IncludeProjectNameInArtifactsPaths>true</IncludeProjectNameInArtifactsPaths>
     <ArtifactsPath>$(SolutionDir)Artifacts\</ArtifactsPath>
-    <ArtifactsPackageOutputName>package</ArtifactsPackageOutputName>
+    <ArtifactsPackageOutputName>packages</ArtifactsPackageOutputName>
     <BaseOutputPath>$(ArtifactsPath)</BaseOutputPath>
     <!--<BaseOutputPath>$(ArtifactsPath)$(ArtifactsProjectName)\</BaseOutputPath>-->
+    <VSTestResultsDirectory>$(ArtifactsPath)tests</VSTestResultsDirectory>
     <AppendPlatformToOutputPath>true</AppendPlatformToOutputPath>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>

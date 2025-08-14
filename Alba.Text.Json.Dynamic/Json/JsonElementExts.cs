@@ -3,7 +3,7 @@ using System.Text.Json;
 #if NET5_0_OR_GREATER
 using System.Globalization;
 #endif
-#if !NET9_0_OR_GREATER
+#if !JSON9_0_OR_GREATER
 using System.Text.Encodings.Web;
 #endif
 
@@ -207,6 +207,7 @@ internal static class JsonElementExts
                 _ => false,
             };
 
+        [SuppressMessage("Style", "IDE0051", Justification = "C #14 Bug")]
         private static bool IsFloatingPoint(ReadOnlySpan<byte> span) =>
             span.IndexOfAny((byte)'.', (byte)'e', (byte)'E') switch {
                 -1 => false,
@@ -214,17 +215,27 @@ internal static class JsonElementExts
             };
     }
 
-    extension(in ObjectEnumerator @this)
+    extension(in JsonProperty @this)
+    {
+      #if JSON10_0_OR_GREATER
+        public ReadOnlySpan<byte> RawNameSpan => JsonMarshal.GetRawUtf8PropertyName(@this);
+      #endif
+    }
+
+    extension(ref ObjectEnumerator @this)
     {
         public string Name => @this.Current.Name;
         public JsonElement Value => @this.Current.Value;
+      #if JSON10_0_OR_GREATER
+        public ReadOnlySpan<byte> RawNameSpan => JsonMarshal.GetRawUtf8PropertyName(@this.Current);
+      #endif
     }
 
   #if !JSON9_0_OR_GREATER
     [field: ThreadStatic, MaybeNull]
     private static Utf8JsonElementWriter JsonElementWriter => field ??= new(256);
 
-    private class Utf8JsonElementWriter
+    private class Utf8JsonElementWriter : IDisposable
     {
         private static readonly JsonWriterOptions JsonWriterOptions = new() {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -248,6 +259,8 @@ internal static class JsonElementExts
             _buffer.ResetIndex();
             j.WriteTo(_writer);
         }
+
+        public void Dispose() => _writer.Dispose();
     }
   #endif
 }

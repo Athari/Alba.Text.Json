@@ -7,6 +7,7 @@ using System.Reflection;
 
 namespace System;
 
+[ExcludeFromCodeCoverage]
 internal static class TypeExts
 {
   #if !NET5_0_OR_GREATER

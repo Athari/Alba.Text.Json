@@ -1,15 +1,21 @@
 <Project>
 
+  <!-- DOC: Common calculated properties -->
+  <PropertyGroup>
+    <DefineConstants Condition="'$(AllowUnsafeBlocks)' == 'true'">$(DefineConstants);UNSAFE</DefineConstants>
+    <RuntimeFrameworkVersion Condition="'$(Tfm)' == 'netcoreapp2.0'">2.0.3</RuntimeFrameworkVersion>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
     <CopyDocumentationFilesFromPackages>false</CopyDocumentationFilesFromPackages>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(AllowUnsafeBlocks)' == 'true'">
-    <DefineConstants>$(DefineConstants);UNSAFE</DefineConstants>
+
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('netcoreapp'))">
+    <AssetTargetFallback>netstandard2.0</AssetTargetFallback>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <CopyLocalLockFileAssemblies Condition="'$(IsTestProject)' == 'true'">true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-  </ItemGroup>
 
   <!-- DOC: Package metadata -->
   <PropertyGroup>
@@ -24,59 +30,37 @@
     <PackageTags>@(PackageTagItem, ' ')</PackageTags>
   </PropertyGroup>
 
-  <!-- DOC: Resolve System.Json.Text version -->
+  <!-- DOC: Resolve System.Text.Json version -->
   <ItemGroup>
-    <TextJsonVersions Include="6;8;9" />
-    <TextJsonVersionsReverse Include="@(TextJsonVersionsSpecific->Reverse())" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(AllowVulnerableTextJson)' == 'true'">
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-8g4q-xg66-9fp4" Label="System.Text.Json [6, 6.0.9], [8, 8.0.4]" />
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-hh2w-p6rv-4g7w" Label="System.Text.Json [7, 8.0.3]" />
   </ItemGroup>
 
-  <Target Name="CalculateTextJsonVersionOverride">
-    <PropertyGroup Condition="'$(TextJsonVersionOverride)' == ''">
-      <TextJsonVersionOverride Label="Min">%(TextJsonVersionsReverse.Identity)</TextJsonVersionOverride>
-      <TextJsonVersionOverride Label="Auto" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">$(TargetFramework.Substring(3).Split('.')[0])</TextJsonVersionOverride>
-      <TextJsonVersionOverride Label="Max" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' or '$(TargetFrameworkIdentifier)' == '.NETFramework'">%(TextJsonVersions.Identity)</TextJsonVersionOverride>
-      <!-- HACK Temporary -->
-      <TextJsonVersionOverride Label="Max" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' or '$(TargetFrameworkIdentifier)' == '.NETFramework'">6</TextJsonVersionOverride>
-    </PropertyGroup>
-    <ItemGroup>
-      <CompatibleTextJsonVersions Include="@(TextJsonVersions)" Condition="'$(TextJsonVersionOverride)' >= '%(Identity)'" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="CalculateTextJsonVersion" DependsOnTargets="CalculateTextJsonVersionOverride" BeforeTargets="CollectPackageReferences">
+  <Target Name="AddImplicitJsonDefineConstants" BeforeTargets="AddImplicitDefineConstants">
     <PropertyGroup>
-      <TextJsonVersionOverride>%(CompatibleTextJsonVersions.Identity)</TextJsonVersionOverride>
-      <TextJsonVersion Condition="'$(AllowVulnerableTextJson)' != 'true' and '$(TextJsonVersionOverride)' >= '6'">6.0.10</TextJsonVersion>
-      <TextJsonVersion Condition="'$(AllowVulnerableTextJson)' != 'true' and '$(TextJsonVersionOverride)' >= '8'">8.0.5</TextJsonVersion>
-      <TextJsonVersion Condition="'$(TextJsonVersion)' == '' or $([MSBuild]::VersionGreaterThan('$(TextJsonVersionOverride).0.0', '$(TextJsonVersion)'))">$(TextJsonVersionOverride).0.0</TextJsonVersion>
+      <TargetTextJsonVersion Condition="'$(TargetTextJsonVersion)' == ''">$(TargetTextJsonVersionFallback)</TargetTextJsonVersion>
     </PropertyGroup>
+    <!--<Warning Text="$(ProjectName) ($(Tfm)) = JSON v$(TargetTextJsonVersion) [spec=$(IsTextJsonVersionSpecific)]" />-->
     <ItemGroup>
-      <CompatibleTextJsonVersion Include="@(CompatibleTextJsonVersions->'%(Identity).0')"
-          Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TextJsonVersion)', '%(CompatibleTextJsonVersions.Identity).0.0'))" />
-      <PackageReference>
-        <VersionOverride Condition="'%(Identity)' == 'System.Text.Json'">$(TextJsonVersion)</VersionOverride>
-      </PackageReference>
+      <TextJsonVersionNumber Include="6;7;8;9;10" />
+      <DefineTextJsonConstant Include="@(TextJsonVersionNumber->'JSON%(Identity)_0_OR_GREATER')" Condition="'$(TargetTextJsonVersion)' >= '%(Identity)'" />
     </ItemGroup>
-    <!--<Warning Text="$(ProjectName) ($(TargetFramework)) = v$(TextJsonVersion)" Code="BDBG0001" />-->
-  </Target>
-
-  <Target Name="GenerateTextJsonDefineConstants" DependsOnTargets="CalculateTextJsonVersion">
-    <ItemGroup>
-      <DefineTextJsonConstant Include="@(CompatibleTextJsonVersion->'JSON%(Identity)_OR_GREATER'->Replace('.', '_'))" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="AddImplicitJsonDefineConstants" DependsOnTargets="GenerateTextJsonDefineConstants"
-      AfterTargets="PrepareForBuild" BeforeTargets="AddImplicitDefineConstants">
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);@(DefineTextJsonConstant)</DefineConstants>
     </PropertyGroup>
-    <!--<Warning Text="$(ProjectName) ($(TargetFramework)) = $(DefineConstants)" Code="BDBG0001" />-->
+    <!--<Warning Text="$(ProjectName) ($(Tfm)) = JSON v$(TargetTextJsonVersion) = $(DefineConstants)" />-->
   </Target>
+
+  <!-- DOC: UseCSharpDynamic property: reference C# DLR for dynamic type -->
+  <ItemGroup Condition="'$(UseCSharpDynamic)' == 'true'">
+    <Reference Include="Microsoft.CSharp" Condition="'$(TfmId)' == '.NETFramework'" />
+    <PackageReference Include="Microsoft.CSharp" Condition="'$(TfmId)' == '.NETStandard'" />
+  </ItemGroup>
+
+  <!-- DOC: UsePreReleaseCSharpCompiler property: reference compilers toolset from Roslyn on Azure -->
+  <ItemGroup Condition="'$(UsePreReleaseCSharpCompiler)' == 'true'">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  </ItemGroup>
 
   <!-- DOC: UseT4 property: Enable T4 service, include T4 scripts and generated files -->
   <ItemGroup Condition="'$(UseT4)' == 'true'">
@@ -132,7 +116,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GeneratePackageOnBuild)' == 'true'">
+  <PropertyGroup Condition="'$(IsPackable)' == 'true' and '$(GeneratePackageOnBuild)' == 'true'">
 
     <!-- DOC: Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -160,7 +144,24 @@
   </ItemGroup>
 
   <!-- DOC: Continuous integration -->
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+  <PropertyGroup>
+    <CI Condition="'$(CI)' == ''">false</CI>
+    <CI Condition="
+      ('$(CI)') == 'true' or
+      ('$(GITHUB_ACTIONS)' == 'true') or
+      ('$(APPVEYOR)' == 'true') or
+      ('$(TRAVIS)' == 'true') or
+      ('$(TF_BUILD)' == 'true') or
+      ('$(CIRCLECI)' == 'true') or
+      ('$(CODEBUILD_BUILD_ID)' != '' AND '$(AWS_REGION)' != '') or
+      ('$(BUILD_ID)' != '' AND '$(BUILD_URL)' != '') or
+      ('$(BUILD_ID)' != '' AND '$(PROJECT_ID)' != '') or
+      ('$(TEAMCITY_VERSION)' != '') or
+      ('$(JB_SPACE_API_URL)' != '')
+    ">true</CI>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CI)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths>true</DeterministicSourcePaths>
   </PropertyGroup>

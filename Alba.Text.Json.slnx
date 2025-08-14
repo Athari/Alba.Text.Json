@@ -21,9 +21,10 @@
   </Folder>
   <Folder Name="/Alba.Text.Json.Dynamic/">
     <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.csproj" />
-    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ6.csproj" />
-    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ8.csproj" />
-    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ9.csproj" />
+    <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ6.csproj" />
+    <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ8.csproj" />
+    <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ9.csproj" />
+    <Project Path="Alba.Text.Json.Dynamic.Tests/Alba.Text.Json.Dynamic.Tests.csproj" />
   </Folder>
   <Project Path="Alba.Text.Json.Dynamic.Playground/Alba.Text.Json.Dynamic.Playground.csproj" />
 </Solution>

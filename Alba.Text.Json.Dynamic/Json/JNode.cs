@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using static Alba.Text.Json.Dynamic.JOperations;
 
 namespace Alba.Text.Json.Dynamic;
 
@@ -22,7 +21,7 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<o
     internal abstract JsonNode NodeUntyped { get; }
 
     public JNode Clone() =>
-        (JNode)JsonNodeToJNodeOrValue(JsonNode.DeepClone(NodeUntyped), Options);
+        (JNode)JsonNode.ToJNodeOrValue(JsonNode.DeepClone(NodeUntyped), Options);
 
     object ICloneable.Clone() =>
         Clone();

@@ -2,13 +2,15 @@
 
   <Import Project="Alba.Text.Json.Dynamic.props" />
   <PropertyGroup Label="Json">
-    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;net462</TargetFrameworks>
-    <TextJsonVersionOverride></TextJsonVersionOverride>
-    <AllowVulnerableTextJson>false</AllowVulnerableTextJson>
+    <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;net462</TargetFrameworks>
+    <TargetTextJsonVersion Condition="'$(TfmId)' == '.NETCoreApp'">$(TfmVersion.Split('.')[0])</TargetTextJsonVersion>
+    <!-- HACK Temporary -->
+    <!--<TargetTextJsonVersion Condition="'$(TfmId)' != '.NETCoreApp'">$(TargetTextJsonVersionFallback)</TargetTextJsonVersion>-->
+    <IsTextJsonVersionSpecific>false</IsTextJsonVersionSpecific>
   </PropertyGroup>
-  <Import Project="Alba.Text.Json.Dynamic.targets" />
-  <ItemGroup>
+  <ItemGroup Label="References">
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
+  <Import Project="Alba.Text.Json.Dynamic.targets" />
 
 </Project>

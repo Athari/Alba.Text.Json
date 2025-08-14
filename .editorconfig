@@ -19,6 +19,7 @@ resharper_unused_member_in_super_global_highlighting = none
 dotnet_remove_unnecessary_suppression_exclusions = category:ReSharper, category:AvaloniaProperty, category:Reliability, category:Performance, category:Design, category:Unknown # Bugged af for categories disabled by default
 dotnet_code_quality.ca1822.api_surface = private, internal
 dotnet_diagnostic.ca1063.severity = none # Implement IDisposable correctly # Obsolete; use SafeHandles instead
+dotnet_diagnostic.ca1725.severity = none # Parameter names should match base declaration # Nah
 dotnet_diagnostic.ca1805.severity = none # Do not initialize unnecessarily # Readability
 dotnet_diagnostic.ca1852.severity = none # Seal internal types # Who tf cares
 dotnet_diagnostic.ca1852.severity = none # Seal internal types # Who tf cares
@@ -27,8 +28,6 @@ dotnet_diagnostic.ide0046.severity = none # Use conditional expression for retur
 dotnet_diagnostic.ide0055.severity = none # Formatting rule # We use R#
 dotnet_diagnostic.ide0130.severity = none # Namespace does not match folder structure # We use R#
 dotnet_diagnostic.ide0305.severity = none # Use collection expression for fluent # Messes up LINQ chains
-
-dotnet_diagnostic.bdbg0001.severity = suggestion
 
 # .NET naming
 
@@ -293,7 +292,7 @@ dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, int
 
 dotnet_naming_symbols.methods.applicable_kinds = method
 dotnet_naming_symbols.methods.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.methods.required_modifiers = 
+dotnet_naming_symbols.methods.required_modifiers =
 
 # Naming styles
 
@@ -305,6 +304,6 @@ dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
 dotnet_naming_style.pascal_or_camel_case.capitalization = pascal_case, camel_case
-dotnet_naming_style.pascal_or_camel_case.required_prefix = 
-dotnet_naming_style.pascal_or_camel_case.required_suffix = 
-dotnet_naming_style.pascal_or_camel_case.word_separator = 
+dotnet_naming_style.pascal_or_camel_case.required_prefix =
+dotnet_naming_style.pascal_or_camel_case.required_suffix =
+dotnet_naming_style.pascal_or_camel_case.word_separator =

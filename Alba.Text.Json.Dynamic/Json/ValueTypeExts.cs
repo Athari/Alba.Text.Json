@@ -3,12 +3,12 @@ using System.Text.Json.Nodes;
 
 namespace Alba.Text.Json.Dynamic;
 
-internal static partial class JOperations
+internal static class ValueTypeExts
 {
     private static readonly JsonValue NoJsonValue = Ensure.NotNull(JsonValue.Create("<NOVALUE>"));
 
-    public static JsonNode? ValueToNewJsonNode<T>(T value, JsonNodeOptions? opts) =>
-        ValueToJsonValueNode(value, out var valueNode, opts)
+    public static JsonNode? ToNewJsonNode<T>(T value, JsonNodeOptions? opts) =>
+        ToJsonValueNode(value, out var valueNode, opts)
             ? valueNode
             : value switch {
                 // already JNode, clone if used within another tree
@@ -22,7 +22,7 @@ internal static partial class JOperations
                 _ => JsonSerializer.SerializeToNode(value),
             };
 
-    public static bool ValueToJsonValueNode<T>(T value,
+    public static bool ToJsonValueNode<T>(T value,
         [NotNullIfNotNull(nameof(value))] out JsonValue? valueNode, JsonNodeOptions? opts)
     {
         valueNode = value switch {

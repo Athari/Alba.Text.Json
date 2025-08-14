@@ -3,6 +3,8 @@
   <PropertyGroup Label="Build">
     <RootNamespace>Alba.Text.Json.Dynamic</RootNamespace>
     <IsPackable>true</IsPackable>
+    <!--<UsePreReleaseCSharpCompiler>true</UsePreReleaseCSharpCompiler>-->
+    <UseCSharpDynamic>true</UseCSharpDynamic>
     <UseJetBrainsAnnotations>true</UseJetBrainsAnnotations>
     <UsePolySharp>true</UsePolySharp>
     <UseT4>true</UseT4>

@@ -1,5 +1,6 @@
 ﻿namespace System.Collections.Generic;
 
+[ExcludeFromCodeCoverage]
 internal static class CollectionExts
 {
   #if !NETCOREAPP2_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
