@@ -9,14 +9,14 @@ function Format-Ref($str) {
 
 $releaseUrl = ""
 $releaseMeta = ""
-$prerelease = "false"
+$prerelease = 'false'
 
 if ($gh.ref -like "refs/tags/v*") {
   $versionSuffix = ""
   $releaseUrl = "$($gh.server_url)/$($gh.repository)/releases/tag/$($gh.ref_name)"
   if ($gh.ref_name -like "*-*") {
     $versionSuffix = $gh.ref_name -ireplace '^[^-]+-(.*)$', '$1'
-    $prerelease = "true"
+    $prerelease = 'true'
   }
 } elseif ($gh.event_name -eq 'pull_request') {
   $versionSuffix = "pr-$($gh.event.number)-$(Format-Ref $gh.base_ref)-$(Format-Ref $gh.head_ref)"
@@ -31,7 +31,7 @@ if ($versionSuffix -ne "") {
   $versionSuffix = "$($versionSuffix).$($gh.run_number)"
 }
 
-$releaseNotes = "See $releaseUrl for more information.`n$releaseMeta".Trim()
+$releaseNotes = $releaseUrl -ne '' ? "See $releaseUrl for more information.`n$releaseMeta".Trim() : ''
 
 @{
   'version-suffix' = $versionSuffix

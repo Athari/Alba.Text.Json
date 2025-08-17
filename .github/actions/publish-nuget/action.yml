@@ -2,58 +2,34 @@ name: Publish NuGet package
 description: Publish a NuGet package on a NuGet server
 
 inputs:
-  path:
-    description: 'Path to the directory containing .nupkg and .snupkg files'
+  artifact-name:
     type: string
     required: true
-    default: Artifacts/
-  api-key:
-    description: 'The API key for the server'
+  artifact-path:
     type: string
     required: true
   source:
-    description: 'Package source URL to use'
     type: string
-    required: false
-    default: https://api.nuget.org/v3/index.json
-  symbol-api-key:
-    description: 'The API key for the symbol server. If not specified, api-key is used.'
+    required: true
+  api-key:
     type: string
-    required: false
-  symbol-source:
-    description: 'Package symbol source URL to use. If not specified, source is used.'
-    type: string
-    required: false
-  no-symbols:
-    description: 'Do not push symbols, even if they exist.'
-    type: boolean
-    required: false
-    default: false
-  timeout:
-    description: 'Timeout for pushing to a server in seconds'
-    type: number
-    required: false
-    default: 300
+    required: true
 
 runs:
   using: composite
   steps:
-    - name: Publish NuGet packages
+    - name: Download packages
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.artifact-path }}
+
+    - name: Publish to NuGet
       shell: pwsh
-      run: |
-        dotnet @(
-          'nuget', 'push'
-          (Join-Path "${{ inputs.path }}" "*.nupkg")
-          '--skip-duplicate'
-          '--force-english-output'
-          '--api-key', "${{ inputs.api-key }}"
-          '--source', "${{ inputs.source }}"
-          '--timeout', "${{ inputs.timeout }}"
-        ) + (
-          ${{ inputs.no-symbols }} ? @(
-            '--no-symbols'
-          ) : @(
-            '--symbol-api-key', "${{ inputs.symbol-api-key || inputs.api-key }}"
-            '--symbol-source', "${{ inputs.symbol-source || inputs.source }}"
-          )
-        )
+      run: >
+        dotnet nuget push
+        (Join-Path "${{ inputs.artifact-path }}" "*.nupkg")
+        --skip-duplicate --force-english-output
+        --source ${{ inputs.source }}
+        --api-key ${{ inputs.api-key }}
+        --timeout 300

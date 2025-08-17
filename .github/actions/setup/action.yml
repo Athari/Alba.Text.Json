@@ -7,6 +7,8 @@ inputs:
     required: true
   dotnet-runtime:
     description: 'Type of installation to check: sdk, dotnet, aspnetcore, or windowsdesktop'
+    type: choice
+    options: [ 'sdk', 'dotnet', 'aspnetcore', 'windowsdesktop' ]
     required: false
     default: 'sdk'
 
@@ -20,6 +22,9 @@ runs:
     - name: Import PowerShell utils
       shell: pwsh
       run: |
+        if (!(Test-Path -Path $PROFILE)) {
+          New-Item -Path $PROFILE -ItemType "File" -Force | Out-Null
+        }
         "
         . '$env:GITHUB_WORKSPACE/.github/actions/lib/utils.ps1'
         " >> $PROFILE

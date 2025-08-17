@@ -1,14 +1,17 @@
 name: Git version
 description: Calculate version metadata based on Git and GitHub Actions state
 
-inputs:
-
 outputs:
-  version-suffix: ${{ steps.version.outputs.version-suffix }}
-  release-url:    ${{ steps.version.outputs.release-url }}
-  release-meta:   ${{ steps.version.outputs.release-meta }}
-  release-notes:  ${{ steps.version.outputs.release-notes }}
-  prerelease:     ${{ steps.version.outputs.prerelease }}
+  version-suffix:
+    value: ${{ steps.version.outputs.version-suffix }}
+  release-url:
+    value: ${{ steps.version.outputs.release-url }}
+  release-meta:
+    value: ${{ steps.version.outputs.release-meta }}
+  release-notes:
+    value: ${{ steps.version.outputs.release-notes }}
+  prerelease:
+    value: ${{ steps.version.outputs.prerelease }}
 
 runs:
   using: composite
