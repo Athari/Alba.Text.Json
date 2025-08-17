@@ -1,0 +1,22 @@
+name: Git version
+description: Calculate version metadata based on Git and GitHub Actions state
+
+inputs:
+
+outputs:
+  version-suffix: ${{ steps.version.outputs.version-suffix }}
+  release-url:    ${{ steps.version.outputs.release-url }}
+  release-meta:   ${{ steps.version.outputs.release-meta }}
+  release-notes:  ${{ steps.version.outputs.release-notes }}
+  prerelease:     ${{ steps.version.outputs.prerelease }}
+
+runs:
+  using: composite
+  steps:
+    - name: Calculate Git version
+      id: version
+      shell: pwsh
+      env:
+        gh: ${{ toJson(github) }}
+      run: |
+        ./.github/actions/git-version/calc-git-version.ps1 ($env:gh | ConvertFrom-Json)

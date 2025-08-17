@@ -4,16 +4,19 @@
   <!-- DOC: Central Package Management -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- DOC: Modify file's hash when VersionOverride calculation changes -->
     <TargetTextJsonVersionFallback>9</TargetTextJsonVersionFallback>
+    <TargetTextJsonVersions>6;8;9;10</TargetTextJsonVersions>
   </PropertyGroup>
   <ItemGroup Label="Main">
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="9.0.0" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="$(TargetTextJsonVersionFallback).0.0" />
   </ItemGroup>
   <ItemGroup Label="Dev">
     <PackageVersion Include="AwesomeAssertions" Version="9.1.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="GitInfo" Version="3.5.0" />
     <PackageVersion Include="JetBrains.Annotations" Version="2025.2.0" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="5.0.0-2.25406.102" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
@@ -24,5 +27,6 @@
     <!--<PackageVersion Include="NUnit" Version="3.14.0" />-->
     <PackageVersion Include="NUnit.Analyzers" Version="4.10.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="5.1.0" />
+    <PackageVersion Include="ThisAssembly.Git" Version="2.0.14" />
   </ItemGroup>
 </Project>

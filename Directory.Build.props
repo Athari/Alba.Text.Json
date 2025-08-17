@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Build">
+    <!--<EnableWindowsTargeting>true</EnableWindowsTargeting>-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningLevel>9999</WarningLevel>
     <WarningsAsErrors>$(WarningsAsErrors)</WarningsAsErrors>

@@ -1,0 +1,49 @@
+name: Setup
+description: Setup environment
+
+inputs:
+  dotnet-version:
+    description: 'List of .NET major versions to ensure are installed (space-separated string e.g., "6 7 8")'
+    required: true
+  dotnet-runtime:
+    description: 'Type of installation to check: sdk, dotnet, aspnetcore, or windowsdesktop'
+    required: false
+    default: 'sdk'
+
+outputs:
+  dotnet-version:
+    value: ${{ steps.calc-dotnet-version.outputs.dotnet-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Import PowerShell utils
+      shell: pwsh
+      run: |
+        "
+        . '$env:GITHUB_WORKSPACE/.github/actions/lib/utils.ps1'
+        " >> $PROFILE
+
+    - name: Check preinstalled .NET versions
+      shell: pwsh
+      run: |
+        Write-Host "Preinstalled .NET versions:"
+        dotnet --info
+
+    - name: Calculate .NET versions
+      id: calc-dotnet-version
+      shell: pwsh
+      run: |
+        ./.github/actions/setup/calc-dotnet-version.ps1 `
+          -DotnetVersion '${{ inputs.dotnet-version }}' `
+          -Runtime '${{ inputs.dotnet-runtime }}'
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ steps.calc-dotnet-version.outputs.dotnet-version }}
+
+    - name: Verify .NET versions
+      shell: pwsh
+      run: |
+        Write-Host ".NET versions:"
+        dotnet --info

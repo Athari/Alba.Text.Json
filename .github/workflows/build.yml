@@ -1,0 +1,292 @@
+name: Build, Test, Publish
+run-name: >-
+  ${{
+    (github.event_name == 'pull_request' &&
+      format('🔀 PR #{0} ({1}) by @{2}', github.event.number, github.event.pull_request.title, github.actor)) ||
+    (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') &&
+      format('📦 Release {0} by @{1}', github.ref_name, github.actor)) ||
+    (github.event_name == 'push' &&
+      format('🧱 Push to {0} by @{1} ({2}) {3}', github.ref_name, github.actor, github.sha, github.event.head_commit.message)) ||
+    (github.event_name == 'workflow_dispatch' &&
+      format('👌 Manual run by @{0}', github.actor)) ||
+    'Build, Test, Publish'
+  }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_myget:
+        description: Publish packages to MyGet
+        type: choice
+        options: [ 'auto', 'yes', 'no' ]
+        default: 'no'
+        required: true
+      publish_nuget:
+        description: Publish packages to NuGet
+        type: choice
+        options: [ 'auto', 'yes', 'no' ]
+        default: 'no'
+        required: true
+      publish_log:
+        description: Publish MSBuild binary log to artifacts
+        type: choice
+        options: [ 'auto', 'yes', 'no' ]
+        default: 'no'
+        required: true
+  push:
+    branches:
+      - main
+      - feature/**
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - main
+
+env:
+  # options
+  dotnet_test_versions_core: '6 7 8 9 10'
+  dotnet_test_versions_win: '461'
+  # arguments
+  publish_myget: ${{ inputs.publish_myget || 'auto' }}
+  publish_nuget: ${{ inputs.publish_nuget || 'auto' }}
+  publish_log: ${{ inputs.publish_log || 'auto' }}
+  # dotnet options
+  SuppressNETCoreSdkPreviewMessage: true
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version-suffix: ${{ steps.git-version.outputs.version-suffix }}
+      release-url:    ${{ steps.git-version.outputs.release-url }}
+      release-meta:   ${{ steps.git-version.outputs.release-meta }}
+      release-notes:  ${{ steps.git-version.outputs.release-notes }}
+      prerelease:     ${{ steps.git-version.outputs.prerelease }}
+      publish-myget:  ${{ steps.next.outputs.publish-myget }}
+      publish-nuget:  ${{ steps.next.outputs.publish-nuget }}
+      publish-log:    ${{ steps.next.outputs.publish-log }}
+
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        filter: tree:0
+        submodules: true
+        show-progress: false
+
+    - uses: ./.github/actions/setup
+      with:
+        dotnet-version: 10
+        runtime: sdk
+
+    - name: Calculate version properties
+      uses: ./.github/actions/git-version
+      id: git-version
+
+    - uses: actions/cache@v4
+      id: cache-nuget
+      with:
+        path: |
+          ~/.nuget/packages
+        key: >-
+          ${{ runner.os }}-nuget-${{
+            hashFiles(
+              '**/NuGet.config',
+              '**/Directory.Packages.props',
+              '**/packages.lock.json'
+            )
+          }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: NuGet restore
+      if: steps.cache-nuget.outputs.cache-hit != 'true'
+      run: dotnet restore
+
+    - name: Build Debug
+      run: >
+        dotnet build
+        --configuration Debug
+        /bl:Artifacts/logs/build-debug.binlog
+
+    - name: Build Release
+      run: >
+        dotnet build
+        --configuration Release
+        /p:ReleaseUrl="${{ steps.git-version.outputs.release-url }}"
+        /p:ReleaseNotes="${{ steps.git-version.outputs.release-notes }}"
+        /p:VersionSuffix="${{ steps.git-version.outputs.version-suffix }}"
+        /bl:Artifacts/logs/build-release.binlog
+
+    - name: 'Upload build artifacts: testing'
+      uses: actions/upload-artifact@v4
+      with:
+        name: testing
+        path:
+          Artifacts/debug*_net/
+          Artifacts/obj/
+          !**/*.resources.dll
+          !**/*.xml
+          !**/*.cache
+          !**/Microsoft.*.pdb
+
+    - name: 'Upload build artifacts: packages'
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: Artifacts/packages/release/
+
+    - name: Calculate next steps
+      if: always()
+      id: next
+      run: >
+        @{
+          'publish-myget' = @{
+            auto = ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            yes = $true
+            no = $false
+          }[$env:publish_myget]
+          'publish-nuget' = @{
+            auto = ${{ startsWith(github.ref, 'refs/tags/v') }}
+            yes = $true
+            no = $false
+          'publish-log' = @{
+            auto = ${{ job.status == 'failure' }}
+            yes = $true
+            no = $false
+          }[$env:publish_log]
+        } | ConvertTo-GitHubOutput >> $env:GITHUB_OUTPUT
+
+    - name: 'Upload build artifacts: logs'
+      if: steps.next.outputs.publish-log == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: logs
+        path: Artifacts/logs/
+
+  test:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 1
+        submodules: true
+        show-progress: false
+
+    - uses: ./.github/actions/setup
+      if: matrix.os == 'ubuntu-latest'
+      with:
+        dotnet-version: ${{ env.dotnet_test_versions_core }}
+        runtime: runtime
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: testing
+        path: Artifacts/
+
+    - name: Run tests
+      run: >
+        $framework = $IsLinux ?
+          ($env:dotnet_test_versions_core -split '\s+' | foreach { "net$_.0" }) -join ';' :
+          ($env:dotnet_test_versions_win -split '\s+' | foreach { "net$_" }) -join ';'
+        dotnet test
+        --no-restore --no-build
+        /p:IsTestRunning=true
+        --configuration Debug
+        --framework $framework
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}
+        path: Artifacts/tests/
+
+  failure:
+    needs: [ build, test ]
+    if: failure() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Determine failure reason
+      id: failure-reason
+      run: |
+        $failure = '${{ needs.test.result }}' -eq 'failure' ? 'tests' : 'build'
+        @{
+          'failure-label' = "check:$failure-failed"
+        } | ConvertTo-GitHubOutput >> $env:GITHUB_OUTPUT
+
+    - name: Label PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.addLabels({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: [ '${{ steps.failure-reason.outputs.failure-label }}' ]
+          })
+
+  publish-myget:
+    needs: [ build, test ]
+    if: success() && needs.build.outputs.publish-myget == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download packages
+      uses: actions/download-artifact@v4
+      with:
+        name: packages
+        path: Artifacts/packages/release/
+
+    - name: Publish to MyGet
+      uses: ./.github/actions/publish-nuget
+      with:
+        path: Artifacts/packages/release/
+        api-key: ${{ secrets.MYGET_KEY }}
+        source: ${{ vars.MYGET_SOURCE }}
+
+  publish-nuget:
+    needs: [ build, test ]
+    if: success() && needs.build.outputs.publish-nuget == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download packages
+      uses: actions/download-artifact@v4
+      with:
+        name: packages
+        path: Artifacts/packages/release/
+
+    - name: Publish to NuGet
+      uses: ./.github/actions/publish-nuget
+      with:
+        path: Artifacts/packages/release/
+        api-key: ${{ secrets.NUGET_KEY }}
+        source: ${{ vars.NUGET_SOURCE }}
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        prerelease: ${{ needs.build.outputs.prerelease }}
+        generate_release_notes: true
+        draft: false
+        files: |
+          Artifacts/packages/release/*

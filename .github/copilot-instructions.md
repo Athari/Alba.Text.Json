@@ -1,0 +1,1 @@
+Follow coding conventions specified in the .editorconfig file.

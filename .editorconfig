@@ -258,6 +258,21 @@ indent_size = 2
 tab_width = 2
 indent_size = 2
 
+[*.{yml,yaml}]
+
+tab_width = 2
+indent_size = 2
+
+[*.{md,markdown}]
+
+tab_width = 3
+indent_size = 3
+
+[*.{ps1,psm1,psd1}]
+
+tab_width = 2
+indent_size = 2
+
 [*.{xaml,axaml}.cs]
 
 dotnet_diagnostic.cs1998.severity = none # This async method lacks await operators # Consistency > minor perf diff
