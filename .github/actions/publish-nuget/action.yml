@@ -2,8 +2,8 @@ name: Publish NuGet package
 description: Publish a NuGet package on a NuGet server
 
 inputs:
-  artifact-ids:
-    description: 'Ids of the artifacts to download, comma-separated.'
+  artifact-name:
+    description: 'Name of the artifact to download.'
     required: true
   artifact-path:
     description: 'Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE'
@@ -21,7 +21,7 @@ runs:
     - name: Download packages
       uses: actions/download-artifact@v4
       with:
-        artifact-ids: ${{ inputs.artifact-ids }}
+        name: ${{ inputs.artifact-name }}
         path: ${{ inputs.artifact-path }}
 
     - name: Publish to NuGet

@@ -276,7 +276,7 @@ jobs:
     - name: Download packages, Publish to MyGet
       uses: ./.github/actions/publish-nuget
       with:
-        artifact-ids: packages
+        artifact-name: packages
         artifact-path: ${{ env.packages_dir }}/release/
         source: ${{ vars.MYGET_SOURCE }}
         api-key: ${{ secrets.MYGET_KEY }}
@@ -305,7 +305,7 @@ jobs:
     - name: Download packages, Publish to NuGet
       uses: ./.github/actions/publish-nuget
       with:
-        artifact-ids: packages
+        artifact-name: packages
         artifact-path: ${{ env.packages_dir }}/release/
         source: ${{ vars.NUGET_SOURCE }}
         api-key: ${{ secrets.NUGET_KEY }}
