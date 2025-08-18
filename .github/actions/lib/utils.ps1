@@ -18,6 +18,10 @@ function Invoke-GitHubAction {
   }
 }
 
+function Get-AutoOption($Value, $Auto) {
+  return @{ auto = $Auto; yes = $true; no = $false }[$Value]
+}
+
 function ConvertTo-GitHubOutput {
   [CmdletBinding()] [OutputType([string])]
   param(

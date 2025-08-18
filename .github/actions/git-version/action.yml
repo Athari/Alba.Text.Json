@@ -3,14 +3,19 @@ description: Calculate version metadata based on Git and GitHub Actions state
 
 outputs:
   version-suffix:
+    description: 'VersionSuffix calculated based on Git state.'
     value: ${{ steps.version.outputs.version-suffix }}
   release-url:
+    description: 'The URL to the (not yet published) GitHub release.'
     value: ${{ steps.version.outputs.release-url }}
   release-meta:
+    description: 'Extra release metadata (currently the name of the user who created the pull request).'
     value: ${{ steps.version.outputs.release-meta }}
   release-notes:
+    description: 'PackageReleaseNotes based on release-url and release-meta.'
     value: ${{ steps.version.outputs.release-notes }}
   prerelease:
+    description: 'Whether the current version is a pre-release.'
     value: ${{ steps.version.outputs.prerelease }}
 
 runs:

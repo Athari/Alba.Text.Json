@@ -30,8 +30,6 @@
     <Company>Athari</Company>
     <Copyright>Copyright © 2024–$([System.DateTime]::Now.ToString(yyyy)) Alexander “Athari” Prokhorov</Copyright>
     <PackageProjectUrl>https://github.com/Athari/Alba.Text.Json</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Athari/Alba.Text.Json.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>

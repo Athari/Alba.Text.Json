@@ -7,13 +7,14 @@ inputs:
     required: true
   dotnet-runtime:
     description: 'Type of installation to check: sdk, dotnet, aspnetcore, or windowsdesktop'
-    type: choice
-    options: [ 'sdk', 'dotnet', 'aspnetcore', 'windowsdesktop' ]
+    # type: choice
+    # options: [ 'sdk', 'dotnet', 'aspnetcore', 'windowsdesktop' ]
     required: false
     default: 'sdk'
 
 outputs:
   dotnet-version:
+    description: 'List of .NET version in the format of actions/setup-dotnet'
     value: ${{ steps.calc-dotnet-version.outputs.dotnet-version }}
 
 runs:

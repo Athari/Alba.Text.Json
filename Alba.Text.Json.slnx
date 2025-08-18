@@ -9,8 +9,8 @@
     <File Path="ReadMe.md" />
   </Folder>
   <Folder Name="/.build/">
-    <File Path="C:/Docs/Projects/Json/.build/Alba.Text.Json.Dynamic.xml" />
-    <File Path="C:/Docs/Projects/Json/.build/FilterXmlDoc.xsl" />
+    <File Path=".build/Alba.Text.Json.Dynamic.xml" />
+    <File Path=".build/FilterXmlDoc.xsl" />
   </Folder>
   <Folder Name="/.nuget/">
     <File Path=".nuget/Logo.svg" />
@@ -24,7 +24,7 @@
     <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ6.csproj" />
     <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ8.csproj" />
     <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.STJ9.csproj" />
+    <Project Path="Alba.Text.Json.Dynamic.Playground/Alba.Text.Json.Dynamic.Playground.csproj" />
     <Project Path="Alba.Text.Json.Dynamic.Tests/Alba.Text.Json.Dynamic.Tests.csproj" />
   </Folder>
-  <Project Path="Alba.Text.Json.Dynamic.Playground/Alba.Text.Json.Dynamic.Playground.csproj" />
 </Solution>

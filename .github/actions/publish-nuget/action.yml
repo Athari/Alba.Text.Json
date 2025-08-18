@@ -2,17 +2,17 @@ name: Publish NuGet package
 description: Publish a NuGet package on a NuGet server
 
 inputs:
-  artifact-name:
-    type: string
+  artifact-ids:
+    description: 'Ids of the artifacts to download, comma-separated.'
     required: true
   artifact-path:
-    type: string
+    description: 'Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE'
     required: true
   source:
-    type: string
+    description: 'The NuGet server URL.'
     required: true
   api-key:
-    type: string
+    description: 'The API key for the NuGet server.'
     required: true
 
 runs:
@@ -21,7 +21,7 @@ runs:
     - name: Download packages
       uses: actions/download-artifact@v4
       with:
-        name: ${{ inputs.artifact-name }}
+        artifact-ids: ${{ inputs.artifact-ids }}
         path: ${{ inputs.artifact-path }}
 
     - name: Publish to NuGet
@@ -29,7 +29,6 @@ runs:
       run: >
         dotnet nuget push
         (Join-Path "${{ inputs.artifact-path }}" "*.nupkg")
-        --skip-duplicate --force-english-output
         --source ${{ inputs.source }}
         --api-key ${{ inputs.api-key }}
-        --timeout 300
+        ${{ env.base_nuget_args}}

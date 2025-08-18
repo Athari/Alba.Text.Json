@@ -117,6 +117,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsPackable)' == 'true' and '$(GeneratePackageOnBuild)' == 'true'">
+    <!-- DOC: Git metadata -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
     <!-- DOC: Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
