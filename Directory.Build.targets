@@ -169,8 +169,10 @@
     <ErrorLog>$(ArtifactsPath)logs/sarif/$(ProjectName)-$(Tfm)-$(Configuration.ToLowerInvariant()).sarif,version=2.1</ErrorLog>
   </PropertyGroup>
 
-  <Target Name="MakeSarifLogsDir" BeforeTargets="Compile" Condition="'$(CI)' == 'true'">
+  <Target Name="MakeSarifLogsDir" BeforeTargets="Compile">
     <MakeDir Directories="$(ArtifactsPath)logs/sarif/" />
+    <MakeDir Directories="$(ArtifactsPath)packages/" />
+    <MakeDir Directories="$(ArtifactsPath)test-results/" />
   </Target>
 
   <!-- DOC: Documentation cleanup -->

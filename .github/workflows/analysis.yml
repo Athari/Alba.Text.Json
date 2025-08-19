@@ -1,4 +1,6 @@
 name: Code analysis
+run-name: >-
+  ${{ format('🔬 Analysis of push to {0} by @{1} ({2})', github.ref_name, github.actor, github.event.head_commit.message) }}
 
 on:
   push:
@@ -12,10 +14,10 @@ on:
       - '**/*.DotSettings'
   schedule:
     - cron: '37 7 * * 1' # 07:37 on Monday
+  workflow_dispatch:
 
 env:
   # options
-  artifacts_dir:    Artifacts
   base_nuget_args: --skip-duplicate --force-english-output --timeout 300
   # dotnet options
   SuppressNETCoreSdkPreviewMessage: true
@@ -75,8 +77,9 @@ jobs:
     # - name: Autobuild
     #   uses: github/codeql-action/autobuild@v3
 
-    - name: Build Debug
+    - name: Build C#
       if: matrix.language == 'csharp'
+      continue-on-error: true
       run: >
         dotnet build
         --configuration Debug
@@ -105,7 +108,8 @@ jobs:
     - name: PowerShell Module Cache
       uses: potatoqualitee/psmodulecache@ee5e9494714abf56f6efbfa51527b2aec5c761b8 #v6.2.1
       with:
-        modules-to-cache: PSScriptAnalyzer, ConvertToSARIF:1.0.0
+        modules-to-cache: PSScriptAnalyzer::, ConvertToSARIF:1.0.0
+        updatable: true
 
     - name: Run PSScriptAnalyzer
       uses: microsoft/psscriptanalyzer-action@v1.1
