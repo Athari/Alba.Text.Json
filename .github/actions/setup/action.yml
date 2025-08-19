@@ -44,7 +44,8 @@ runs:
           -DotnetVersion '${{ inputs.dotnet-version }}' `
           -Runtime '${{ inputs.dotnet-runtime }}'
 
-    - uses: actions/setup-dotnet@v4
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ steps.calc-dotnet-version.outputs.dotnet-version }}
 

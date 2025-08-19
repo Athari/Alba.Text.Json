@@ -21,6 +21,11 @@
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="5.0.0-2.25406.102" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.13.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CrashDump" Version="1.8.2" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="1.8.2" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.VSTestBridge" Version="1.8.2" />
+    <PackageVersion Include="Microsoft.Testing.Platform.MSBuild" Version="1.8.2" />
     <PackageVersion Include="Polyfill" Version="9.0.0-beta.15" />
     <PackageVersion Include="PolySharp" Version="1.15.0" />
     <PackageVersion Include="NUnit" Version="4.4.0" />

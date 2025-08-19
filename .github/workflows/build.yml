@@ -44,24 +44,26 @@ on:
       - main
 
 env:
-  # options
-  dotnet_test_versions_core: '6 7 8 9 10'
-  dotnet_test_versions_win: '462'
-  artifacts_dir: Artifacts
-  logs_dir:      Artifacts/logs
-  packages_dir:  Artifacts/packages
-  tests_dir:     Artifacts/tests
-  base_nuget_args: --skip-duplicate --force-english-output --timeout 300
   # arguments
   publish_myget: ${{ inputs.publish-myget || 'auto' }}
   publish_nuget: ${{ inputs.publish-nuget || 'auto' }}
   publish_log:   ${{ inputs.publish-log   || 'auto' }}
+  # options
+  dotnet_test_versions_core: '6 7 8 9 10'
+  dotnet_test_versions_win: '462'
+  artifacts_dir:    Artifacts
+  logs_dir:         Artifacts/logs
+  packages_dir:     Artifacts/packages
+  test_results_dir: Artifacts/test-results
+  base_nuget_args: --skip-duplicate --force-english-output --timeout 300
   # dotnet options
   SuppressNETCoreSdkPreviewMessage: true
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_NOLOGO: true
+  TESTINGPLATFORM_TELEMETRY_OPTOUT: true
+  TESTINGPLATFORM_UI_LANGUAGE: en-us
 
 permissions:
   actions: write
@@ -69,6 +71,7 @@ permissions:
   contents: write
   packages: write
   pull-requests: write
+  security-events: write
   statuses: write
 
 defaults:
@@ -77,6 +80,7 @@ defaults:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
     outputs:
       version-suffix: ${{ steps.git-version.outputs.version-suffix }}
@@ -107,26 +111,8 @@ jobs:
       uses: ./.github/actions/git-version
       id: git-version
 
-    - name: Cache NuGet packages
-      uses: actions/cache@v4
-      id: cache-nuget
-      with:
-        path: |
-          ~/.nuget/packages
-        key: >-
-          ${{ runner.os }}-nuget-${{
-            hashFiles(
-              '**/NuGet.config',
-              '**/Directory.Packages.props',
-              '**/packages.lock.json'
-            )
-          }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-
     - name: Restore NuGet packages
-      #if: steps.cache-nuget.outputs.cache-hit != 'true'
-      run: dotnet restore
+      uses: ./.github/actions/nuget-restore
 
     - name: Build Debug
       run: >
@@ -187,14 +173,35 @@ jobs:
         compression-level: 0
         if-no-files-found: 'error'
 
+    - name: Upload SARIF reports
+      if: always()
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ env.logs_dir }}/sarif/
+        category: build
+
     - name: Dump context
+      if: always()
+      env:
+        github: ${{ toJson(github) }}
+        inputs: ${{ toJson(inputs) }}
+        job:    ${{ toJson(job) }}
+        runner: ${{ toJson(runner) }}
+        steps:  ${{ toJson(steps) }}
+        vars:   ${{ toJson(vars) }}
+      run: ''
+
+    - name: Dump JS context
+      if: always()
       uses: actions/github-script@v7
       with:
-        script: console.log(context)
+        script: console.log(JSON.stringify(context, null, "  "))
 
   test:
+    name: Test
     needs: build
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -235,36 +242,15 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.os }}
-        path: ${{ env.tests_dir }}/
+        path: ${{ env.test_results_dir }}/
 
-  failure:
+  result:
+    name: Result
     needs: [ build, test ]
-    if: failure() && github.event_name == 'pull_request'
+    if: always()
     runs-on: ubuntu-latest
-    steps:
-    - name: Determine failure reason
-      id: failure-reason
-      run: |
-        $failure = '${{ needs.test.result }}' -eq 'failure' ? 'tests' : 'build'
-        @{
-          'failure-label' = "check:$failure-failed"
-        } | ConvertTo-GitHubOutput >> $env:GITHUB_OUTPUT
-
-    - name: Label PR
-      uses: actions/github-script@v7
-      with:
-        script: |
-          github.rest.issues.addLabels({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: [ '${{ steps.failure-reason.outputs.failure-label }}' ]
-          })
-
-  publish-myget:
-    needs: [ build, test ]
-    if: success() && needs.build.outputs.publish-myget == 'true'
-    runs-on: ubuntu-latest
+    env:
+      success: ${{ needs.build.result == 'success' && needs.test.result == 'success' }}
     steps:
     - name: Checkout Git repository (shallow)
       uses: actions/checkout@v5
@@ -273,16 +259,45 @@ jobs:
         submodules: true
         show-progress: false
 
-    - name: Download packages, Publish to MyGet
-      uses: ./.github/actions/publish-nuget
+    - name: Restore NuGet packages
+      uses: ./.github/actions/nuget-restore
+
+    - name: Merge test results
+      if: always()
+      run: >
+        dotnet coverage merge
+        ${{ env.test_results_dir }}/*.coverage
+        --nologo
+        --output ${{ env.test_results_dir }}/combined.cobertura.xml
+        --output-format cobertura
+
+    - name: Download packages
+      if: env.success == 'true' && (needs.build.outputs.publish-myget == 'true' || needs.build.outputs.publish-nuget == 'true')
+      uses: actions/download-artifact@v4
       with:
-        artifact-name: packages
-        artifact-path: ${{ env.packages_dir }}/release/
-        source: ${{ vars.MYGET_SOURCE }}
-        api-key: ${{ secrets.MYGET_KEY }}
+        name: packages
+        path: ${{ env.packages_dir }}/release/
+
+    - name: Publish to MyGet
+      if: env.success == 'true' && needs.build.outputs.publish-myget == 'true'
+      run: >
+        dotnet nuget push
+        "${{ env.packages_dir }}/release/*.nupkg"
+        --source ${{ vars.MYGET_SOURCE }}
+        --api-key ${{ secrets.MYGET_KEY }}
+        ${{ env.base_nuget_args}}
+
+    - name: Publish to NuGet
+      if: env.success == 'true' && needs.build.outputs.publish-nuget == 'true'
+      run: >
+        dotnet nuget push
+        "${{ env.packages_dir }}/release/*.nupkg"
+        --source ${{ vars.NUGET_SOURCE }}
+        --api-key ${{ secrets.NUGET_KEY }}
+        ${{ env.base_nuget_args}}
 
     - name: Publish to GitHub Packages NuGet registry
-      shell: pwsh
+      if: env.success == 'true'
       run: >
         dotnet nuget push
         "${{ env.packages_dir }}/release/*.nupkg"
@@ -290,27 +305,8 @@ jobs:
         --api-key ${{ github.token }}
         ${{ env.base_nuget_args}}
 
-  publish-nuget:
-    needs: [ build, test ]
-    if: success() && needs.build.outputs.publish-nuget == 'true'
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Git repository (shallow)
-      uses: actions/checkout@v5
-      with:
-        fetch-depth: 1
-        submodules: true
-        show-progress: false
-
-    - name: Download packages, Publish to NuGet
-      uses: ./.github/actions/publish-nuget
-      with:
-        artifact-name: packages
-        artifact-path: ${{ env.packages_dir }}/release/
-        source: ${{ vars.NUGET_SOURCE }}
-        api-key: ${{ secrets.NUGET_KEY }}
-
     - name: Create GitHub Release
+      if: env.success == 'true'
       uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
       with:
         tag_name: ${{ github.ref_name }}
@@ -320,3 +316,16 @@ jobs:
         draft: false
         files: |
           ${{ env.packages_dir }}/release/*
+
+    - name: Label PR
+      if: env.success == 'false' && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          let failure = '${{ needs.test.result }}' == 'failure' ? 'tests' : 'build'
+          github.rest.issues.addLabels({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: [ `check:${failure}-failed` ],
+          })

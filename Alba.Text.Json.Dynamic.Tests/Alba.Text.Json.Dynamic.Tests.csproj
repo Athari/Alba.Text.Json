@@ -3,6 +3,7 @@
   <PropertyGroup Label="Build">
     <!-- No fucking idea how to test .NET Standard 2.0/2.1. Should be .NET Core App 2.0/3.0, but everything breaks, so fuck these obsolete platforms -->
     <!--<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netcoreapp3.0;netcoreapp2.0;netstandard2.1;netstandard2.0;net462</TargetFrameworks>-->
+    <OutputType>Exe</OutputType>
     <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;net462</TargetFrameworks>
     <TargetTextJsonVersion Condition="'$(TfmId)' == '.NETCoreApp'">$(TfmVersion.Split('.')[0])</TargetTextJsonVersion>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -17,10 +18,9 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Testing">
-    <VSTestNoBuild>true</VSTestNoBuild>
-    <VSTestNoLogo>true</VSTestNoLogo>
-    <VSTestLogger>trx</VSTestLogger>
-    <VSTestCollect>XPlat Code Coverage</VSTestCollect>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <!--<TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>-->
+    <EnableNUnitRunner>true</EnableNUnitRunner>
   </PropertyGroup>
 
   <ItemGroup Label="Build">
@@ -32,21 +32,15 @@
   <ItemGroup Label="References">
     <SolutionProjectReference Include="Alba.Text.Json.Dynamic" />
     <PackageReference Include="AwesomeAssertions" />
-    <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CrashDump" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="Microsoft.Testing.Extensions.VSTestBridge" />
+    <PackageReference Include="Microsoft.Testing.Platform.MSBuild" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" NoWarn="NU1701" />
   </ItemGroup>
-
-  <Target Name="VSTestFrameworkSwitch" BeforeTargets="VSTest">
-    <PropertyGroup>
-      <TargetFrameworkMoniker Condition="'$(Tfm)' == 'netcoreapp2.0'">.NETFramework,Version=v4.6.2</TargetFrameworkMoniker>
-      <TargetFrameworkMoniker Condition="'$(Tfm)' == 'netcoreapp3.0'">.NETCoreApp,Version=v6.0.0</TargetFrameworkMoniker>
-      <TargetFrameworkMoniker Condition="'$(Tfm)' == 'netstandard2.0'">.NETFramework,Version=v4.6.2</TargetFrameworkMoniker>
-      <TargetFrameworkMoniker Condition="'$(Tfm)' == 'netstandard2.1'">.NETCoreApp,Version=v6.0.0</TargetFrameworkMoniker>
-      <!--<TargetFrameworkMoniker>.NETCoreApp,Version=v6.0.0</TargetFrameworkMoniker>-->
-    </PropertyGroup>
-  </Target>
 
 </Project>

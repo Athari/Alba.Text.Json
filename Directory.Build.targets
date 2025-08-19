@@ -147,7 +147,7 @@
 
   <!-- DOC: Continuous integration -->
   <PropertyGroup>
-    <CI Condition="'$(CI)' == ''">false</CI>
+    <!-- <CI Condition="'$(CI)' == ''">false</CI> -->
     <CI Condition="
       ('$(CI)') == 'true' or
       ('$(GITHUB_ACTIONS)' == 'true') or
@@ -166,7 +166,12 @@
   <PropertyGroup Condition="'$(CI)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    <ErrorLog>$(ArtifactsPath)logs/sarif/$(ProjectName)-$(Tfm)-$(Configuration.ToLowerInvariant()).sarif,version=2.1</ErrorLog>
   </PropertyGroup>
+
+  <Target Name="MakeSarifLogsDir" BeforeTargets="Compile" Condition="'$(CI)' == 'true'">
+    <MakeDir Directories="$(ArtifactsPath)logs/sarif/" />
+  </Target>
 
   <!-- DOC: Documentation cleanup -->
   <ItemGroup Label="XML Docs">

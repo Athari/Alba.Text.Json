@@ -11,6 +11,7 @@
   <Folder Name="/.build/">
     <File Path=".build/Alba.Text.Json.Dynamic.xml" />
     <File Path=".build/FilterXmlDoc.xsl" />
+    <File Path=".build/testing.rsp" />
   </Folder>
   <Folder Name="/.nuget/">
     <File Path=".nuget/Logo.svg" />

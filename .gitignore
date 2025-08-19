@@ -1,5 +1,6 @@
 /.vs
 /Artifacts
+/Tmp
 **/RefImpl/*.cs
 *.user
 *.tmp

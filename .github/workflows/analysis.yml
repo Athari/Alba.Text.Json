@@ -1,0 +1,122 @@
+name: Code analysis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - 'Docs'
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/*.DotSettings'
+  schedule:
+    - cron: '37 7 * * 1' # 07:37 on Monday
+
+env:
+  # options
+  artifacts_dir:    Artifacts
+  base_nuget_args: --skip-duplicate --force-english-output --timeout 300
+  # dotnet options
+  SuppressNETCoreSdkPreviewMessage: true
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  # https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql
+  codeql-analysis:
+    name: ${{ matrix.name }} (CodeQL)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: GitHub Actions
+          language: actions # actions/c-cpp/csharp/go/java-kotlin/javascript-typescript/python/ruby/rust/swift
+          build-mode: none
+        - name: C#
+          language: csharp
+          build-mode: manual
+
+    steps:
+    - name: Checkout Git repository (shallow)
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 1
+        submodules: true
+        show-progress: false
+
+    - name: Setup environment
+      uses: ./.github/actions/setup
+      with:
+        dotnet-version: 10
+        dotnet-runtime: sdk
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+        queries: +security-and-quality
+        dependency-caching: true
+
+    # - name: Autobuild
+    #   uses: github/codeql-action/autobuild@v3
+
+    - name: Build Debug
+      if: matrix.language == 'csharp'
+      run: >
+        dotnet build
+        --configuration Debug
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+
+  ps-analysis:
+    name: PowerShell (PSScriptAnalyzer)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout Git repository (shallow)
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 1
+        submodules: true
+        show-progress: false
+
+    - name: PowerShell Module Cache
+      uses: potatoqualitee/psmodulecache@ee5e9494714abf56f6efbfa51527b2aec5c761b8 #v6.2.1
+      with:
+        modules-to-cache: PSScriptAnalyzer, ConvertToSARIF:1.0.0
+
+    - name: Run PSScriptAnalyzer
+      uses: microsoft/psscriptanalyzer-action@v1.1
+      with:
+        path: ./
+        recurse: true
+        settings: ./.vscode/PSScriptAnalyzerSettings.psd1
+        output: ps-analysis.sarif
+
+    - name: Upload SARIF report
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ps-analysis.sarif
+        category: "/language:powershell"

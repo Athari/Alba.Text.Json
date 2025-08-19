@@ -1,0 +1,9 @@
+--results-directory "Artifacts/test-results"
+--coverage
+--coverage-output-format coverage
+#--diagnostic
+#--diagnostic-output-directory "Artifacts/test-results"
+--crashdump
+--crashdump-filename "Artifacts/test-results/crashdump.dmp"
+--report-trx
+--timeout 30m
