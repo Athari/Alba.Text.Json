@@ -53,6 +53,7 @@ env:
   dotnet_test_versions_win: '462'
   artifacts_dir:    Artifacts
   logs_dir:         Artifacts/logs
+  sarif_dir:        Artifacts/logs/sarif
   packages_dir:     Artifacts/packages
   test_results_dir: Artifacts/test-results
   base_nuget_args: --skip-duplicate --force-english-output --timeout 300
@@ -88,6 +89,7 @@ jobs:
       release-meta:   ${{ steps.git-version.outputs.release-meta }}
       release-notes:  ${{ steps.git-version.outputs.release-notes }}
       prerelease:     ${{ steps.git-version.outputs.prerelease }}
+      build-success:  ${{ steps.next.outputs.build-success }}
       publish-myget:  ${{ steps.next.outputs.publish-myget }}
       publish-nuget:  ${{ steps.next.outputs.publish-nuget }}
       publish-log:    ${{ steps.next.outputs.publish-log }}
@@ -106,6 +108,8 @@ jobs:
       with:
         dotnet-version: 10
         dotnet-runtime: sdk
+        ensure-dirs: |-
+          ${{ env.sarif_dir }}
 
     - name: Calculate version properties
       uses: ./.github/actions/git-version
@@ -142,8 +146,20 @@ jobs:
           !**/*.xml
           !**/*.cache
           !**/Microsoft.*.pdb
-        if-no-files-found: 'error'
+        if-no-files-found: error
         retention-days: 1
+
+    - name: Calculate next steps
+      if: always()
+      id: next
+      run: |
+        @{
+          'build-success' = $${{ job.status == 'success' }}
+          'publish-myget' = Get-AutoOption $env:publish_myget `
+            $${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          'publish-nuget' = Get-AutoOption $env:publish_nuget $${{ startsWith(github.ref, 'refs/tags/v') }}
+          'publish-log'   = Get-AutoOption $env:publish_log   $${{ job.status == 'failure' }}
+        } | ConvertTo-GitHubOutput >> $env:GITHUB_OUTPUT
 
     - name: 'Upload build artifacts: packages'
       uses: actions/upload-artifact@v4
@@ -151,18 +167,7 @@ jobs:
         name: packages
         path: ${{ env.packages_dir }}/release/
         compression-level: 0
-        if-no-files-found: 'error'
-
-    - name: Calculate next steps
-      if: always()
-      id: next
-      run: |
-        @{
-          'publish-myget' = Get-AutoOption $env:publish_myget `
-            $${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          'publish-nuget' = Get-AutoOption $env:publish_nuget $${{ startsWith(github.ref, 'refs/tags/v') }}
-          'publish-log'   = Get-AutoOption $env:publish_log   $${{ job.status == 'failure' }}
-        } | ConvertTo-GitHubOutput >> $env:GITHUB_OUTPUT
+        if-no-files-found: error
 
     - name: 'Upload build artifacts: logs'
       if: steps.next.outputs.publish-log == 'true'
@@ -173,12 +178,21 @@ jobs:
         compression-level: 0
         if-no-files-found: 'error'
 
+    - name: Merge SARIF reports
+      run: >
+        dotnet sarif merge
+        ${{ env.sarif_dir }}/*.sarif
+        --output-directory ${{ env.logs_dir }}
+        --output-file build.sarif
+        --log "Optimize;Minify"
+
+        Remove-Item -Path '${{ env.sarif_dir }}' -Recurse
+
     - name: Upload SARIF reports
-      if: always()
       uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: ${{ env.logs_dir }}/sarif/
-        category: build
+        sarif_file: ${{ env.logs_dir }}/build.sarif
+        category: "/language:csharp/msbuild"
 
     - name: Dump context
       if: always()
@@ -200,6 +214,7 @@ jobs:
   test:
     name: Test
     needs: build
+    if: needs.build.outputs.build-success == 'true'
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -250,7 +265,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      success: ${{ needs.build.result == 'success' && needs.test.result == 'success' }}
+      success: ${{ needs.build.outputs.build-success == 'true' && needs.test.result == 'success' }}
     steps:
     - name: Checkout Git repository (shallow)
       uses: actions/checkout@v5

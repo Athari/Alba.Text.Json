@@ -11,6 +11,10 @@ inputs:
     # options: [ 'sdk', 'dotnet', 'aspnetcore', 'windowsdesktop' ]
     required: false
     default: 'sdk'
+  ensure-dirs:
+    description: 'Multiline list of directory paths to ensure exist'
+    required: false
+    default: ''
 
 outputs:
   dotnet-version:
@@ -20,6 +24,15 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Ensure directories exist
+      shell: pwsh
+      run: |
+        ("${{ inputs.ensure-dirs }}" -split '\r?\n').Trim() |
+          where { $_ -ne '' } |
+          foreach { Join-Path (Get-Location) $_ } |
+          foreach { [IO.Directory]::CreateDirectory($_) } |
+          Out-Null
+
     - name: Import PowerShell utils
       shell: pwsh
       run: |

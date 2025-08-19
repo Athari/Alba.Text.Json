@@ -8,6 +8,13 @@
         "dotnet-coverage"
       ],
       "rollForward": false
+    },
+    "sarif.multitool": {
+      "version": "4.5.4",
+      "commands": [
+        "sarif"
+      ],
+      "rollForward": true
     }
   }
 }

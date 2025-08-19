@@ -18,6 +18,7 @@ on:
 
 env:
   # options
+  sarif_dir: Artifacts/logs/sarif
   base_nuget_args: --skip-duplicate --force-english-output --timeout 300
   # dotnet options
   SuppressNETCoreSdkPreviewMessage: true
@@ -65,6 +66,8 @@ jobs:
       with:
         dotnet-version: 10
         dotnet-runtime: sdk
+        ensure-dirs: |-
+          ${{ env.sarif_dir }}
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
