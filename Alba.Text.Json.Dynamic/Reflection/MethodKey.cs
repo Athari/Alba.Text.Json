@@ -9,11 +9,11 @@ internal sealed class MethodKey : IEquatable<MethodKey>
     public static T GetT<T>(int _) => throw new NotSupportedException();
     public static object GetT(int _) => throw new NotSupportedException();
 
-    public MethodKeyKind Kind;
-    public Type Type;
-    public string Name;
-    public RefEquatableArray<Type> ParameterTypes;
-    public RefEquatableArray<Type> GenericTypes;
+    public readonly MethodKeyKind Kind;
+    public readonly Type Type;
+    public readonly string Name;
+    public readonly RefEquatableArray<Type> ParameterTypes;
+    public readonly RefEquatableArray<Type> GenericTypes;
 
     private readonly int _hashCode;
 

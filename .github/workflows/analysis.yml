@@ -72,6 +72,7 @@ jobs:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
         queries: +security-and-quality
+        config-file: ./.github/codeql/codeql-config.yml
         dependency-caching: true
 
     # - name: Autobuild

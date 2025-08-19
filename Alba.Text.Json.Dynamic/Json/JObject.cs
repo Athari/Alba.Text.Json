@@ -28,10 +28,12 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
     private object? Get(string name) =>
         JsonNode.ToJNodeOrValue(Node[name], Options);
 
-    public bool TryGet(string name, out object? value) =>
-        Node.TryGetPropertyValue(name, out var node) switch {
-            var r => (value = r ? JsonNode.ToJNodeOrValue(node, Options) : null, r).r,
-        };
+    public bool TryGet(string name, out object? value)
+    {
+        var ret = Node.TryGetPropertyValue(name, out var node);
+        value = ret ? JsonNode.ToJNodeOrValue(node, Options) : null;
+        return ret;
+    }
 
     private void Set<T>(string name, T value) =>
         Node[name] = ValueTypeExts.ToNewJsonNode(value, Node.Options);

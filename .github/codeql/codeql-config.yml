@@ -1,0 +1,17 @@
+# https://github.com/github/codeql
+name: CodeQL config
+
+paths-ignore:
+  - node_modules
+
+packs:
+  actions: []
+
+queries: []
+  # - uses: ./my-basic-queries/example-query.ql
+  # - uses: ./my-advanced-queries
+  # - uses: ./query-suites/my-security-queries.qls
+
+query-filters:
+  - exclude: { id: cs/useless-assignment-to-local }
+  # - exclude: { tags: /cwe-020/ }

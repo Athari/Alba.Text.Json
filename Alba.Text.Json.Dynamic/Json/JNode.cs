@@ -7,10 +7,10 @@ using System.Text.Json.Serialization;
 namespace Alba.Text.Json.Dynamic;
 
 [JsonConverter(typeof(JNodeConverter))]
-public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<object?>, ICloneable
+public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<object?>
 {
     private static readonly MethodRef PClone = MethodRef.Of((JNode o) => o.Clone());
-    private static readonly MethodRef PEquals = MethodRef.Of((JNode o) => o.Equals(null));
+    private static readonly MethodRef PEquals = MethodRef.Of((JNode o) => o.Equals(0));
     private static readonly MethodRef PGetHashCode = MethodRef.Of((JNode o) => o.GetHashCode());
 
     private static readonly PropertyRef PNodeUntyped = PropertyRef.Of((JNode o) => o.NodeUntyped);
@@ -22,9 +22,6 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<o
 
     public JNode Clone() =>
         (JNode)JsonNode.ToJNodeOrValue(JsonNode.DeepClone(NodeUntyped), Options);
-
-    object ICloneable.Clone() =>
-        Clone();
 
     public sealed override bool Equals(object? o) =>
         JsonNode.Equals(NodeUntyped, o, Options.DirectEquality, Options);
