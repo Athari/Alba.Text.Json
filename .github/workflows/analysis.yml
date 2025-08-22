@@ -119,13 +119,24 @@ jobs:
     - name: Run PSScriptAnalyzer
       uses: ./.github/actions/analyze-powershell
       with:
-        path: ./
-        recurse: true
-        settings: ./.vscode/PSScriptAnalyzerSettings.psd1
-        output: ps-analysis.sarif
+        analysis: |
+          @{
+            Path = './'
+            Recurse = $true
+            IncludeSuppressed = $true
+            Settings = './.vscode/PSScriptAnalyzerSettings.psd1'
+          }
+        conversion: |
+          @{
+            Category = 'PSScriptAnalyzer/language:powershell'
+          }
+        serialization: |
+          @{
+            Compress = $false
+          }
+        output-path: ps-analysis.sarif
 
     - name: Upload SARIF report
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ps-analysis.sarif
-        category: "/language:powershell"

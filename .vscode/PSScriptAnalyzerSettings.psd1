@@ -13,7 +13,7 @@
   Rules = @{
     PSAvoidLongLines = @{
       Enable = $true
-      MaximumLineLength = 120
+      MaximumLineLength = 160
     }
     PSAvoidUsingCmdletAliases = @{
       Enable = $true

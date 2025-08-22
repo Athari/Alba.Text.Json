@@ -321,7 +321,7 @@ jobs:
         ${{ env.base_nuget_args}}
 
     - name: Create GitHub Release
-      if: env.success == 'true'
+      if: env.success == 'true' && needs.build.outputs.publish-nuget == 'true'
       uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
       with:
         tag_name: ${{ github.ref_name }}
