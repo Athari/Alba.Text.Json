@@ -215,7 +215,7 @@ function ConvertTo-Sarif
           'problem.severity' = $problemSeverities[[uint] $info.Severity]
         }
         if ($null -ne $securitySeverities[$rule.id]) {
-          $rule.properties.'security-severity' = $securitySeverities[$rule.id]
+          $rule.properties.'security-severity' = '{0:0.0}' -f $securitySeverities[$rule.id]
         }
       }
     }
