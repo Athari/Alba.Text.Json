@@ -13,6 +13,7 @@ function ConvertTo-Sarif
   )
   begin {
     $version = '0.1.0'
+    $helpUrlBase = "https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer"
     $records = [Collections.ArrayList]::new()
   }
   process {
@@ -23,7 +24,7 @@ function ConvertTo-Sarif
       Where-Object { [string]::IsNullOrEmpty($IgnoreFiles) ? $true : $_.ScriptPath -notmatch $IgnoreFiles } |
       Sort-Object -Property ScriptPath, Line, Severity, RuleName, Message
 
-    function Format-RuleName($RuleName)
+    function Format-RuleName([string] $RuleName)
     {
       $RuleName `
         -replace '^PS', '' `
@@ -32,7 +33,13 @@ function ConvertTo-Sarif
         -replace '\A\s+|\s+\z', ''
     }
 
-    function Format-PathUri($Path) {
+    function Format-RuleHelpUrl([string] $RuleName)
+    {
+      $helpId = $RuleName.Substring(2).ToLowerInvariant()
+      return "$helpUrlBase/rules/$helpId"
+    }
+
+    function Format-PathUri([string] $Path) {
       [Uri]::new((Resolve-Path $Path)).AbsoluteUri
     }
 
@@ -100,12 +107,11 @@ function ConvertTo-Sarif
     function Get-RuleId($RuleName) {
       if ($null -eq $ruleIds.$RuleName) {
         $ruleIds[$RuleName] = $true
-        $helpId = $RuleName.Substring(2).ToLowerInvariant()
         [void] $rules.Add(
           [ordered] @{
             id = $RuleName
             name = Format-RuleName $RuleName
-            helpUri = "https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/rules/$helpId"
+            helpUri = Format-RuleHelpUrl $RuleName
           }
         )
       }
@@ -205,9 +211,19 @@ function ConvertTo-Sarif
     foreach ($rule in $rules) {
       $info = Get-ScriptAnalyzerRule -Name $rule.id -ErrorAction Ignore
       if ($null -ne $info) {
+        $helpUrl = Format-RuleHelpUrl $rule.id
+        $helpText = @(
+          $info.Description
+          ""
+          "See:"
+          "* [$($rule.id) rule help]($helpUrl)"
+          "* [$($module.Name) module help]($helpUrlBase/overview)"
+          "* [$($module.Name) module]($($module.ProjectUri))"
+        ) -join "`n"
         $rule.name = $info.CommonName
-        $rule.shortDescription = @{
-          text = $info.Description
+        $rule.help = @{
+          markdown = $helpText
+          text = $helpText
         }
         # https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning#reportingdescriptor-object
         $rule.properties = @{

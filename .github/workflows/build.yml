@@ -180,21 +180,20 @@ jobs:
 
     - name: Merge SARIF reports
       run: >
-        Update-CscSarifCategory 'Artifacts/logs/sarif/*.sarif'
+        # Update-CscSarifCategory '${{ env.sarif_dir }}/*.sarif'
 
         dotnet sarif merge
         ${{ env.sarif_dir }}/*.sarif
         --output-directory ${{ env.logs_dir }}
         --output-file build.sarif
         --log "Optimize;Minify"
-
-        Remove-Item -Path '${{ env.sarif_dir }}' -Recurse
+        --merge-runs
 
     - name: Upload SARIF reports
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ env.logs_dir }}/build.sarif
-        category: "/language:csharp/msbuild"
+        category: "MSBuild/language:csharp"
 
     - name: Dump context
       if: always()
