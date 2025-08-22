@@ -180,6 +180,8 @@ jobs:
 
     - name: Merge SARIF reports
       run: >
+        Update-CscSarifCategory 'Artifacts/logs/sarif/*.sarif'
+
         dotnet sarif merge
         ${{ env.sarif_dir }}/*.sarif
         --output-directory ${{ env.logs_dir }}

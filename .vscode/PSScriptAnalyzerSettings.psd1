@@ -7,8 +7,9 @@
   ExcludeRules = @(
     'PSAlignAssignmentStatement'
     'PSAvoidAssignmentToAutomaticVariable'
-    'AvoidSemicolonsAsLineTerminators'
+    'PSAvoidSemicolonsAsLineTerminators'
     'PSAvoidUsingWriteHost'
+    'PSUseShouldProcessForStateChangingFunctions'
   )
   Rules = @{
     PSAvoidLongLines = @{

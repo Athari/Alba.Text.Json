@@ -47,3 +47,53 @@ function ConvertTo-GitHubOutput {
     }
   }
 }
+
+function Set-SarifCategory
+{
+  param(
+    [Parameter(Mandatory, ValueFromPipeline)]
+    [IO.FileInfo[]] $InputObject,
+    [Parameter(Mandatory, ParameterSetName = 'Category')]
+    [string] $Category,
+    [Parameter(Mandatory, ParameterSetName = 'CategorySetter')]
+    [scriptblock] $CategorySetter
+  )
+  process {
+    foreach ($file in $InputObject.FullName) {
+      $sarif = Get-Content -LiteralPath $file -Raw | ConvertFrom-Json -Depth 16 -AsHashtable
+      foreach ($run in $sarif.runs) {
+        $run.automationDetails = @{}
+        if ($Category) {
+          $run.automationDetails.id = $Category
+        } elseif ($CategorySetter) {
+          & $CategorySetter $run.automationDetails -File $file
+        }
+      }
+      $sarif | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $file
+    }
+  }
+}
+
+function Update-CscSarifCategory
+{
+  param(
+    [Parameter(Mandatory)]
+    [string] $Path
+  )
+  Get-ChildItem $Path | Set-SarifCategory -CategorySetter {
+    param($_, [IO.FileInfo] $File)
+    $cats = $File.BaseName -split '-' | Where-Object { $_ }
+    $project = $cats[0]
+    $platform = ($cats | Select-Object -Skip 1) -join ':'
+    $_.id = "MSBuild/$($cats -join '/')/language:csharp"
+    $_.description = @{ text = "C# compiler log of project $project built for $platform" }
+    $_.properties = @{
+      project = $project
+      platform = $platform
+    }
+  }
+}
+
+if ($env:TERM_PROGRAM -eq 'vscode') {
+  Update-CscSarifCategory 'Artifacts/logs/sarif/*.sarif'
+}
