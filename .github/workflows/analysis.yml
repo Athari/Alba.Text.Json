@@ -54,10 +54,11 @@ jobs:
           build-mode: manual
 
     steps:
-    - name: Checkout Git repository (shallow)
+    - name: Checkout Git repository (deep)
       uses: actions/checkout@v5
       with:
-        fetch-depth: 1
+        fetch-depth: 0
+        filter: tree:0
         submodules: true
         show-progress: false
 
@@ -112,11 +113,11 @@ jobs:
     - name: PowerShell Module Cache
       uses: potatoqualitee/psmodulecache@ee5e9494714abf56f6efbfa51527b2aec5c761b8 #v6.2.1
       with:
-        modules-to-cache: PSScriptAnalyzer::, ConvertToSARIF:1.0.0
+        modules-to-cache: 'PSScriptAnalyzer::'
         updatable: true
 
     - name: Run PSScriptAnalyzer
-      uses: microsoft/psscriptanalyzer-action@v1.1
+      uses: ./.github/actions/analyze-powershell
       with:
         path: ./
         recurse: true

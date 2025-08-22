@@ -214,7 +214,7 @@ jobs:
   test:
     name: Test
     needs: build
-    if: needs.build.outputs.build-success == 'true'
+    if: always() && needs.build.outputs.build-success == 'true'
     runs-on: ${{ matrix.os }}
 
     strategy:
