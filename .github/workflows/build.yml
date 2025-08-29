@@ -296,20 +296,24 @@ jobs:
 
     - name: Publish to MyGet
       if: env.success == 'true' && needs.build.outputs.publish-myget == 'true'
+      env:
+        myget_key: ${{ secrets.MYGET_KEY }}
       run: >
         dotnet nuget push
         "${{ env.packages_dir }}/release/*.nupkg"
         --source ${{ vars.MYGET_SOURCE }}
-        --api-key ${{ secrets.MYGET_KEY }}
+        --api-key $env:myget_key
         ${{ env.base_nuget_args}}
 
     - name: Publish to NuGet
       if: env.success == 'true' && needs.build.outputs.publish-nuget == 'true'
+      env:
+        nuget_key: ${{ secrets.NUGET_KEY }}
       run: >
         dotnet nuget push
         "${{ env.packages_dir }}/release/*.nupkg"
         --source ${{ vars.NUGET_SOURCE }}
-        --api-key ${{ secrets.NUGET_KEY }}
+        --api-key $env:nuget_key
         ${{ env.base_nuget_args}}
 
     - name: Publish to GitHub Packages NuGet registry
