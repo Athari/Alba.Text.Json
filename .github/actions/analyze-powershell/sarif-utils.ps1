@@ -251,11 +251,11 @@ function Invoke-ScriptAnalyzerAction {
   )
 
   function Get-Config($Str) {
-    $guid = "$(New-Guid)"
-    New-Item -Path "$guid.psd1" -Value $Str | Out-Null
-    $value = Import-PowerShellDataFile -LiteralPath "$guid.psd1"
-    Remove-Item -LiteralPath "$guid.psd1"
-    return $null -eq $value ? @{} : $value
+    $tempFile = "./$(New-Guid).psd1"
+    Set-Content -LiteralPath $tempFile -Value $Str
+    $value = Import-PowerShellDataFile -LiteralPath $tempFile
+    Remove-Item -LiteralPath $tempFile
+    return $value ?? @{}
   }
 
   if ($null -eq (Get-Module -ListAvailable -Name 'PSScriptAnalyzer')) {
@@ -265,6 +265,12 @@ function Invoke-ScriptAnalyzerAction {
   $analysis = Get-Config $env:analysis
   $conversion = Get-Config $env:conversion
   $serialization = Get-Config $env:serialization
+
+  @{
+    analysis = $analysis
+    conversion = $conversion
+    serialization = $serialization
+  } | ConvertTo-Json -Depth 4 | Write-Host
 
   Invoke-ScriptAnalyzer @analysis |
     ConvertTo-Sarif @conversion |

@@ -119,18 +119,18 @@ jobs:
     - name: Run PSScriptAnalyzer
       uses: ./.github/actions/analyze-powershell
       with:
-        analysis: |
+        analysis: |-
           @{
             Path = './'
             Recurse = $true
             IncludeSuppressed = $true
             Settings = './.vscode/PSScriptAnalyzerSettings.psd1'
           }
-        conversion: |
+        conversion: |-
           @{
             Category = 'PSScriptAnalyzer/language:powershell'
           }
-        serialization: |
+        serialization: |-
           @{
             Compress = $false
           }
