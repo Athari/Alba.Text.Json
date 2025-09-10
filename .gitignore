@@ -5,3 +5,5 @@
 *.user
 *.tmp
 *.tmp.*
+*.log
+*.sarif
