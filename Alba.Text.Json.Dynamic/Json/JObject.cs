@@ -1,5 +1,6 @@
 ﻿using System.Dynamic;
 using System.Text.Json.Nodes;
+using Alba.Text.Json.Dynamic.Extensions;
 
 namespace Alba.Text.Json.Dynamic;
 

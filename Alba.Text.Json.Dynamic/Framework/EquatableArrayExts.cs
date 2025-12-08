@@ -1,4 +1,4 @@
-﻿namespace Alba.Text.Json.Dynamic;
+﻿namespace Alba.Framework;
 
 internal static class EquatableArrayExts
 {

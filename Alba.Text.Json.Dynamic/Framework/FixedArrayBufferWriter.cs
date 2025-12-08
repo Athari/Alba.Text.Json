@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Framework;
 
 [InternalAPI]
 internal sealed class FixedArrayBufferWriter<T>(int size) : IBufferWriter<T>

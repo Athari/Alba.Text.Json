@@ -1,11 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Alba.Framework;
 using C = System.TypeCode;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Text.Json.Dynamic.Extensions;
 
-internal static class JsonNodeExts
+[SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug")]
+public static class JsonNodeExts
 {
     extension(JsonNode @this)
     {

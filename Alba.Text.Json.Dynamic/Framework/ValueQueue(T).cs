@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Framework;
 
 /// <remarks>From https://github.com/dotnet/dotnet/blob/main/src/runtime/src/libraries/System.Text.Json/src/System/Text/Json/ValueQueue.cs</remarks>
 [StructLayout(LayoutKind.Auto)]

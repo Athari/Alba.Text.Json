@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Alba.Text.Json.Dynamic.Extensions;
 
 namespace Alba.Text.Json.Dynamic;
 

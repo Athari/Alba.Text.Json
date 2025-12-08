@@ -1,9 +1,10 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using Alba.Framework;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Text.Json.Dynamic.Extensions;
 
-internal static class ValueTypeExts
+public static class ValueTypeExts
 {
     private static readonly JsonValue NoJsonValue = Ensure.NotNull(JsonValue.Create("<NOVALUE>"));
 

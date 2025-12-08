@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Alba.Framework;
 
 namespace Alba.Text.Json.Dynamic;
 

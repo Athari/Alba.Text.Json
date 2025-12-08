@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Text.Json.Dynamic.Extensions;
 
 internal static class JsonValueExts
 {

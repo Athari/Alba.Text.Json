@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Framework;
 
-internal readonly struct EquatableArray<T>(T[] array) : IEquatable<EquatableArray<T>>, IEnumerable<T>
-    where T : IEquatable<T>
+internal readonly struct RefEquatableArray<T>(T[] array) : IEquatable<RefEquatableArray<T>>, IEnumerable<T>
 {
-    public static readonly EquatableArray<T> Empty = new([ ]);
+    public static readonly RefEquatableArray<T> Empty = new([ ]);
 
     public readonly T[]? Array = array;
 
@@ -28,8 +27,8 @@ internal readonly struct EquatableArray<T>(T[] array) : IEquatable<EquatableArra
         return hc.ToHashCode();
     }
 
-    public bool Equals(EquatableArray<T> o) => AsSpan().SequenceEqual(o.AsSpan());
-    public override bool Equals(object? o) => o is EquatableArray<T> v && Equals(v);
-    public static bool operator ==(EquatableArray<T> a, EquatableArray<T> b) => a.Equals(b);
-    public static bool operator !=(EquatableArray<T> a, EquatableArray<T> b) => !a.Equals(b);
+    public bool Equals(RefEquatableArray<T> o) => this.SequenceEqual(o);
+    public override bool Equals(object? o) => o is RefEquatableArray<T> v && Equals(v);
+    public static bool operator ==(RefEquatableArray<T> a, RefEquatableArray<T> b) => a.Equals(b);
+    public static bool operator !=(RefEquatableArray<T> a, RefEquatableArray<T> b) => !a.Equals(b);
 }

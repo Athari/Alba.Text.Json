@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using MethodAttribute = System.Runtime.CompilerServices.MethodImplAttribute;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Framework;
 
 [InternalAPI]
 internal static class Ensure

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #endif
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Framework;
 
 [InternalAPI]
 internal static class Exts

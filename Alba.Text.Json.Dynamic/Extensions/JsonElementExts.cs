@@ -5,11 +5,13 @@ using System.Globalization;
 #endif
 #if !JSON9_0_OR_GREATER
 using System.Text.Encodings.Web;
+using Alba.Framework;
 #endif
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Text.Json.Dynamic.Extensions;
 
-internal static class JsonElementExts
+[SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug")]
+public static class JsonElementExts
 {
   #if NET5_0_OR_GREATER
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
