@@ -1,7 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+#if !JSON8_0_OR_GREATER
 using Alba.Framework;
+#endif
 using C = System.TypeCode;
 
 namespace Alba.Text.Json.Dynamic.Extensions;
@@ -59,20 +61,18 @@ public static class JsonNodeExts
             }
         }
 
-        [return: NotNullIfNotNull(nameof(node))]
-        public static JsonNode? DeepClone(JsonNode? node)
+        public bool TryGetElementValue(out JsonElement el)
         {
-          #if JSON8_0_OR_GREATER
-            return node?.DeepClone();
-          #else
-            return node.Deserialize<JsonNode?>();
-          #endif
+            if ((@this as JsonValue)?.TryGetValue(out el) ?? false)
+                return true;
+            el = default;
+            return false;
         }
 
         public static bool EqualsJsonElement(JsonNode? n1, JsonElement el2, Equality equality, JNodeOptions options)
         {
             var el1null = n1 == null || JsonNode.IsNull(n1, options);
-            var el2null = JsonElement.IsNull(el2, options);
+            var el2null = el2.IsNull(options);
             if (el1null && el2null)
                 return true;
             else if (el1null || el2null)
@@ -97,7 +97,7 @@ public static class JsonNodeExts
                 JNode n2 => JsonNode.Equals(n1, n2.NodeUntyped, equality, options),
                 JsonElement el2 => JsonNode.EqualsJsonElement(n1, el2, equality, options),
                 JsonDocument doc2 => JsonNode.EqualsJsonElement(n1, doc2.RootElement, equality, options),
-                not null => JsonNode.Equals(n1, ValueTypeExts.ToNewJsonNode(v2, n1?.Options ?? options.JsonNodeOptions), equality, options),
+                not null => JsonNode.Equals(n1, v2.ToJsonNode(n1?.Options ?? options.JsonNodeOptions), equality, options),
             };
 
         private static bool Equals(JsonNode? n1, JsonNode? n2, Equality equality, JNodeOptions options)
@@ -148,7 +148,7 @@ public static class JsonNodeExts
 
         private static bool ReferenceEquals(JsonNode n1, JsonNode n2, JNodeOptions options) =>
             ReferenceEquals(n1, n2) ||
-            n1.TryGetElementValue(out var el1) && n2.TryGetElementValue(out var el2) && JsonElement.ReferenceEquals(el1, el2, options);
+            n1.TryGetElementValue(out var el1) && n2.TryGetElementValue(out var el2) && JsonElement.Equals(el1, el2, Equality.Reference, options);
 
         private static bool ValueEquals(JsonValue v1, JsonValue v2, JNodeOptions options)
         {
@@ -164,7 +164,7 @@ public static class JsonNodeExts
                 JsonValueKind.String =>
                     string.Equals(v1.GetValue<string>(), v2.GetValue<string>(), StringComparison.Ordinal),
                 JsonValueKind.Number =>
-                    Equals(JsonValue.ToValue(v1, options), JsonValue.ToValue(v2, options)),
+                    Equals(v1.ToValue(options), v2.ToValue(options)),
                 _ =>
                     throw new InvalidOperationException($"Unexpected JsonValueKind of JsonNode: {k1}"),
             };
@@ -190,22 +190,22 @@ public static class JsonNodeExts
             return equalsFn(n1!, n2!, options);
         }
 
-        public static int ToHashCode(JsonNode node, Equality equality, JNodeOptions options) =>
+        public int GetHashCode(Equality equality, JNodeOptions options) =>
             equality switch {
-                Equality.Deep => JsonNode.ToDeepHashCode(node, options),
-                Equality.Shallow => JsonNode.ToShallowHashCode(node, options),
-                Equality.Reference => JsonNode.ToReferenceHashCode(node),
+                Equality.Deep => @this.GetDeepHashCode(options),
+                Equality.Shallow => @this.GetShallowHashCode(options),
+                Equality.Reference => @this.GetReferenceHashCode(),
                 _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
             };
 
-        private static int ToDeepHashCode(JsonNode node, JNodeOptions? options)
+        private int GetDeepHashCode(JNodeOptions? options)
         {
             int maxCount = options?.MaxHashCodeValueCount ?? int.MaxValue;
             int maxDepth = options?.MaxHashCodeDepth ?? int.MaxValue;
 
             var hash = 0;
             var count = 0;
-            GetHashCodeProc(node, depth: 0);
+            GetHashCodeProc(@this, depth: 0);
             return hash;
 
             bool Add(object? value)
@@ -239,56 +239,35 @@ public static class JsonNodeExts
                         }
                         break;
                     case JsonValue value:
-                        Add(JsonValue.ToValue(value, JNodeOptions.Default));
+                        Add(value.ToValue(JNodeOptions.Default));
                         break;
                 }
             }
         }
 
-        private static int ToShallowHashCode(JsonNode node, JNodeOptions options) =>
-            node switch {
+        private int GetShallowHashCode(JNodeOptions options) =>
+            @this switch {
                 null => 0,
                 JsonObject v => v.Count.GetHashCode(),
                 JsonArray v => v.Count.GetHashCode(),
-                JsonValue v => JsonValue.ToValue(v, options)?.GetHashCode() ?? 0,
-                _ => throw new InvalidOperationException($"Unexpected node type: {node.GetType().Name}"),
+                JsonValue v => v.ToValue(options)?.GetHashCode() ?? 0,
+                _ => throw new InvalidOperationException($"Unexpected node type: {@this.GetType().Name}"),
             };
 
-        private static int ToReferenceHashCode(JsonNode node) =>
-            RuntimeHelpers.GetHashCode(node);
-
-        [return: NotNullIfNotNull(nameof(node))]
-        public static object? ToJNodeOrValue(JsonNode? node, JNodeOptions options) =>
-            node switch {
-                null => null,
-                JsonValue v => JsonValue.ToValue(v, options),
-                JsonObject v => new JObject(v, options),
-                JsonArray v => new JArray(v, options),
-                _ => throw new InvalidOperationException($"Unexpected JsonNode: {node.GetType()}"),
-            };
+        private int GetReferenceHashCode() =>
+            RuntimeHelpers.GetHashCode(@this);
     }
 
-    extension(JsonValue)
+    extension(JsonNode? @this)
     {
-        private static object? ToValue(JsonValue v, JNodeOptions options) =>
-            v.DataValueKind switch {
-                // return primitive values directly
-                JsonValueKind.Undefined => options.UndefinedValue,
-                JsonValueKind.Null => null,
-                JsonValueKind.String => v.GetValue<string>(),
-                JsonValueKind.True => true,
-                JsonValueKind.False => false,
-                // numbers can be stored as JsonElement pointing to barely parsed binary data
-                JsonValueKind.Number => v.TryGetElementValue(out var el) ? JsonElement.ToNumber(el, options) : v.GetValue<object>(),
-                // objects can be JsonElement or an arbitrary user type
-                JsonValueKind.Object or JsonValueKind.Array
-                    or (JsonValueKind)byte.MaxValue => // from JsonNodeExts
-                    v.TryGetElementValue(out var el)
-                        // return value of wrapped JsonElement
-                        ? JsonElement.ToValue(el, options)
-                        // return raw objects stored inside
-                        : v.GetValue<object>(),
-                _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonNode: {v}"),
-            };
+        [return: NotNullIfNotNull(nameof(@this))]
+        public JsonNode? DeepClone()
+        {
+          #if JSON8_0_OR_GREATER
+            return @this?.DeepClone();
+          #else
+            return @this.Deserialize<JsonNode?>();
+          #endif
+        }
     }
 }

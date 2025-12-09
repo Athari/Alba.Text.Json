@@ -19,8 +19,12 @@ public static class JsonElementExts
 
     extension(in JsonElement @this)
     {
+        /// <inheritdoc cref="JsonElement.GetRawText" />
         public string RawText => @this.GetRawText();
 
+      #if JSON9_0_OR_GREATER
+        /// <inheritdoc cref="JsonMarshal.GetRawUtf8Value" />
+      #endif
         public ReadOnlySpan<byte> RawValueSpan {
             get {
               #if JSON9_0_OR_GREATER
@@ -33,54 +37,57 @@ public static class JsonElementExts
             }
         }
 
-        public static object? ToValue(in JsonElement el, JNodeOptions options) =>
-            el.ValueKind switch {
+        public object? ToValue(JNodeOptions options) =>
+            @this.ValueKind switch {
                 JsonValueKind.Undefined => options.UndefinedValue,
                 JsonValueKind.Null => null,
-                JsonValueKind.String => el.GetString(),
+                JsonValueKind.String => @this.GetString(),
                 JsonValueKind.True => true,
                 JsonValueKind.False => false,
-                JsonValueKind.Number => JsonElement.ToNumber(el, options),
+                JsonValueKind.Number => @this.ToNumber(options),
                 JsonValueKind.Object or JsonValueKind.Array =>
-                    throw new InvalidOperationException($"{el.ValueKind} JsonElement in JsonValue"),
-                _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonElement: {el.ValueKind}"),
+                    throw new InvalidOperationException($"{@this.ValueKind} JsonElement in JsonValue"),
+                _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonElement: {@this.ValueKind}"),
             };
 
-        public static object ToNumber(in JsonElement el, JNodeOptions options) =>
-            IsFloatingPoint(el.RawValueSpan) ?
-                JsonElement.ToNumberType(el, options.FloatTypes) ??
-                throw new InvalidOperationException($"Cannot convert {el} to a floating point number.") :
-                JsonElement.ToNumberType(el, options.IntegerTypes) ??
-                throw new InvalidOperationException($"Cannot convert {el} to an integer number.");
+        public object ToNumber(JNodeOptions options) =>
+            IsFloatingPoint(@this.RawValueSpan) ?
+                @this.ToNumberType(options.FloatTypes) ??
+                throw new InvalidOperationException($"Cannot convert {@this} to a floating point number.") :
+                @this.ToNumberType(options.IntegerTypes) ??
+                throw new InvalidOperationException($"Cannot convert {@this} to an integer number.");
 
-        private static object? ToNumberType(JsonElement el, NumberType[] types) =>
-            types.Select(t => JsonElement.ToNumberType(el, t)).FirstOrDefault(v => v != null);
+        private object? ToNumberType(NumberType[] types)
+        {
+            var el = @this;
+            return types.Select(t => el.ToNumberType(t)).FirstOrDefault(v => v != null);
+        }
 
         [SuppressMessage("ReSharper", "SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault", Justification = "Intentional")]
-        private static object? ToNumberType(in JsonElement el, NumberType type) =>
+        private object? ToNumberType(NumberType type) =>
             type switch {
-                NumberType.SByte => el.TryGetSByte(out var v) ? v : null,
-                NumberType.Byte => el.TryGetByte(out var v) ? v : null,
-                NumberType.Int16 => el.TryGetInt16(out var v) ? v : null,
-                NumberType.UInt16 => el.TryGetUInt16(out var v) ? v : null,
-                NumberType.Int32 => el.TryGetInt32(out var v) ? v : null,
-                NumberType.UInt32 => el.TryGetUInt32(out var v) ? v : null,
-                NumberType.Int64 => el.TryGetInt64(out var v) ? v : null,
-                NumberType.UInt64 => el.TryGetUInt64(out var v) ? v : null,
-                NumberType.Single => el.TryGetSingle(out var v) ? v : null,
-                NumberType.Double => el.TryGetDouble(out var v) ? v : null,
-                NumberType.Decimal => el.TryGetDecimal(out var v) ? v : null,
+                NumberType.SByte => @this.TryGetSByte(out var v) ? v : null,
+                NumberType.Byte => @this.TryGetByte(out var v) ? v : null,
+                NumberType.Int16 => @this.TryGetInt16(out var v) ? v : null,
+                NumberType.UInt16 => @this.TryGetUInt16(out var v) ? v : null,
+                NumberType.Int32 => @this.TryGetInt32(out var v) ? v : null,
+                NumberType.UInt32 => @this.TryGetUInt32(out var v) ? v : null,
+                NumberType.Int64 => @this.TryGetInt64(out var v) ? v : null,
+                NumberType.UInt64 => @this.TryGetUInt64(out var v) ? v : null,
+                NumberType.Single => @this.TryGetSingle(out var v) ? v : null,
+                NumberType.Double => @this.TryGetDouble(out var v) ? v : null,
+                NumberType.Decimal => @this.TryGetDecimal(out var v) ? v : null,
               #if NET8_0_OR_GREATER
-                NumberType.Half => Half.TryParse(el.RawValueSpan, Invariant, out var v) ? v : null,
+                NumberType.Half => Half.TryParse(@this.RawValueSpan, Invariant, out var v) ? v : null,
               #elif NET5_0_OR_GREATER
-                NumberType.Half => Half.TryParse(el.RawText, NumberStyles.Float | NumberStyles.AllowThousands, Invariant, out var v) ? v : null,
+                NumberType.Half => Half.TryParse(@this.RawText, NumberStyles.Float | NumberStyles.AllowThousands, Invariant, out var v) ? v : null,
               #endif
               #if NET8_0_OR_GREATER
-                NumberType.Int128 => Int128.TryParse(el.RawValueSpan, Invariant, out var v) ? v : null,
-                NumberType.UInt128 => UInt128.TryParse(el.RawValueSpan, Invariant, out var v) ? v : null,
+                NumberType.Int128 => Int128.TryParse(@this.RawValueSpan, Invariant, out var v) ? v : null,
+                NumberType.UInt128 => UInt128.TryParse(@this.RawValueSpan, Invariant, out var v) ? v : null,
               #elif NET7_0_OR_GREATER
-                NumberType.Int128 => Int128.TryParse(el.RawText, Invariant, out var v) ? v : null,
-                NumberType.UInt128 => UInt128.TryParse(el.RawText, Invariant, out var v) ? v : null,
+                NumberType.Int128 => Int128.TryParse(@this.RawText, Invariant, out var v) ? v : null,
+                NumberType.UInt128 => UInt128.TryParse(@this.RawText, Invariant, out var v) ? v : null,
               #endif
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"A number or string NumberKind expected, got {type}"),
             };
@@ -175,7 +182,7 @@ public static class JsonElementExts
             };
 
         [SuppressMessage("Style", "IDE0060:Remove unused parameter"), SuppressMessage("ReSharper", "UnusedParameter.Local")]
-        public static bool ReferenceEquals(in JsonElement el1, in JsonElement el2, JNodeOptions options) =>
+        private static bool ReferenceEquals(in JsonElement el1, in JsonElement el2, JNodeOptions options) =>
             JsonElement.DocumentOffsetEquals(el1, el2);
 
         private static bool ValueEquals(in JsonElement el1, in JsonElement el2, JNodeOptions options)
@@ -192,7 +199,7 @@ public static class JsonElementExts
                 JsonValueKind.String =>
                     el1.ValueEquals(el2.GetString()),
                 JsonValueKind.Number =>
-                    Equals(JsonElement.ToValue(el1, options), JsonElement.ToValue(el2, options)),
+                    Equals(el1.ToValue(options), el2.ToValue(options)),
                 _ =>
                     throw new InvalidOperationException($"Unexpected JsonValueKind of JsonElement: {k1}"),
             };
@@ -202,8 +209,8 @@ public static class JsonElementExts
         public static bool DocumentOffsetEquals(in JsonElement el1, in JsonElement el2) =>
             MemoryMarshal.CreateReadOnlyByteSpan(el1).SequenceEqual(MemoryMarshal.CreateReadOnlyByteSpan(el2));
 
-        public static bool IsNull(in JsonElement el, JNodeOptions options) =>
-            el.ValueKind switch {
+        public bool IsNull(JNodeOptions options) =>
+            @this.ValueKind switch {
                 JsonValueKind.Null => true,
                 JsonValueKind.Undefined => options.UndefinedValue == null,
                 _ => false,
@@ -215,22 +222,6 @@ public static class JsonElementExts
                 -1 => false,
                 var i => span[i] == (byte)'.' || i + 1 < span.Length && span[i + 1] == (byte)'-',
             };
-    }
-
-    extension(in JsonProperty @this)
-    {
-      #if JSON10_0_OR_GREATER
-        public ReadOnlySpan<byte> RawNameSpan => JsonMarshal.GetRawUtf8PropertyName(@this);
-      #endif
-    }
-
-    extension(ref ObjectEnumerator @this)
-    {
-        public string Name => @this.Current.Name;
-        public JsonElement Value => @this.Current.Value;
-      #if JSON10_0_OR_GREATER
-        public ReadOnlySpan<byte> RawNameSpan => JsonMarshal.GetRawUtf8PropertyName(@this.Current);
-      #endif
     }
 
   #if !JSON9_0_OR_GREATER

@@ -14,7 +14,7 @@ internal static class JsonNodeList
             JNode node => IndexOfJsonNode(node.NodeUntyped),
             JsonElement el => IndexOfJsonElement(el),
             JsonDocument doc => IndexOfJsonElement(doc.RootElement),
-            _ => ValueTypeExts.ToJsonValueNode(value, out var node, options.JsonNodeOptions)
+            _ => value.ToJsonValue(out var node, options.JsonNodeOptions)
                 ? IndexOfJsonNode(node) : -1,
         };
         int IndexOfJsonNode(JsonNode? node) =>

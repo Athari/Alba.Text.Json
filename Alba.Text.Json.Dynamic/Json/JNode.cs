@@ -22,13 +22,13 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<o
     internal abstract JsonNode NodeUntyped { get; }
 
     public JNode Clone() =>
-        (JNode)JsonNode.ToJNodeOrValue(JsonNode.DeepClone(NodeUntyped), Options);
+        (JNode)NodeUntyped.DeepClone().ToJNodeOrValue(Options);
 
     public sealed override bool Equals(object? o) =>
         JsonNode.Equals(NodeUntyped, o, Options.DirectEquality, Options);
 
     public sealed override int GetHashCode() =>
-        JsonNode.ToHashCode(NodeUntyped, Options.DirectEquality, Options);
+        NodeUntyped.GetHashCode(Options.DirectEquality, Options);
 
     public string ToJsonString(JsonSerializerOptions? opts) =>
         NodeUntyped.ToJsonString(opts);

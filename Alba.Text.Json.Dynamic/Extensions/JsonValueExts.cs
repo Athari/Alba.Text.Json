@@ -5,14 +5,27 @@ namespace Alba.Text.Json.Dynamic.Extensions;
 
 internal static class JsonValueExts
 {
-    extension(JsonNode @this)
+    extension(JsonValue @this)
     {
-        public bool TryGetElementValue(out JsonElement el)
-        {
-            if ((@this as JsonValue)?.TryGetValue(out el) ?? false)
-                return true;
-            el = default;
-            return false;
-        }
+        public object? ToValue(JNodeOptions options) =>
+            @this.DataValueKind switch {
+                // return primitive values directly
+                JsonValueKind.Undefined => options.UndefinedValue,
+                JsonValueKind.Null => null,
+                JsonValueKind.String => @this.GetValue<string>(),
+                JsonValueKind.True => true,
+                JsonValueKind.False => false,
+                // numbers can be stored as JsonElement pointing to barely parsed binary data
+                JsonValueKind.Number => @this.TryGetElementValue(out var el) ? el.ToNumber(options) : @this.GetValue<object>(),
+                // objects can be JsonElement or an arbitrary user type
+                JsonValueKind.Object or JsonValueKind.Array
+                    or (JsonValueKind)byte.MaxValue => // from JsonNodeExts
+                    @this.TryGetElementValue(out var el)
+                        // return value of wrapped JsonElement
+                        ? el.ToValue(options)
+                        // return raw objects stored inside
+                        : @this.GetValue<object>(),
+                _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonNode: {@this}"),
+            };
     }
 }

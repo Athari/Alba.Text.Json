@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Text.Json.Nodes;
-using Alba.Text.Json.Dynamic.Extensions;
 
 namespace Alba.Text.Json.Dynamic;
 
@@ -40,7 +39,7 @@ public sealed partial class JObject
     {
         var i = index;
         foreach ((string name, var value) in Node)
-            array[i++] = new(name, JsonNode.ToJNodeOrValue(value, Options));
+            array[i++] = new(name, value.ToJNodeOrValue(Options));
     }
 
     bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => false;
@@ -80,7 +79,7 @@ public sealed partial class JObject
         {
             var i = index;
             foreach (var (_, value) in source.Node)
-                array[i++] = JsonNode.ToJNodeOrValue(value, source.Options);
+                array[i++] = value.ToJNodeOrValue(source.Options);
         }
 
         void ICollection<object?>.Add(object? item) => throw ReadOnly();

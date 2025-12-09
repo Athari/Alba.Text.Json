@@ -13,9 +13,9 @@ public sealed partial class JObject
     KeyValuePair<string, object?> IList<KeyValuePair<string, object?>>.this[int index] {
         get {
             var p = NodeList[index];
-            return new(p.Key, JsonNode.ToJNodeOrValue(p.Value, Options));
+            return new(p.Key, p.Value.ToJNodeOrValue(Options));
         }
-        set => NodeList[index] = new(value.Key, ValueTypeExts.ToNewJsonNode(value.Value, Node.Options));
+        set => NodeList[index] = new(value.Key, value.Value.ToJsonNode(Node.Options));
     }
 
     int IList<KeyValuePair<string, object?>>.IndexOf(KeyValuePair<string, object?> item) =>
@@ -33,7 +33,7 @@ public sealed partial class JObject
     private partial class ValueCollection : IList<object?>, IReadOnlyList<object?>
     {
         public object? this[int index] {
-            get => JsonNode.ToJNodeOrValue(source.NodeList[index].Value, source.Options);
+            get => source.NodeList[index].Value.ToJNodeOrValue(source.Options);
             set => throw ReadOnly();
         }
 

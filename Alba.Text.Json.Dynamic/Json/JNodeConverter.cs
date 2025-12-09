@@ -5,9 +5,9 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Alba.Text.Json.Dynamic;
 
-[PublicAPI]
 public sealed class JNodeConverter(JNodeOptions? options) : JsonConverter<JNode?>
 {
+    [SuppressMessage("ReSharper", "RedundantSuppressNullableWarningExpression", Justification = "Nullability fixed in JSON 8.0+")]
     private static readonly JsonConverter<JsonNode?> NodeConverter = JsonMetadataServices.JsonNodeConverter!;
 
     public JNodeOptions? Options { get; } = options ?? JNodeOptions.Default;

@@ -31,33 +31,33 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
     }
 
     public object? this[Index index] {
-        get => JsonNode.ToJNodeOrValue(Node[index], Options);
-        set => Node[index] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
+        get => Node[index].ToJNodeOrValue(Options);
+        set => Node[index] = value.ToJsonNode(Node.Options);
     }
 
     public int Count =>
         Node.Count;
 
     private object? Get(int index) =>
-        JsonNode.ToJNodeOrValue(Node[index], Options);
+        Node[index].ToJNodeOrValue(Options);
 
     private object? Get(Index index) =>
-        JsonNode.ToJNodeOrValue(Node[index], Options);
+        Node[index].ToJNodeOrValue(Options);
 
     private void Set<T>(int index, T value) =>
-        Node[index] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
+        Node[index] = value.ToJsonNode(Node.Options);
 
     private void Set<T>(Index index, T value) =>
-        Node[index] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
+        Node[index] = value.ToJsonNode(Node.Options);
 
     public void Add<T>(T value) =>
-        Node.Add(ValueTypeExts.ToNewJsonNode(value, Node.Options));
+        Node.Add(value.ToJsonNode(Node.Options));
 
     public void Insert<T>(int index, T value) =>
-        Node.Insert(index, ValueTypeExts.ToNewJsonNode(value, Node.Options));
+        Node.Insert(index, value.ToJsonNode(Node.Options));
 
     public void Insert<T>(Index index, T value) =>
-        Node.Insert(index.GetOffset(Node.Count), ValueTypeExts.ToNewJsonNode(value, Node.Options));
+        Node.Insert(index.GetOffset(Node.Count), value.ToJsonNode(Node.Options));
 
     public bool Remove<T>(T item) =>
         JsonNodeList.Remove(Node, item, Options);
@@ -81,7 +81,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
         (JArray)base.Clone();
 
     public IEnumerator<object?> GetEnumerator() =>
-        Node.Select(n => JsonNode.ToJNodeOrValue(n, Options)).GetEnumerator();
+        Node.Select(n => n.ToJNodeOrValue(Options)).GetEnumerator();
 
     public dobject GetMetaObject(E expression) => new MetaJArray(expression, this);
 

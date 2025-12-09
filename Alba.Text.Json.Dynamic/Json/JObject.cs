@@ -27,20 +27,20 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
         Node.Count;
 
     private object? Get(string name) =>
-        JsonNode.ToJNodeOrValue(Node[name], Options);
+        Node[name].ToJNodeOrValue(Options);
 
     public bool TryGet(string name, out object? value)
     {
         var ret = Node.TryGetPropertyValue(name, out var node);
-        value = ret ? JsonNode.ToJNodeOrValue(node, Options) : null;
+        value = ret ? node.ToJNodeOrValue(Options) : null;
         return ret;
     }
 
     private void Set<T>(string name, T value) =>
-        Node[name] = ValueTypeExts.ToNewJsonNode(value, Node.Options);
+        Node[name] = value.ToJsonNode(Node.Options);
 
     public void Add<T>(string name, T value) =>
-        Node.Add(name, ValueTypeExts.ToNewJsonNode(value, Node.Options));
+        Node.Add(name, value.ToJsonNode(Node.Options));
 
     public bool Remove(string name) =>
         Node.Remove(name);
@@ -55,7 +55,7 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
         (JObject)base.Clone();
 
     public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() =>
-        Node.Select(p => new KeyValuePair<string, object?>(p.Key, JsonNode.ToJNodeOrValue(p.Value, Options)))
+        Node.Select(p => new KeyValuePair<string, object?>(p.Key, p.Value.ToJNodeOrValue(Options)))
             .GetEnumerator();
 
     public dobject GetMetaObject(E expression) =>
