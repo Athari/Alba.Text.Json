@@ -8,7 +8,7 @@
     <UseJetBrainsAnnotations>true</UseJetBrainsAnnotations>
     <UsePolySharp>true</UsePolySharp>
     <UseT4>true</UseT4>
-    <NoWarn Label="Missing XML comment for publicly visible type or member">$(NoWarn);CS1591</NoWarn>
+    <!--<NoWarn Label="Missing XML comment for publicly visible type or member">$(NoWarn);CS1591</NoWarn>-->
     <NoWarn Label="The type name only contains lower-cased ascii characters | .editorconfig fails">$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 

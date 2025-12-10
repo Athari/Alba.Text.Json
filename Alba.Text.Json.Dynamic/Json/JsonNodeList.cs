@@ -20,7 +20,7 @@ internal static class JsonNodeList
         int IndexOfJsonNode(JsonNode? node) =>
             nodes.IndexOf(n => JsonNode.Equals(n, node, options.SearchEquality, options));
         int IndexOfJsonElement(JsonElement el) =>
-            nodes.IndexOf(n => JsonNode.EqualsJsonElement(n, el, options.SearchEquality, options));
+            nodes.IndexOf(n => JsonNode.Equals(n, el, options.SearchEquality, options));
     }
 
     public static bool Contains<T>(IEnumerable<JsonNode?> nodes, T value, JNodeOptions options) =>

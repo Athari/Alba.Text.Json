@@ -5,6 +5,7 @@ namespace Alba.Text.Json.Dynamic;
 
 #pragma warning disable CS1633 // Unrecognized #pragma directive
 
+/// <summary>Options for controlling behavior of <see cref="JNode"/>.</summary>
 public sealed class JNodeOptions
 {
     internal static readonly JNodeOptions Default = new();
@@ -14,9 +15,15 @@ public sealed class JNodeOptions
         FloatTypes = [ NumberType.Decimal ],
     };
 
-    public JsonNodeOptions JsonNodeOptions => new() { PropertyNameCaseInsensitive = !IsCaseSensitive };
+    internal JsonNodeOptions JsonNodeOptions => new() { PropertyNameCaseInsensitive = !IsCaseSensitive };
+
+    internal bool PropertyNameEquals(string a, string b) =>
+        a.Equals(b, IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
 
 #pragma t4 copy begin
+    /// <summary>
+    /// Gets or sets a value that indicates whether property names on <see cref="JObject"/> are case-sensitive.
+    /// </summary>
     public bool IsCaseSensitive { get; set; } = true;
 
     /// <summary>Equality mode of <see cref="JNode.Equals(object?)"/>,

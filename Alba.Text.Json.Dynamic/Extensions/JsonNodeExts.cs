@@ -8,15 +8,16 @@ using C = System.TypeCode;
 
 namespace Alba.Text.Json.Dynamic.Extensions;
 
-[SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug")]
+/// <summary>Extension methods for <see cref="JsonNode"/>.</summary>
+[SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug"), SuppressMessage("CodeQuality", "IDE0079")]
 public static class JsonNodeExts
 {
+    ///
     extension(JsonNode @this)
     {
-        public JsonValueKind DataValueKind
-        {
-            get
-            {
+        /// <summary>Gets <see cref="JsonValueKind"/> of the value of <see cref="JsonNode"/>.</summary>
+        public JsonValueKind DataValueKind {
+            get {
                 switch (@this) {
                     case null:
                         return JsonValueKind.Null;
@@ -61,15 +62,24 @@ public static class JsonNodeExts
             }
         }
 
-        public bool TryGetElementValue(out JsonElement el)
-        {
-            if ((@this as JsonValue)?.TryGetValue(out el) ?? false)
-                return true;
-            el = default;
-            return false;
-        }
+        /// <summary>Determines whether the specified <see cref="JsonNode"/> and <see langword="object"/> are considered equal.</summary>
+        /// <param name="n1">The <see cref="JsonNode"/> to compare.</param>
+        /// <param name="v2">The <see langword="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="equality">Kind of equality comparison: deep, shallow or reference.</param>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
+        /// <remarks>Uses built-in JsonNode.DeepEquals and JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
+        public static bool Equals(JsonNode? n1, object? v2, Equality equality, JNodeOptions options) =>
+            v2 switch {
+                JsonNode or null => JsonNode.Equals(n1, (JsonNode?)v2, equality, options),
+                JNode n2 => JsonNode.Equals(n1, n2.NodeUntyped, equality, options),
+                JsonElement el2 => JsonNode.EqualsJsonElement(n1, el2, equality, options),
+                JsonDocument doc2 => JsonNode.EqualsJsonElement(n1, doc2.RootElement, equality, options),
+                not null => JsonNode.Equals(n1, v2.ToJsonNode(n1?.Options ?? options.JsonNodeOptions, false), equality, options),
+            };
 
-        public static bool EqualsJsonElement(JsonNode? n1, JsonElement el2, Equality equality, JNodeOptions options)
+        private static bool EqualsJsonElement(JsonNode? n1, JsonElement el2, Equality equality, JNodeOptions options)
         {
             var el1null = n1 == null || JsonNode.IsNull(n1, options);
             var el2null = el2.IsNull(options);
@@ -90,15 +100,6 @@ public static class JsonNodeExts
             // Can doc be null here?
             return el2null;
         }
-
-        public static bool Equals(JsonNode? n1, object? v2, Equality equality, JNodeOptions options) =>
-            v2 switch {
-                JsonNode or null => JsonNode.Equals(n1, (JsonNode?)v2, equality, options),
-                JNode n2 => JsonNode.Equals(n1, n2.NodeUntyped, equality, options),
-                JsonElement el2 => JsonNode.EqualsJsonElement(n1, el2, equality, options),
-                JsonDocument doc2 => JsonNode.EqualsJsonElement(n1, doc2.RootElement, equality, options),
-                not null => JsonNode.Equals(n1, v2.ToJsonNode(n1?.Options ?? options.JsonNodeOptions), equality, options),
-            };
 
         private static bool Equals(JsonNode? n1, JsonNode? n2, Equality equality, JNodeOptions options)
         {
@@ -171,6 +172,14 @@ public static class JsonNodeExts
           #endif
         }
 
+        internal bool TryGetElementValue(out JsonElement el)
+        {
+            if ((@this as JsonValue)?.TryGetValue(out el) ?? false)
+                return true;
+            el = default;
+            return false;
+        }
+
         private static bool IsNull(JsonNode node, JNodeOptions options) =>
             node.DataValueKind switch {
                 JsonValueKind.Null => true,
@@ -190,6 +199,12 @@ public static class JsonNodeExts
             return equalsFn(n1!, n2!, options);
         }
 
+        /// <summary>Hash code function which correspeconds to the specified <paramref name="equality"/> kind.</summary>
+        /// <param name="equality">Kind of equality comparison: deep, shallow or reference.</param>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns>A hash code of the node.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
+        /// <exception cref="InvalidOperationException">Unsupported <see cref="JsonNode"/> type. Should never happen.</exception>
         public int GetHashCode(Equality equality, JNodeOptions options) =>
             equality switch {
                 Equality.Deep => @this.GetDeepHashCode(options),
@@ -258,8 +273,12 @@ public static class JsonNodeExts
             RuntimeHelpers.GetHashCode(@this);
     }
 
+    ///
     extension(JsonNode? @this)
     {
+        /// <summary>Creates a new instance of the <see cref="JsonNode"/>. All children nodes are recursively cloned.</summary>
+        /// <returns>A new cloned instance of the node, or <see langword="null"/> if <see langword="null"/> is passed.</returns>
+        /// <remarks>Uses built-in JsonNode.DeepClone, if available.</remarks>
         [return: NotNullIfNotNull(nameof(@this))]
         public JsonNode? DeepClone()
         {

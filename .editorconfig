@@ -14,6 +14,10 @@ dotnet_diagnostic.ca1822.severity = none
 
 resharper_unused_member_in_super_global_highlighting = none
 
+# R# handles warnings better
+
+dotnet_diagnostic.cs8602.severity = none # Dereference of a possibly null reference # Can't handle extension methods on nullable
+
 # .NET diagnostic
 
 dotnet_remove_unnecessary_suppression_exclusions = category:ReSharper, category:AvaloniaProperty, category:Reliability, category:Performance, category:Design, category:Unknown # Bugged af for categories disabled by default
@@ -166,7 +170,7 @@ resharper_cpp_other_braces = end_of_line
 resharper_cpp_wrap_lines = false
 resharper_csharp_allow_comment_after_lbrace = true
 resharper_csharp_blank_lines_around_field = 0
-resharper_csharp_blank_lines_around_namespace = 0
+resharper_csharp_blank_lines_around_namespace = 1
 resharper_csharp_stick_comment = false
 resharper_csharp_wrap_before_binary_opsign = true
 resharper_csharp_wrap_lines = false
@@ -288,7 +292,7 @@ dotnet_diagnostic.ca2007.severity = none # Do not directly await a Task # Avalon
 
 dotnet_diagnostic.cs8981.severity = none # The type name only contains lower-cased ascii characters # Those won't become keywords, trust me bro
 
-[**/{Polyfill,Polyfills,Compat}/**/*.cs]
+[**/{Polyfill,Polyfills,Compat,Framework}/**/*.cs]
 
 resharper_check_namespace_highlighting = none
 

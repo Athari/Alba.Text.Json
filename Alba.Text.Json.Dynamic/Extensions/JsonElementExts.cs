@@ -10,21 +10,24 @@ using Alba.Framework;
 
 namespace Alba.Text.Json.Dynamic.Extensions;
 
-[SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug")]
+/// <summary>Extension methods for <see cref="JsonElement"/>.</summary>
+[SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug"), SuppressMessage("CodeQuality", "IDE0079")]
 public static class JsonElementExts
 {
   #if NET5_0_OR_GREATER
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
   #endif
 
+    ///
     extension(in JsonElement @this)
     {
-        /// <inheritdoc cref="JsonElement.GetRawText" />
+        /// <summary>Gets the original input data backing this value, returning it as a <see cref="string"/>.</summary>
+        /// <exception cref="ObjectDisposedException">The parent <see cref="JsonDocument"/> has been disposed.</exception>
         public string RawText => @this.GetRawText();
 
-      #if JSON9_0_OR_GREATER
-        /// <inheritdoc cref="JsonMarshal.GetRawUtf8Value" />
-      #endif
+        /// <summary>Gets a <see cref="ReadOnlySpan{T}"/> view over the raw JSON data of the given <see cref="JsonElement"/>.</summary>
+        /// <exception cref="ObjectDisposedException">The underlying <see cref="JsonDocument"/> has been disposed.</exception>
+        /// <remarks>While the method itself does check for disposal of the underlying <see cref="JsonDocument"/>, it is possible that it could be disposed after the method returns, which would result in the span pointing to a buffer that has been returned to the shared pool. Callers should take extra care to make sure that such a scenario isn't possible to avoid potential data corruption.</remarks>
         public ReadOnlySpan<byte> RawValueSpan {
             get {
               #if JSON9_0_OR_GREATER
@@ -37,6 +40,10 @@ public static class JsonElementExts
             }
         }
 
+        /// <summary>Converts a <see cref="JsonElement"/> to a raw value: <see langword="null"/>, <see langword="string"/>, <see langword="bool"/> or a numeric type (<see langword="int"/>, <see langword="double"/>, <see langword="decimal"/> etc.). Conversion of numbers depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>. Conversion of <c>undefined</c> depends on <see cref="JNodeOptions.UndefinedValue"/> of <paramref name="options"/>.</summary>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns>A converted raw value.</returns>
+        /// <exception cref="InvalidOperationException">Unsupported <see cref="JsonValueKind"/> value. Should never happen.</exception>
         public object? ToValue(JNodeOptions options) =>
             @this.ValueKind switch {
                 JsonValueKind.Undefined => options.UndefinedValue,
@@ -50,6 +57,10 @@ public static class JsonElementExts
                 _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonElement: {@this.ValueKind}"),
             };
 
+        /// <summary>Converts a <see cref="JsonElement"/> to a number: <see langword="int"/>, <see langword="double"/>, <see langword="decimal"/> etc. Conversion depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>.</summary>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns>A converted number.</returns>
+        /// <exception cref="InvalidOperationException">The element cannot be converted to a number.</exception>
         public object ToNumber(JNodeOptions options) =>
             IsFloatingPoint(@this.RawValueSpan) ?
                 @this.ToNumberType(options.FloatTypes) ??
@@ -92,6 +103,14 @@ public static class JsonElementExts
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"A number or string NumberKind expected, got {type}"),
             };
 
+        /// <summary>Determines whether the specified <see cref="JsonElement"/> instances are considered equal.</summary>
+        /// <param name="el1">The first <see cref="JsonElement"/> to compare.</param>
+        /// <param name="el2">The second <see cref="JsonElement"/> to compare.</param>
+        /// <param name="equality">Kind of equality comparison: deep, shallow or reference.</param>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns><see langword="true"/> if the elements are considered equal; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
+        /// <remarks>Uses built-in JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
         public static bool Equals(in JsonElement el1, in JsonElement el2, Equality equality, JNodeOptions options) =>
             equality switch {
                 Equality.Deep => JsonElement.DeepEquals(el1, el2, options),
@@ -206,9 +225,16 @@ public static class JsonElementExts
           #endif
         }
 
+        /// <summary>Determines whether the specified <see cref="JsonElement"/> instances refer to the same document offset.</summary>
+        /// <param name="el1">The first <see cref="JsonElement"/> to compare.</param>
+        /// <param name="el2">The second <see cref="JsonElement"/> to compare.</param>
+        /// <returns><see langword="true"/> if the offsets of the elements are considered equal; otherwise, <see langword="false"/>.</returns>
         public static bool DocumentOffsetEquals(in JsonElement el1, in JsonElement el2) =>
             MemoryMarshal.CreateReadOnlyByteSpan(el1).SequenceEqual(MemoryMarshal.CreateReadOnlyByteSpan(el2));
 
+        /// <summary>Determines whether the element's value is <see langword="null"/>. Respects <see cref="JNodeOptions.UndefinedValue"/> of <paramref name="options"/>.</summary>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns><see langword="true"/> if the element's value is <see langword="null"/>; otherwise, <see langword="false"/>.</returns>
         public bool IsNull(JNodeOptions options) =>
             @this.ValueKind switch {
                 JsonValueKind.Null => true,

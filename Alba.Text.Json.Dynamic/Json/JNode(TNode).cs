@@ -3,6 +3,10 @@ using System.Text.Json.Nodes;
 
 namespace Alba.Text.Json.Dynamic;
 
+/// <summary>Generic base of dynamic adapters for <see cref="JsonNode"/> types with support for dynamic dispatch via <see cref="IDynamicMetaObjectProvider"/>.</summary>
+/// <typeparam name="TNode">Type of <see cref="JsonNode"/> to wrap.</typeparam>
+/// <param name="source"><see cref="JsonNode"/> to wrap.</param>
+/// <param name="options">Options to control the behavior.</param>
 public class JNode<TNode>(TNode source, JNodeOptions? options = null)
     : JNode(options)
     where TNode : JsonNode
