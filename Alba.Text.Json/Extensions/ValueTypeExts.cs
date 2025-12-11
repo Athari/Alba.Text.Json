@@ -44,7 +44,7 @@ public static class ValueTypeExts
                 ? valueNode
                 : @this switch {
                     // already JNode, clone if used within another tree
-                    IJNode { NodeUntyped: var n } => n.ToJsonNode(options, isolated),
+                    IJNode { Node: var n } => n.ToJsonNode(options, isolated),
                     // already JsonNode
                     JsonNode v => v.Parent == null ? v : v.DeepClone(),
                     // element is always stored as JsonValueOfElement
@@ -76,7 +76,7 @@ public static class ValueTypeExts
         /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see langword="bool"/>, <see langword="int"/>, <see langword="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
         public JsonElement ToJsonElement() =>
             @this switch {
-                IJNode { NodeUntyped: var n } => n.ToJsonElement(),
+                IJNode { Node: var n } => n.ToJsonElement(),
                 JsonNode n => n.Deserialize<JsonDocument>().RootElement,
                 JsonElement el => el,
                 JsonDocument doc => doc.RootElement,

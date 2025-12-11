@@ -10,7 +10,7 @@ namespace Alba.Text.Json.Dynamic;
 /// <summary>Non-generic base of dynamic adapters for <see cref="JsonNode"/> types with support for dynamic dispatch via <see cref="IDynamicMetaObjectProvider"/>.</summary>
 /// <param name="options">Options to control the behavior.</param>
 [JsonConverter(typeof(JNodeConverter))]
-public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<object?>
+public abstract partial class JNode(JNodeOptions? options = null) : IJNode, IEquatable<object?>
 {
     private static readonly MethodRef PClone = MethodRef.Of((JNode o) => o.Clone());
     private static readonly MethodRef PEquals = MethodRef.Of((JNode o) => o.Equals(0));
@@ -23,6 +23,8 @@ public abstract partial class JNode(JNodeOptions? options = null) : IEquatable<o
     internal readonly JNodeOptions Options = options ?? JNodeOptions.Default;
 
     internal abstract JsonNode NodeUntyped { get; }
+
+    JsonNode IJNode.Node => NodeUntyped;
 
     /// <summary>Gets the JSON path.</summary>
     /// <returns>The JSON Path value.</returns>

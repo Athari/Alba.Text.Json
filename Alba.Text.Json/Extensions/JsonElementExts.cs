@@ -109,7 +109,7 @@ public static class JsonElementExts
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"A number or string NumberKind expected, got {type}"),
             };
 
-        /// <summary>Determines whether the specified JSON objects are considered equal. One of comparands must be <see cref="JsonElement"/> or <see cref="JsonDocument"/>. To compare arbitrary types, use <see cref="JsonNodeExts.Equals(object?,object?,Equality,JNodeOptions)"/>.</summary>
+        /// <summary>Determines whether the specified JSON objects are considered equal. One of comparands must be <see cref="JsonElement"/> or <see cref="JsonDocument"/>. To compare arbitrary types, use <see cref="JsonNodeExts.Equals(object?,object?,JEquality,JNodeOptions)"/>.</summary>
         /// <param name="v1">The first <see langword="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
         /// <param name="v2">The second <see langword="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
         /// <param name="equality">Kind of equality comparison.</param>
@@ -117,7 +117,7 @@ public static class JsonElementExts
         /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
         /// <remarks>Uses built-in JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
-        public static bool Equals(object? v1, object? v2, Equality equality, JNodeOptions options) =>
+        public static bool Equals(object? v1, object? v2, JEquality equality, JNodeOptions options) =>
             (v1, v2) switch {
                 (JsonNode or IJNode, _) or (_, JsonNode or IJNode) =>
                     throw new ArgumentException(InvalidEqualityComparandType),
@@ -149,15 +149,15 @@ public static class JsonElementExts
         /// <returns><see langword="true"/> if the elements are considered equal; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
         /// <remarks>Uses built-in JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
-        public static bool Equals(in JsonElement el1, in JsonElement el2, Equality equality, JNodeOptions options) =>
+        public static bool Equals(in JsonElement el1, in JsonElement el2, JEquality equality, JNodeOptions options) =>
             equality switch {
-                Equality.Deep => JsonElement.DeepEquals(el1, el2, options),
-                Equality.Shallow => JsonElement.ShallowEquals(el1, el2, options),
-                Equality.Reference => JsonElement.ReferenceEquals(el1, el2, options),
+                JEquality.Deep => JsonElement.DeepEquals(el1, el2, options),
+                JEquality.Shallow => JsonElement.ShallowEquals(el1, el2, options),
+                JEquality.Reference => JsonElement.ReferenceEquals(el1, el2, options),
                 _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
             };
 
-        private static bool EqualsValue(JsonElement el1, object? v2, Equality equality, JNodeOptions options) =>
+        private static bool EqualsValue(JsonElement el1, object? v2, JEquality equality, JNodeOptions options) =>
             JsonElement.Equals(el1, v2.ToJsonElement(), equality, options);
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local", Justification = "Conditional")]
@@ -279,11 +279,11 @@ public static class JsonElementExts
         /// <returns>A hash code of the node.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
         /// <exception cref="InvalidOperationException">Unsupported <see cref="JsonNode"/> type. Should never happen.</exception>
-        public int GetHashCode(Equality equality, JNodeOptions options) =>
+        public int GetHashCode(JEquality equality, JNodeOptions options) =>
             equality switch {
-                Equality.Deep => @this.GetDeepHashCode(options),
-                Equality.Shallow => @this.GetShallowHashCode(options),
-                Equality.Reference => @this.GetDocumentOffsetHashCode(),
+                JEquality.Deep => @this.GetDeepHashCode(options),
+                JEquality.Shallow => @this.GetShallowHashCode(options),
+                JEquality.Reference => @this.GetDocumentOffsetHashCode(),
                 _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
             };
 

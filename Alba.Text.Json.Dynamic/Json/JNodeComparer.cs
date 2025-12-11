@@ -5,13 +5,13 @@ public static class JNodeComparer
 {
     /// <inheritdoc cref="JsonComparer.Reference"/>
     [field: MaybeNull]
-    public static JsonComparer<JNode> Reference => field ??= new(Equality.Reference, JNodeOptions.Default);
+    public static JsonComparer<JNode> Reference => field ??= new(JEquality.Reference, JNodeOptions.Default);
 
     /// <inheritdoc cref="JsonComparer.Shallow"/>
     [field: MaybeNull]
-    public static JsonComparer<JNode> Shallow => field ??= new(Equality.Shallow, JNodeOptions.Default);
+    public static JsonComparer<JNode> Shallow => field ??= new(JEquality.Shallow, JNodeOptions.Default);
 
     /// <inheritdoc cref="JsonComparer.Deep"/>
     [field: MaybeNull]
-    public static JsonComparer<JNode> Deep => field ??= new(Equality.Deep, JNodeOptions.Default);
+    public static JsonComparer<JNode> Deep => field ??= new(JEquality.Deep, JNodeOptions.Default);
 }

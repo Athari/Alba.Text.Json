@@ -70,7 +70,7 @@ public static class JsonNodeExts
         /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
         /// <remarks>Uses built-in JsonNode.DeepEquals and JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
-        public static bool Equals(object? v1, object? v2, Equality equality, JNodeOptions options) =>
+        public static bool Equals(object? v1, object? v2, JEquality equality, JNodeOptions options) =>
             (v1, v2) switch {
                 (null, null) => true,
                 (JsonNode n1, _) =>
@@ -78,9 +78,9 @@ public static class JsonNodeExts
                 (_, JsonNode n2) =>
                     JsonNode.EqualsValue(n2, v1, equality, options),
                 (IJNode j1, _) =>
-                    JsonNode.EqualsValue(j1.NodeUntyped, v2, equality, options),
+                    JsonNode.EqualsValue(j1.Node, v2, equality, options),
                 (_, IJNode j2) =>
-                    JsonNode.EqualsValue(j2.NodeUntyped, v1, equality, options),
+                    JsonNode.EqualsValue(j2.Node, v1, equality, options),
                 (JsonElement or JsonDocument, _) or (_, JsonElement or JsonDocument) =>
                     JsonElement.Equals(v1, v2, equality, options),
                 (_, null) =>
@@ -92,12 +92,12 @@ public static class JsonNodeExts
                     JsonElement.Equals(v1.ToJsonElement(), v2.ToJsonElement(), equality, options),
             };
 
-        private static bool EqualsValue(JsonNode? n1, object? v2, Equality equality, JNodeOptions options) =>
+        private static bool EqualsValue(JsonNode? n1, object? v2, JEquality equality, JNodeOptions options) =>
             v2 switch {
                 JsonNode or null =>
                     JsonNode.Equals(n1, (JsonNode?)v2, equality, options),
                 IJNode j2 =>
-                    JsonNode.Equals(n1, j2.NodeUntyped, equality, options),
+                    JsonNode.Equals(n1, j2.Node, equality, options),
                 JsonElement el2 =>
                     JsonNode.EqualsJsonElement(n1, el2, equality, options),
                 JsonDocument doc2 =>
@@ -106,7 +106,7 @@ public static class JsonNodeExts
                     JsonNode.Equals(n1, v2.ToJsonNode(n1?.Options ?? options.JsonNodeOptions, false), equality, options),
             };
 
-        private static bool EqualsJsonElement(JsonNode? n1, JsonElement el2, Equality equality, JNodeOptions options)
+        private static bool EqualsJsonElement(JsonNode? n1, JsonElement el2, JEquality equality, JNodeOptions options)
         {
             var el1null = n1 == null || JsonNode.IsNull(n1, options);
             var el2null = el2.IsNull(options);
@@ -123,7 +123,7 @@ public static class JsonNodeExts
             return JsonElement.Equals(n1n.ToJsonElement(), el2, equality, options);
         }
 
-        private static bool Equals(JsonNode? n1, JsonNode? n2, Equality equality, JNodeOptions options)
+        private static bool Equals(JsonNode? n1, JsonNode? n2, JEquality equality, JNodeOptions options)
         {
           #if JSON9_0_OR_GREATER
             // try faster element comparison first
@@ -132,9 +132,9 @@ public static class JsonNodeExts
           #endif
             return WithNullCheck(
                 (n1n, n2n, _) => equality switch {
-                    Equality.Deep => JsonNode.DeepEquals(n1n, n2n, options),
-                    Equality.Shallow => JsonNode.ShallowEquals(n1n, n2n, options),
-                    Equality.Reference => JsonNode.ReferenceEquals(n1n, n2n, options),
+                    JEquality.Deep => JsonNode.DeepEquals(n1n, n2n, options),
+                    JEquality.Shallow => JsonNode.ShallowEquals(n1n, n2n, options),
+                    JEquality.Reference => JsonNode.ReferenceEquals(n1n, n2n, options),
                     _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
                 },
                 n1, n2, options);
@@ -171,7 +171,7 @@ public static class JsonNodeExts
 
         private static bool ReferenceEquals(JsonNode n1, JsonNode n2, JNodeOptions options) =>
             ReferenceEquals(n1, n2) ||
-            n1.TryGetElementValue(out var el1) && n2.TryGetElementValue(out var el2) && JsonElement.Equals(el1, el2, Equality.Reference, options);
+            n1.TryGetElementValue(out var el1) && n2.TryGetElementValue(out var el2) && JsonElement.Equals(el1, el2, JEquality.Reference, options);
 
         private static bool ValueEquals(JsonValue v1, JsonValue v2, JNodeOptions options)
         {
@@ -227,9 +227,9 @@ public static class JsonNodeExts
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A hash code of the object.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
-        public static int GetHashCode(object? v, Equality equality, JNodeOptions options) =>
+        public static int GetHashCode(object? v, JEquality equality, JNodeOptions options) =>
             v switch {
-                IJNode { NodeUntyped: var n } => n.GetHashCode(equality, options),
+                IJNode { Node: var n } => n.GetHashCode(equality, options),
                 JsonNode n => n.GetHashCode(equality, options),
                 JsonElement el => el.GetHashCode(equality, options),
                 JsonDocument doc => doc.RootElement.GetHashCode(equality, options),
@@ -242,11 +242,11 @@ public static class JsonNodeExts
         /// <returns>A hash code of the node.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
         /// <exception cref="InvalidOperationException">Unsupported <see cref="JsonNode"/> type. Should never happen.</exception>
-        public int GetHashCode(Equality equality, JNodeOptions options) =>
+        public int GetHashCode(JEquality equality, JNodeOptions options) =>
             equality switch {
-                Equality.Deep => @this.GetDeepHashCode(options),
-                Equality.Shallow => @this.GetShallowHashCode(options),
-                Equality.Reference => @this.GetReferenceHashCode(),
+                JEquality.Deep => @this.GetDeepHashCode(options),
+                JEquality.Shallow => @this.GetShallowHashCode(options),
+                JEquality.Reference => @this.GetReferenceHashCode(),
                 _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
             };
 

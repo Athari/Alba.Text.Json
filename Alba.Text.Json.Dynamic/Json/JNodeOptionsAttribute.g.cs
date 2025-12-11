@@ -8,10 +8,10 @@ public partial class JNodeOptionsAttribute
     public bool IsCaseSensitive { get; set; } = JNodeOptions.Default.IsCaseSensitive;
 
     /// <inheritdoc cref="JNodeOptions.DirectEquality" />
-    public Equality DirectEquality { get; set; } = JNodeOptions.Default.DirectEquality;
+    public JEquality DirectEquality { get; set; } = JNodeOptions.Default.DirectEquality;
 
     /// <inheritdoc cref="JNodeOptions.SearchEquality" />
-    public Equality SearchEquality { get; set; } = JNodeOptions.Default.SearchEquality;
+    public JEquality SearchEquality { get; set; } = JNodeOptions.Default.SearchEquality;
 
     /// <inheritdoc cref="JNodeOptions.MaxHashCodeValueCount" />
     public int MaxHashCodeValueCount { get; set; } = JNodeOptions.Default.MaxHashCodeValueCount;

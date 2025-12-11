@@ -4,7 +4,7 @@ using System.Text.Json.Nodes;
 namespace Alba.Text.Json.Dynamic;
 
 /// <summary>Kind of equality comparison of JSON types.</summary>
-public enum Equality
+public enum JEquality
 {
     /// <summary>Reference equality. Determines whether nodes reference the same memory address. For <see cref="JsonElement"/>, compares whether elements refer to the same document offset.</summary>
     Reference,

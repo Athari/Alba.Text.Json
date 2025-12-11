@@ -30,19 +30,19 @@ public sealed class JNodeOptions
     public bool IsCaseSensitive { get; set; } = true;
 
     /// <summary>Equality mode of <see cref="IJNode.Equals(object?)"/>,
-    /// <see cref="IJNode.GetHashCode"/> and other direct equality operations. Default: <see cref="Equality.Deep"/>.</summary>
-    public Equality DirectEquality { get; set; } = Equality.Deep;
+    /// <see cref="IJNode.GetHashCode"/> and other direct equality operations. Default: <see cref="JEquality.Deep"/>.</summary>
+    public JEquality DirectEquality { get; set; } = JEquality.Deep;
 
     /// <summary>Equality mode of <see cref="JsonArray.IndexOf"/>, <see cref="JsonArray.Contains"/>,
-    /// <see cref="JsonArray.Remove"/> and other search operations. Default: <see cref="Equality.Shallow"/>.</summary>
-    public Equality SearchEquality { get; set; } = Equality.Shallow;
+    /// <see cref="JsonArray.Remove"/> and other search operations. Default: <see cref="JEquality.Shallow"/>.</summary>
+    public JEquality SearchEquality { get; set; } = JEquality.Shallow;
 
     /// <summary>Maximum number of values to include in the calculation of <see cref="IJNode.GetHashCode"/>
-    /// when in <see cref="Equality.Deep"/> mode.</summary>
+    /// when in <see cref="JEquality.Deep"/> mode.</summary>
     public int MaxHashCodeValueCount { get; set; } = 32;
 
     /// <summary>Maxmium depth of arrays and objects to include in the calculation of <see cref="IJNode.GetHashCode"/>
-    /// when in <see cref="Equality.Deep"/> mode.</summary>
+    /// when in <see cref="JEquality.Deep"/> mode.</summary>
     public int MaxHashCodeDepth { get; set; } = 4;
 
     /// <summary>Value of nodes of <see cref="JsonValueKind.Undefined"/> kind.</summary>
