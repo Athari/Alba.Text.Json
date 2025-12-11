@@ -12,25 +12,26 @@ public static class ValueTypeExts
     ///
     extension<T>(T @this)
     {
+        // TODO Support specifying JsonSerializerOptions/JsonTypeInfo when serializing objects to nodes
         /// <summary>
-        ///   Converts a value to a <see cref="JsonNode"/>. Attempts to reuse the existing value. If isolation is requested (<paramref name="isolated"/> is <see langword="true"/> by default), it creates a new node or clones the existing node if necessary. The result depends on the type of the value:
+        ///   Converts an <see langword="object"/> value to a <see cref="JsonNode"/>. Attempts to reuse the existing value. If isolation is requested (<paramref name="isolated"/> is <see langword="true"/> by default), it creates a new node or clones the existing node if necessary. The result depends on the type of the value:
         ///   <list type="table">
-        ///     <listheader><term>Type</term><term>Result</term></listheader>
-        ///     <item><description><see langword="null"/></description>
+        ///     <listheader><term>Type</term><description>Result</description></listheader>
+        ///     <item><term><see langword="null"/></term>
         ///           <description><see langword="null"/></description></item>
-        ///     <item><description>A primitive type †</description>
+        ///     <item><term>A primitive type †</term>
         ///           <description><see cref="JsonValue"/> wrapping the value</description></item>
-        ///     <item><description><see cref="JNode"/></description>
+        ///     <item><term><see cref="JNode"/></term>
         ///           <description>Wrapped <see cref="JsonNode"/>; deep cloned if it has a parent and isolation is requested</description></item>
-        ///     <item><description><see cref="JsonValue"/></description>
+        ///     <item><term><see cref="JsonValue"/></term>
         ///           <description><see cref="JsonValue"/> itself</description></item>
-        ///     <item><description><see cref="JsonArray"/> or <see cref="JsonObject"/></description>
+        ///     <item><term><see cref="JsonArray"/> or <see cref="JsonObject"/></term>
         ///           <description><see cref="JsonNode"/> itself; deep cloned if it has a parent and isolation is requested</description></item>
-        ///     <item><description><see cref="JsonElement"/></description>
+        ///     <item><term><see cref="JsonElement"/></term>
         ///           <description><see cref="JsonValue"/> wrapping the <see cref="JsonElement"/></description></item>
-        ///     <item><description><see cref="JsonDocument"/></description>
+        ///     <item><term><see cref="JsonDocument"/></term>
         ///           <description><see cref="JsonNode"/> serialization of the <see cref="JsonDocument"/></description></item>
-        ///     <item><description>Everything else</description>
+        ///     <item><term>Everything else</term>
         ///           <description><see cref="JsonNode"/> serialization of the value</description></item>
         ///   </list>
         /// </summary>
@@ -54,18 +55,47 @@ public static class ValueTypeExts
                 };
 
         /// <summary>
+        ///   Converts an <see langword="object"/> value to a <see cref="JsonElement"/>. Attempts to reuse the existing value. The result depends on the type of the value:
+        ///   <list type="table">
+        ///     <listheader><term>Type</term><description>Result</description></listheader>
+        ///     <item><term><see cref="JNode"/></term>
+        ///           <description><see cref="JsonElement"/> deserialization of the wrapped <see cref="JsonNode"/>.</description></item>
+        ///     <item><term><see cref="JsonNode"/></term>
+        ///           <description><see cref="JsonElement"/> deserialization of the node.</description></item>
+        ///     <item><term><see cref="JsonArray"/> or <see cref="JsonObject"/></term>
+        ///           <description><see cref="JsonElement"/> itself</description></item>
+        ///     <item><term><see cref="JsonElement"/></term>
+        ///           <description><see cref="JsonElement"/> wrapping the <see cref="JsonElement"/></description></item>
+        ///     <item><term><see cref="JsonDocument"/></term>
+        ///           <description><see cref="JsonElement"/> serialization of the <see cref="JsonDocument"/></description></item>
+        ///     <item><term>Everything else</term>
+        ///           <description><see cref="JsonElement"/> serialization of the value</description></item>
+        ///   </list>
+        /// </summary>
+        /// <returns>An isolated <see cref="JsonNode"/></returns>
+        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see langword="bool"/>, <see langword="int"/>, <see langword="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
+        public JsonElement ToJsonElement() =>
+            @this switch {
+                JNode { NodeUntyped: var n } => n.ToJsonElement(),
+                JsonNode n => n.Deserialize<JsonDocument>().RootElement,
+                JsonElement el => el,
+                JsonDocument doc => doc.RootElement,
+                _ => JsonSerializer.SerializeToElement(@this),
+            };
+
+        /// <summary>
         ///   Converts a value to a primitive <see cref="JsonValue"/>. A return value indicates whether the conversion succeeded. The result <paramref name="valueNode"/> depends on the type of the value:
         ///   <list type="table">
-        ///     <listheader><term>Type</term><term>Result</term></listheader>
-        ///     <item><description><see langword="null"/></description>
+        ///     <listheader><term>Type</term><description>Result</description></listheader>
+        ///     <item><term><see langword="null"/></term>
         ///           <description><see langword="null"/></description></item>
-        ///     <item><description>A primitive type †</description>
+        ///     <item><term>A primitive type †</term>
         ///           <description><see cref="JsonValue"/> wrapping the value</description></item>
-        ///     <item><description><see cref="JsonValue"/></description>
+        ///     <item><term><see cref="JsonValue"/></term>
         ///           <description><see cref="JsonValue"/> itself</description></item>
-        ///     <item><description><see cref="JsonElement"/></description>
+        ///     <item><term><see cref="JsonElement"/></term>
         ///           <description><see cref="JsonValue"/> wrapping the <see cref="JsonElement"/>, unless an array or an object is wrapped</description></item>
-        ///     <item><description>Everything else</description>
+        ///     <item><term>Everything else</term>
         ///           <description><see langword="null"/> (failure)</description></item>
         ///   </list>
         /// </summary>

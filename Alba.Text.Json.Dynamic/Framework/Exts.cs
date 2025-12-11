@@ -72,4 +72,14 @@ internal static class Exts
             return -1;
         }
     }
+
+    extension(ReadOnlySpan<byte> @this)
+    {
+        public int GetBytesHashCode()
+        {
+            var hash = new HashCode();
+            hash.AddBytes(@this);
+            return hash.ToHashCode();
+        }
+    }
 }

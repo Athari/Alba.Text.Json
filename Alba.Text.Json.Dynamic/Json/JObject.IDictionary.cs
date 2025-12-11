@@ -8,10 +8,10 @@ public sealed partial class JObject
 {
     private IDictionary<string, JsonNode?> NodeDictionary => Node;
 
-    /// <summary>Gets a collection containing the property names in the <see cref="JsonObject"/>.</summary>
+    /// <summary>Gets a collection containing the property names in the <see cref="JObject"/>.</summary>
     private ICollection<string> Keys => NodeDictionary.Keys;
 
-    /// <summary>Gets a collection containing the property values in the <see cref="JsonObject"/>.</summary>
+    /// <summary>Gets a collection containing the property values in the <see cref="JObject"/>.</summary>
     private ICollection<object?> Values => new ValueCollection(this);
 
     // IDictionary<string, JsonNode?>
@@ -44,8 +44,8 @@ public sealed partial class JObject
 
     // ICollection<KeyValuePair<string, object?>>
 
-    /// <summary>Copies the elements of the <see cref="JsonObject"/> to an array of type KeyValuePair starting at the specified array index.</summary>
-    /// <param name="array">The one-dimensional Array that is the destination of the elements copied from <see cref="JsonObject"/>.</param>
+    /// <summary>Copies the elements of the <see cref="JObject"/> to an array of type KeyValuePair starting at the specified array index.</summary>
+    /// <param name="array">The one-dimensional Array that is the destination of the elements copied from <see cref="JObject"/>.</param>
     /// <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.</exception>
@@ -64,14 +64,14 @@ public sealed partial class JObject
     void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item) =>
         Add(item.Key, item.Value);
 
-    /// <summary>Determines whether the <see cref="JsonObject"/> contains a specific property name and <see cref="JsonNode"/> reference.</summary>
-    /// <param name="item">The element to locate in the <see cref="JsonObject"/>.</param>
-    /// <returns><see langword="true"/> if the <see cref="JsonObject"/> contains an element with the property name; otherwise, <see langword="false"/>.</returns>
+    /// <summary>Determines whether the <see cref="JObject"/> contains a specific property name and <see cref="JsonNode"/> reference.</summary>
+    /// <param name="item">The element to locate in the <see cref="JObject"/>.</param>
+    /// <returns><see langword="true"/> if the <see cref="JObject"/> contains an element with the property name; otherwise, <see langword="false"/>.</returns>
     bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) =>
         TryGet(item.Key, out var value) && Equals(item.Value, value);
 
-    /// <summary>Removes a key and value from the <see cref="JsonObject"/>.</summary>
-    /// <param name="item">The KeyValuePair structure representing the property name and value to remove from the <see cref="JsonObject"/>.</param>
+    /// <summary>Removes a key and value from the <see cref="JObject"/>.</summary>
+    /// <param name="item">The KeyValuePair structure representing the property name and value to remove from the <see cref="JObject"/>.</param>
     /// <returns><see langword="true"/> if the element is successfully removed; otherwise, <see langword="false"/>.</returns>
     bool ICollection<KeyValuePair<string, object?>>.Remove(KeyValuePair<string, object?> item) =>
         TryGet(item.Key, out var value) && Equals(item.Value, value) && Remove(item.Key);
@@ -92,7 +92,7 @@ public sealed partial class JObject
         public bool IsReadOnly => true;
 
         public bool Contains(object? item) =>
-            JsonNodeList.Contains(source.Node.Select(p => p.Value), item, source.Options);
+            source.Node.Select(p => p.Value).Contains(item, source.Options);
 
         public IEnumerator<object?> GetEnumerator() =>
             source.Select(p => p.Value).GetEnumerator();

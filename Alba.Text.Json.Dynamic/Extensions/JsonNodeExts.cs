@@ -63,20 +63,47 @@ public static class JsonNodeExts
         }
 
         /// <summary>Determines whether the specified <see cref="JsonNode"/> and <see langword="object"/> are considered equal.</summary>
-        /// <param name="n1">The <see cref="JsonNode"/> to compare.</param>
-        /// <param name="v2">The <see langword="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
-        /// <param name="equality">Kind of equality comparison: deep, shallow or reference.</param>
+        /// <param name="v1">The first <see langword="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="v2">The second <see langword="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
         /// <remarks>Uses built-in JsonNode.DeepEquals and JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
-        public static bool Equals(JsonNode? n1, object? v2, Equality equality, JNodeOptions options) =>
+        public static bool Equals(object? v1, object? v2, Equality equality, JNodeOptions options) =>
+            (v1, v2) switch {
+                (null, null) => true,
+                (JsonNode n1, _) =>
+                    JsonNode.EqualsValue(n1, v2, equality, options),
+                (_, JsonNode n2) =>
+                    JsonNode.EqualsValue(n2, v1, equality, options),
+                (JNode j1, _) =>
+                    JsonNode.EqualsValue(j1.NodeUntyped, v2, equality, options),
+                (_, JNode j2) =>
+                    JsonNode.EqualsValue(j2.NodeUntyped, v1, equality, options),
+                (JsonElement or JsonDocument, _) or (_, JsonElement or JsonDocument) =>
+                    JsonElement.Equals(v1, v2, equality, options),
+                (_, null) =>
+                    JNodeOptions.Default.IsNull(v1),
+                (null, _) =>
+                    JNodeOptions.Default.IsNull(v2),
+                // Compare arbitrary types as their JSON representations
+                (_, _) =>
+                    JsonElement.Equals(v1.ToJsonElement(), v2.ToJsonElement(), equality, options),
+            };
+
+        private static bool EqualsValue(JsonNode? n1, object? v2, Equality equality, JNodeOptions options) =>
             v2 switch {
-                JsonNode or null => JsonNode.Equals(n1, (JsonNode?)v2, equality, options),
-                JNode n2 => JsonNode.Equals(n1, n2.NodeUntyped, equality, options),
-                JsonElement el2 => JsonNode.EqualsJsonElement(n1, el2, equality, options),
-                JsonDocument doc2 => JsonNode.EqualsJsonElement(n1, doc2.RootElement, equality, options),
-                not null => JsonNode.Equals(n1, v2.ToJsonNode(n1?.Options ?? options.JsonNodeOptions, false), equality, options),
+                JsonNode or null =>
+                    JsonNode.Equals(n1, (JsonNode?)v2, equality, options),
+                JNode j2 =>
+                    JsonNode.Equals(n1, j2.NodeUntyped, equality, options),
+                JsonElement el2 =>
+                    JsonNode.EqualsJsonElement(n1, el2, equality, options),
+                JsonDocument doc2 =>
+                    JsonNode.EqualsJsonElement(n1, doc2.RootElement, equality, options),
+                not null =>
+                    JsonNode.Equals(n1, v2.ToJsonNode(n1?.Options ?? options.JsonNodeOptions, false), equality, options),
             };
 
         private static bool EqualsJsonElement(JsonNode? n1, JsonElement el2, Equality equality, JNodeOptions options)
@@ -93,12 +120,7 @@ public static class JsonNodeExts
                 return JsonElement.Equals(el1, el2, equality, options);
 
             // Let's hope non-element JsonValue isn't compared with JsonElement often and just deserialize
-            var doc1 = n1n.Deserialize<JsonDocument>();
-            if (doc1?.RootElement != null)
-                return JsonElement.Equals(doc1.RootElement, el2, equality, options);
-
-            // Can doc be null here?
-            return el2null;
+            return JsonElement.Equals(n1n.ToJsonElement(), el2, equality, options);
         }
 
         private static bool Equals(JsonNode? n1, JsonNode? n2, Equality equality, JNodeOptions options)
@@ -200,7 +222,22 @@ public static class JsonNodeExts
         }
 
         /// <summary>Hash code function which correspeconds to the specified <paramref name="equality"/> kind.</summary>
-        /// <param name="equality">Kind of equality comparison: deep, shallow or reference.</param>
+        /// <param name="v">The <see langword="object"/> whose hash code to calculate. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="equality">Kind of equality comparison.</param>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns>A hash code of the object.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
+        public static int GetHashCode(object? v, Equality equality, JNodeOptions options) =>
+            v switch {
+                JNode { NodeUntyped: var n } => n.GetHashCode(equality, options),
+                JsonNode n => n.GetHashCode(equality, options),
+                JsonElement el => el.GetHashCode(equality, options),
+                JsonDocument doc => doc.RootElement.GetHashCode(equality, options),
+                _ => v?.ToJsonNode(options.JsonNodeOptions, false)?.GetHashCode(equality, options) ?? 0,
+            };
+
+        /// <summary>Hash code function which correspeconds to the specified <paramref name="equality"/> kind.</summary>
+        /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A hash code of the node.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
@@ -213,27 +250,26 @@ public static class JsonNodeExts
                 _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
             };
 
-        private int GetDeepHashCode(JNodeOptions? options)
+        private int GetDeepHashCode(JNodeOptions options)
         {
-            int maxCount = options?.MaxHashCodeValueCount ?? int.MaxValue;
-            int maxDepth = options?.MaxHashCodeDepth ?? int.MaxValue;
+            var maxCount = options.MaxHashCodeValueCount;
+            var maxDepth = options.MaxHashCodeDepth;
+            var nameComparer = options.PropertyNameComparer;
 
-            var hash = 0;
+            var hash = new HashCode();
             var count = 0;
-            GetHashCodeProc(@this, depth: 0);
-            return hash;
+            AddHashCode(@this, depth: 0);
+            return hash.ToHashCode();
 
-            bool Add(object? value)
+            bool Add<T>(T? value, IEqualityComparer<T?>? comparer = null)
             {
-                if (count >= maxCount)
+                if (count++ >= maxCount)
                     return false;
-                else
-                    count++;
-                hash = unchecked(hash * 397 ^ (value?.GetHashCode() ?? 0));
+                hash.Add(value, comparer);
                 return true;
             }
 
-            void GetHashCodeProc(JsonNode? n, int depth)
+            void AddHashCode(JsonNode? n, int depth)
             {
                 if (n == null || !Add(n.GetType()))
                     return;
@@ -241,20 +277,20 @@ public static class JsonNodeExts
                     case JsonArray a:
                         if (depth < maxDepth)
                             foreach (var item in a)
-                                GetHashCodeProc(item, depth + 1);
+                                AddHashCode(item, depth + 1);
                         else
                             Add(a.Count);
                         break;
                     case JsonObject o:
-                        foreach (var (name, value) in o.OrderBy(p => p.Key, StringComparer.Ordinal)) {
-                            if (!Add(name))
+                        foreach (var (name, value) in o.OrderBy(p => p.Key, nameComparer)) {
+                            if (!Add(name, nameComparer))
                                 return;
                             if (depth < maxDepth)
-                                GetHashCodeProc(value, depth + 1);
+                                AddHashCode(value, depth + 1);
                         }
                         break;
-                    case JsonValue value:
-                        Add(value.ToValue(JNodeOptions.Default));
+                    case JsonValue v:
+                        Add(v.ToValue(options));
                         break;
                 }
             }
@@ -263,9 +299,8 @@ public static class JsonNodeExts
         private int GetShallowHashCode(JNodeOptions options) =>
             @this switch {
                 null => 0,
-                JsonObject v => v.Count.GetHashCode(),
-                JsonArray v => v.Count.GetHashCode(),
                 JsonValue v => v.ToValue(options)?.GetHashCode() ?? 0,
+                JsonObject or JsonArray => @this.GetReferenceHashCode(),
                 _ => throw new InvalidOperationException($"Unexpected node type: {@this.GetType().Name}"),
             };
 

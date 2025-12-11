@@ -9,13 +9,13 @@ public static class JNodeDynamicExts
     ///
     extension(JsonNode? @this)
     {
-        /// <summary>Convert a <see cref="JsonNode"/> to a <see cref="JNode"/> or a primitive value, typed as <see langword="dynamic"/>.</summary>
+        /// <summary>Converts a <see cref="JsonNode"/> to a <see cref="JNode"/> or a primitive value, typed as <see langword="dynamic"/>.</summary>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A <see langword="dynamic"/> adapter for <see cref="JsonNode"/> or a primitive value.</returns>
         public dynamic? ToDynamic(JNodeOptions? options = null) =>
             @this.ToJNodeOrValue(options ?? JNodeOptions.Default);
 
-        /// <summary>Convert a <see cref="JsonNode"/> to a <see cref="JNode"/> or a primitive value.</summary>
+        /// <summary>Converts a <see cref="JsonNode"/> to a <see cref="JNode"/> or a primitive value.</summary>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A <see langword="dynamic"/> adapter for <see cref="JsonNode"/> or a primitive value.</returns>
         [return: NotNullIfNotNull(nameof(@this))]

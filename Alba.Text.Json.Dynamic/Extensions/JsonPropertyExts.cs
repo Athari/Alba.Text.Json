@@ -1,6 +1,7 @@
 ﻿#if JSON10_0_OR_GREATER
-
 using System.Runtime.InteropServices;
+#endif
+using System.ComponentModel;
 using System.Text.Json;
 
 namespace Alba.Text.Json.Dynamic.Extensions;
@@ -17,7 +18,15 @@ public static class JsonPropertyExts
         /// <exception cref="ObjectDisposedException">The underlying <see cref="JsonDocument"/> has been disposed.</exception>
         public ReadOnlySpan<byte> RawNameSpan => JsonMarshal.GetRawUtf8PropertyName(@this);
       #endif
+
+        /// <summary>Deconstructs the current <see cref="JsonProperty"/>.</summary>
+        /// <param name="name">The name of the current <see cref="JsonProperty"/>.</param>
+        /// <param name="value">The value of the current <see cref="JsonProperty"/>.</param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public void Deconstruct(out string name, out JsonElement value)
+        {
+            name = @this.Name;
+            value = @this.Value;
+        }
     }
 }
-
-#endif

@@ -8,17 +8,20 @@ namespace Alba.Text.Json.Dynamic;
 /// <summary>Options for controlling behavior of <see cref="JNode"/>.</summary>
 public sealed class JNodeOptions
 {
-    internal static readonly JNodeOptions Default = new();
-
-    internal static readonly JNodeOptions DefaultDecimal = new() {
-        IntegerTypes = [ NumberType.Int32, NumberType.Decimal ],
-        FloatTypes = [ NumberType.Decimal ],
-    };
+    /// <summary>Default options set.</summary>
+    public static readonly JNodeOptions Default = new();
 
     internal JsonNodeOptions JsonNodeOptions => new() { PropertyNameCaseInsensitive = !IsCaseSensitive };
 
-    internal bool PropertyNameEquals(string a, string b) =>
-        a.Equals(b, IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+    internal StringComparison PropertyNameComparison => IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+    internal StringComparer PropertyNameComparer => IsCaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+
+    internal bool IsNull(object? o) => o == null || Equals(UndefinedValue, null) && IsUndefined(o);
+
+    internal bool IsUndefined(object? o) => Equals(UndefinedValue, o);
+
+    internal bool ArePropertyNamesEqual(string a, string b) => a.Equals(b, PropertyNameComparison);
 
 #pragma t4 copy begin
     /// <summary>

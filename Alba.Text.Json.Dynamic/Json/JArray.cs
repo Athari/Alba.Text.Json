@@ -28,7 +28,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
     private static readonly PropertyRef PNodeCount = PropertyRef.Of((JsonArray o) => o.Count);
     private static readonly MethodRef PNodeClear = MethodRef.Of((JsonArray o) => o.Clear());
 
-    /// <summary>Gets or sets the value at the specified index.</summary>
+    /// <summary>Gets or sets the value at the specified index. The assigned value is converted to <see cref="JNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
     /// <param name="index">The zero-based index of the value to get or set.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0 or <paramref name="index"/> is greater than the number of values.</exception>
     public object? this[int index] {
@@ -36,7 +36,7 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
         set => Set(index, value);
     }
 
-    /// <summary>Gets or sets the value at the specified index.</summary>
+    /// <summary>Gets or sets the value at the specified index. The assigned value is converted to <see cref="JNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
     /// <param name="index">The index of the value to get or set, which is either from the beginning or the end of the array.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0 or <paramref name="index"/> is greater than the number of values.</exception>
     public object? this[Index index] {
@@ -60,38 +60,38 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
     private void Set<T>(Index index, T item) =>
         Node[index] = item.ToJsonNode(Node.Options);
 
-    /// <summary>Adds a value to the end of the <see cref="JArray"/>. The value is converted to <see cref="JsonNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
+    /// <summary>Adds a value to the end of the <see cref="JArray"/>. The value is converted to <see cref="JNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
     /// <param name="item">The value to be added to the end of the <see cref="JArray"/>.</param>
     public void Add<T>(T item) =>
         Node.Add(item.ToJsonNode(Node.Options));
 
-    /// <summary>Inserts a value into the <see cref="JsonArray"/> at the specified index. The value is converted to <see cref="JsonNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
+    /// <summary>Inserts a value into the <see cref="JArray"/> at the specified index. The value is converted to <see cref="JNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
     /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
     /// <param name="item">The value to insert.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0 or <paramref name="index"/> is greater than <see cref="Count"/>.</exception>
     public void Insert<T>(int index, T item) =>
         Node.Insert(index, item.ToJsonNode(Node.Options));
 
-    /// <summary>Inserts a value into the <see cref="JsonArray"/> at the specified index. The value is converted to <see cref="JsonNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
+    /// <summary>Inserts a value into the <see cref="JArray"/> at the specified index. The value is converted to <see cref="JNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
     /// <param name="index">The index at which <paramref name="item"/> should be inserted, which is either from the beginning or the end of the array.</param>
     /// <param name="item">The value to insert.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0 or <paramref name="index"/> is greater than <see cref="Count"/>.</exception>
     public void Insert<T>(Index index, T item) =>
         Node.Insert(index.GetOffset(Node.Count), item.ToJsonNode(Node.Options));
 
-    /// <summary>Removes the first occurrence of a specific value from the <see cref="JsonArray"/>. The value is searched using <see cref="JNodeOptions.SearchEquality"/> comparison kind.</summary>
-    /// <param name="item">The value to remove from the <see cref="JsonArray"/>.</param>
+    /// <summary>Removes the first occurrence of a specific value from the <see cref="JArray"/>. The value is searched using <see cref="JNodeOptions.SearchEquality"/> comparison kind.</summary>
+    /// <param name="item">The value to remove from the <see cref="JArray"/>.</param>
     /// <returns><see langword="true"/> if <paramref name="item"/> is successfully removed; otherwise, <see langword="false"/>.</returns>
     public bool Remove<T>(T item) =>
-        JsonNodeList.Remove(Node, item, Options);
+        Node.Remove(item, Options);
 
-    /// <summary>Removes the value at the specified index of the <see cref="JsonArray"/>.</summary>
+    /// <summary>Removes the value at the specified index of the <see cref="JArray"/>.</summary>
     /// <param name="index">The zero-based index of the value to remove.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0 or <paramref name="index"/> is greater than <see cref="Count"/>.</exception>
     public void RemoveAt(int index) =>
         Node.RemoveAt(index);
 
-    /// <summary>Removes the value at the specified index of the <see cref="JsonArray"/>.</summary>
+    /// <summary>Removes the value at the specified index of the <see cref="JArray"/>.</summary>
     /// <param name="index">The index of the value to remove, which is either from the beginning or the end of the array.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0 or <paramref name="index"/> is greater than <see cref="Count"/>.</exception>
     public void RemoveAt(Index index) =>
@@ -101,25 +101,25 @@ public sealed partial class JArray(JsonArray source, JNodeOptions? options = nul
     public void Clear() =>
         Node.Clear();
 
-    /// <summary>Determines whether a value is in the <see cref="JArray"/>.</summary>
+    /// <summary>Determines whether a value is in the <see cref="JArray"/>. The value is searched using <see cref="JNodeOptions.SearchEquality"/> comparison kind.</summary>
     /// <param name="item">The object to locate in the <see cref="JArray"/>.</param>
     /// <returns><see langword="true"/> if <paramref name="item"/> is found in the <see cref="JArray"/>; otherwise, <see langword="false"/>.</returns>
     public bool Contains<T>(T item) =>
-        JsonNodeList.Contains(Node, item, Options);
+        Node.Contains(item, Options);
 
-    /// <summary>The object to locate in the <see cref="JsonArray"/>.</summary>
-    /// <param name="item">The <see cref="JsonNode"/> to locate in the <see cref="JsonArray"/>.</param>
+    /// <summary>The object to locate in the <see cref="JArray"/>. The value is searched using <see cref="JNodeOptions.SearchEquality"/> comparison kind.</summary>
+    /// <param name="item">The <see cref="JNode"/> to locate in the <see cref="JArray"/>.</param>
     /// <returns>The index of item if found in the list; otherwise, -1.</returns>
     public int IndexOf<T>(T item) =>
-        JsonNodeList.IndexOf(Node, item, Options);
+        Node.IndexOf(item, Options);
 
     /// <summary>Creates a new instance of the <see cref="JArray"/>. All children nodes are recursively cloned.</summary>
     /// <returns>A new cloned instance of the current node.</returns>
     public new JArray Clone() =>
         (JArray)base.Clone();
 
-    /// <summary>Returns an enumerator that iterates through the <see cref="JsonArray"/>.</summary>
-    /// <returns>A <see cref="IEnumerator{Object}"/> for the <see cref="JArray"/>.</returns>
+    /// <summary>Returns an enumerator that iterates through the <see cref="JArray"/>.</summary>
+    /// <returns>An <see cref="IEnumerator{Object}"/> for the <see cref="JArray"/>.</returns>
     public IEnumerator<object?> GetEnumerator() =>
         Node.Select(n => n.ToJNodeOrValue(Options)).GetEnumerator();
 

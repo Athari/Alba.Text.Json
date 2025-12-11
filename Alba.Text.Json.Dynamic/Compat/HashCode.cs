@@ -2,18 +2,17 @@
 #nullable enable
 #pragma warning disable
 
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NET5_0_OR_GREATER
+//#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET6_0_OR_GREATER
 
 using System.ComponentModel;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace System;
 
 [ExcludeFromCodeCoverage]
-public struct HashCode
+internal struct HashCode
 {
     private static readonly uint s_seed = 0;
 
@@ -275,6 +274,62 @@ public struct HashCode
             _v2 = Round(_v2, _queue2);
             _v3 = Round(_v3, _queue3);
             _v4 = Round(_v4, val);
+        }
+    }
+
+    public void AddBytes(ReadOnlySpan<byte> value)
+    {
+        ref byte pos = ref MemoryMarshal.GetReference(value);
+        ref byte end = ref Unsafe.Add(ref pos, value.Length);
+
+        if (value.Length < (sizeof(int) * 4)) {
+            goto Small;
+        }
+
+        if (_length == 0) {
+            Initialize(out _v1, out _v2, out _v3, out _v4);
+        }
+        else {
+            switch (_length % 4) {
+                case 1:
+                    Add(Unsafe.ReadUnaligned<int>(ref pos));
+                    pos = ref Unsafe.Add(ref pos, sizeof(int));
+                    goto case 2;
+                case 2:
+                    Add(Unsafe.ReadUnaligned<int>(ref pos));
+                    pos = ref Unsafe.Add(ref pos, sizeof(int));
+                    goto case 3;
+                case 3:
+                    Add(Unsafe.ReadUnaligned<int>(ref pos));
+                    pos = ref Unsafe.Add(ref pos, sizeof(int));
+                    break;
+            }
+        }
+
+        ref byte blockEnd = ref Unsafe.Subtract(ref end, (int)Unsafe.ByteOffset(ref pos, ref end) % (sizeof(int) * 4));
+        while (Unsafe.IsAddressLessThan(ref pos, ref blockEnd)) {
+            uint v1 = Unsafe.ReadUnaligned<uint>(ref pos);
+            _v1 = Round(_v1, v1);
+            uint v2 = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref pos, sizeof(int) * 1));
+            _v2 = Round(_v2, v2);
+            uint v3 = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref pos, sizeof(int) * 2));
+            _v3 = Round(_v3, v3);
+            uint v4 = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref pos, sizeof(int) * 3));
+            _v4 = Round(_v4, v4);
+
+            _length += 4;
+            pos = ref Unsafe.Add(ref pos, sizeof(int) * 4);
+        }
+
+        Small:
+        while ((int)Unsafe.ByteOffset(ref pos, ref end) >= sizeof(int)) {
+            Add(Unsafe.ReadUnaligned<int>(ref pos));
+            pos = ref Unsafe.Add(ref pos, sizeof(int));
+        }
+
+        while (Unsafe.IsAddressLessThan(ref pos, ref end)) {
+            Add((int)pos);
+            pos = ref Unsafe.Add(ref pos, 1);
         }
     }
 

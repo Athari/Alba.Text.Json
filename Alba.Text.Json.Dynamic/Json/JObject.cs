@@ -21,7 +21,7 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
     private static readonly MethodRef PNodeContainsKey = MethodRef.Of((JsonObject o) => o.ContainsKey(""));
     private static readonly MethodRef PNodeRemove = MethodRef.Of((JsonObject o) => o.Remove(""));
 
-    /// <summary>Gets or sets the value of the specified property. If the property is not found, <see langword="null"/> is returned.</summary>
+    /// <summary>Gets or sets the value of the specified property. If the property is not found, <see langword="null"/> is returned. The assigned value is converted to <see cref="JNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <see langword="null"/>.</exception>
     public object? this[string propertyName] {
@@ -51,28 +51,28 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
     private void Set<T>(string propertyName, T value) =>
         Node[propertyName] = value.ToJsonNode(Node.Options);
 
-    /// <summary>Adds an element with the provided property name and value to the <see cref="JsonObject"/>.</summary>
+    /// <summary>Adds an element with the provided property name and value to the <see cref="JObject"/>. The value is converted to <see cref="JNode"/> using <see cref="ValueTypeExts.ToJsonNode{T}"/>.</summary>
     /// <param name="propertyName">The property name of the element to add.</param>
     /// <param name="value">The value of the element to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="propertyName"/>is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">An element with the same property name already exists in the <see cref="JsonObject"/>.</exception>
+    /// <exception cref="ArgumentException">An element with the same property name already exists in the <see cref="JObject"/>.</exception>
     public void Add<T>(string propertyName, T value) =>
         Node.Add(propertyName, value.ToJsonNode(Node.Options));
 
-    /// <summary>Removes the element with the specified property name from the <see cref="JsonObject"/>.</summary>
+    /// <summary>Removes the element with the specified property name from the <see cref="JObject"/>.</summary>
     /// <param name="propertyName">The property name of the element to remove.</param>
     /// <returns><see langword="true"/> if the element is successfully removed; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <see langword="null"/>.</exception>
     public bool Remove(string propertyName) =>
         Node.Remove(propertyName);
 
-    /// <summary>Removes all elements from the <see cref="JsonObject"/>.</summary>
+    /// <summary>Removes all elements from the <see cref="JObject"/>.</summary>
     public void Clear() =>
         Node.Clear();
 
-    /// <summary>Determines whether the <see cref="JsonObject"/> contains an element with the specified property name.</summary>
-    /// <param name="propertyName">The property name to locate in the <see cref="JsonObject"/>.</param>
-    /// <returns><see langword="true"/> if the <see cref="JsonObject"/> contains an element with the specified property name; otherwise, <see langword="false"/>.</returns>
+    /// <summary>Determines whether the <see cref="JObject"/> contains an element with the specified property name.</summary>
+    /// <param name="propertyName">The property name to locate in the <see cref="JObject"/>.</param>
+    /// <returns><see langword="true"/> if the <see cref="JObject"/> contains an element with the specified property name; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <see langword="null"/>.</exception>
     public bool ContainsKey(string propertyName) =>
         Node.ContainsKey(propertyName);
@@ -82,8 +82,8 @@ public sealed partial class JObject(JsonObject source, JNodeOptions? options = n
     public new JObject Clone() =>
         (JObject)base.Clone();
 
-    /// <summary>Returns an enumerator that iterates through the <see cref="JsonObject"/>.</summary>
-    /// <returns>An enumerator that iterates through the <see cref="JsonObject"/>.</returns>
+    /// <summary>Returns an enumerator that iterates through the <see cref="JObject"/>.</summary>
+    /// <returns>An enumerator that iterates through the <see cref="JObject"/>.</returns>
     public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() =>
         Node.Select(p => new KeyValuePair<string, object?>(p.Key, p.Value.ToJNodeOrValue(Options)))
             .GetEnumerator();

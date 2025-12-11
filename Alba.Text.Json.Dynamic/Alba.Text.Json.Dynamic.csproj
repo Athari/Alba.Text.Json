@@ -2,7 +2,7 @@
 
   <Import Project="Alba.Text.Json.Dynamic.props" />
   <PropertyGroup Label="Json">
-    <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;net462</TargetFrameworks>
+    <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.0;net462</TargetFrameworks>
     <TargetTextJsonVersion Condition="'$(TfmId)' == '.NETCoreApp'">$(TfmVersion.Split('.')[0])</TargetTextJsonVersion>
     <!-- HACK Temporary -->
     <!--<TargetTextJsonVersion Condition="'$(TfmId)' != '.NETCoreApp'">$(TargetTextJsonVersionFallback)</TargetTextJsonVersion>-->

@@ -1,11 +1,13 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using Alba.Framework;
 #if NET5_0_OR_GREATER
 using System.Globalization;
 #endif
 #if !JSON9_0_OR_GREATER
 using System.Text.Encodings.Web;
-using Alba.Framework;
 #endif
 
 namespace Alba.Text.Json.Dynamic.Extensions;
@@ -14,6 +16,10 @@ namespace Alba.Text.Json.Dynamic.Extensions;
 [SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug"), SuppressMessage("CodeQuality", "IDE0079")]
 public static class JsonElementExts
 {
+    private const string InvalidEqualityComparandType =
+        $"One of comparands must be of type {nameof(JsonElement)} or {nameof(JsonDocument)}. "
+      + $"Use {nameof(JsonNode)}.{nameof(Equals)} to compare objects of arbitrary types.";
+
   #if NET5_0_OR_GREATER
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
   #endif
@@ -103,10 +109,42 @@ public static class JsonElementExts
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"A number or string NumberKind expected, got {type}"),
             };
 
+        /// <summary>Determines whether the specified JSON objects are considered equal. One of comparands must be <see cref="JsonElement"/> or <see cref="JsonDocument"/>. To compare arbitrary types, use <see cref="JsonNodeExts.Equals(object?,object?,Equality,JNodeOptions)"/>.</summary>
+        /// <param name="v1">The first <see langword="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
+        /// <param name="v2">The second <see langword="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
+        /// <param name="equality">Kind of equality comparison.</param>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
+        /// <remarks>Uses built-in JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
+        public static bool Equals(object? v1, object? v2, Equality equality, JNodeOptions options) =>
+            (v1, v2) switch {
+                (JsonNode or JNode, _) or (_, JsonNode or JNode) =>
+                    throw new ArgumentException(InvalidEqualityComparandType),
+                (null, null) => true,
+                (JsonElement el1, JsonElement el2) =>
+                    JsonElement.Equals(el1, el2, equality, options),
+                (JsonElement el1, JsonDocument doc2) =>
+                    JsonElement.Equals(el1, doc2.RootElement, equality, options),
+                (JsonDocument doc1, JsonElement el2) =>
+                    JsonElement.Equals(doc1.RootElement, el2, equality, options),
+                (JsonDocument doc1, JsonDocument doc2) =>
+                    JsonElement.Equals(doc1.RootElement, doc2.RootElement, equality, options),
+                (JsonElement el1, _) =>
+                    JsonElement.EqualsValue(el1, v2, equality, options),
+                (_, JsonElement el2) =>
+                    JsonElement.EqualsValue(el2, v1, equality, options),
+                (JsonDocument doc1, _) =>
+                    JsonElement.EqualsValue(doc1.RootElement, v2, equality, options),
+                (_, JsonDocument doc2) =>
+                    JsonElement.EqualsValue(doc2.RootElement, v1, equality, options),
+                _ => throw new ArgumentException(InvalidEqualityComparandType),
+            };
+
         /// <summary>Determines whether the specified <see cref="JsonElement"/> instances are considered equal.</summary>
         /// <param name="el1">The first <see cref="JsonElement"/> to compare.</param>
         /// <param name="el2">The second <see cref="JsonElement"/> to compare.</param>
-        /// <param name="equality">Kind of equality comparison: deep, shallow or reference.</param>
+        /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns><see langword="true"/> if the elements are considered equal; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
@@ -118,6 +156,9 @@ public static class JsonElementExts
                 Equality.Reference => JsonElement.ReferenceEquals(el1, el2, options),
                 _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
             };
+
+        private static bool EqualsValue(JsonElement el1, object? v2, Equality equality, JNodeOptions options) =>
+            JsonElement.Equals(el1, v2.ToJsonElement(), equality, options);
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local", Justification = "Conditional")]
         private static bool DeepEquals(in JsonElement el1, in JsonElement el2, JNodeOptions options)
@@ -231,6 +272,78 @@ public static class JsonElementExts
         /// <returns><see langword="true"/> if the offsets of the elements are considered equal; otherwise, <see langword="false"/>.</returns>
         public static bool DocumentOffsetEquals(in JsonElement el1, in JsonElement el2) =>
             MemoryMarshal.CreateReadOnlyByteSpan(el1).SequenceEqual(MemoryMarshal.CreateReadOnlyByteSpan(el2));
+
+        /// <summary>Hash code function which correspeconds to the specified <paramref name="equality"/> kind.</summary>
+        /// <param name="equality">Kind of equality comparison.</param>
+        /// <param name="options">Options to control the behavior.</param>
+        /// <returns>A hash code of the node.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
+        /// <exception cref="InvalidOperationException">Unsupported <see cref="JsonNode"/> type. Should never happen.</exception>
+        public int GetHashCode(Equality equality, JNodeOptions options) =>
+            equality switch {
+                Equality.Deep => @this.GetDeepHashCode(options),
+                Equality.Shallow => @this.GetShallowHashCode(options),
+                Equality.Reference => @this.GetDocumentOffsetHashCode(),
+                _ => throw new ArgumentOutOfRangeException(nameof(equality), equality, null),
+            };
+
+        private int GetDeepHashCode(JNodeOptions options)
+        {
+            var maxCount = options.MaxHashCodeValueCount;
+            var maxDepth = options.MaxHashCodeDepth;
+            var nameComparer = options.PropertyNameComparer;
+
+            var hash = new HashCode();
+            var count = 0;
+            AddHashCode(@this, depth: 0);
+            return hash.ToHashCode();
+
+            bool Add<T>(T? value, IEqualityComparer<T?>? comparer = null)
+            {
+                if (count++ >= maxCount)
+                    return false;
+                hash.Add(value, comparer);
+                return true;
+            }
+
+            void AddHashCode(in JsonElement el, int depth)
+            {
+                switch (el.ValueKind) {
+                    case JsonValueKind.Array:
+                        if (depth < maxDepth)
+                            foreach (var item in el.EnumerateArray())
+                                AddHashCode(item, depth + 1);
+                        else
+                            Add(el.GetArrayLength());
+                        break;
+                    case JsonValueKind.Object:
+                        foreach (var (name, value) in el.EnumerateObject().OrderBy(p => p.Name, nameComparer)) {
+                            if (!Add(name, nameComparer))
+                                return;
+                            if (depth < maxDepth)
+                                AddHashCode(value, depth + 1);
+                        }
+                        break;
+                    default:
+                        Add(el.GetShallowHashCode(options));
+                        break;
+                }
+            }
+        }
+
+        private int GetShallowHashCode(JNodeOptions options) =>
+            @this.ValueKind switch {
+                JsonValueKind.Number => @this.RawValueSpan.GetBytesHashCode(),
+                JsonValueKind.String => @this.RawText.GetHashCode(),
+                JsonValueKind.Undefined => options.UndefinedValue?.GetHashCode() ?? 0,
+                JsonValueKind.True => 1,
+                JsonValueKind.False or JsonValueKind.Null => 0,
+                JsonValueKind.Array or JsonValueKind.Object => GetDocumentOffsetHashCode(@this),
+                _ => throw new InvalidEnumArgumentException(),
+            };
+
+        private int GetDocumentOffsetHashCode() =>
+            MemoryMarshal.CreateReadOnlyByteSpan(@this).GetBytesHashCode();
 
         /// <summary>Determines whether the element's value is <see langword="null"/>. Respects <see cref="JNodeOptions.UndefinedValue"/> of <paramref name="options"/>.</summary>
         /// <param name="options">Options to control the behavior.</param>
