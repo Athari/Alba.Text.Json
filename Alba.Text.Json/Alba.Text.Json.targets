@@ -12,7 +12,7 @@
     <Using Include="System.Text.Json.JsonElement.ObjectEnumerator" Alias="ObjectEnumerator" />
     <Using Include="System.Text.Json.JsonElement.ArrayEnumerator" Alias="ArrayEnumerator" />
     <InternalsVisibleTo Include="$(RootNamespace).Tests" />
-    <InternalsVisibleTo Include="$(RootNamespace).Dynamic" Condition="'$(IsTextJsonVersionSpecific)' == 'false'" />
+    <InternalsVisibleTo Include="$(RootNamespace).Dynamic" Condition="'$(IsTextJsonVersionSpecific)' != 'true'" />
     <InternalsVisibleTo Include="$(RootNamespace).Dynamic.STJ$(TargetTextJsonVersion)" Condition="'$(IsTextJsonVersionSpecific)' == 'true'" />
     <InternalsVisibleTo Include="$(RootNamespace).Dynamic.Tests" />
   </ItemGroup>

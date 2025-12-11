@@ -41,7 +41,7 @@
 
   <!-- DOC: Make IDE-only macros available in non-IDE builds -->
   <PropertyGroup Label="Solution">
-    <SolutionName Condition="'$(SolutionName)' == '' or '$(SolutionName)' == '*Undefined*'">Alba.Text.Json.Dynamic</SolutionName>
+    <SolutionName Condition="'$(SolutionName)' == '' or '$(SolutionName)' == '*Undefined*'">Alba.Text.Json</SolutionName>
     <SolutionExt Condition="'$(SolutionExt)' == '' or '$(SolutionExt)' == '*Undefined*'">.slnx</SolutionExt>
     <SolutionFileName Condition="'$(SolutionFileName)' == '' or '$(SolutionFileName)' == '*Undefined*'">$(SolutionName)$(SolutionExt)</SolutionFileName>
     <CurrentSolutionDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), '$(SolutionFileName)'))\</CurrentSolutionDir>

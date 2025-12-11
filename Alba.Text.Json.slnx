@@ -1,10 +1,4 @@
 <Solution>
-  <Folder Name="/Alba.Text.Json/">
-    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.csproj" />
-    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.STJ6.csproj" />
-    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.STJ8.csproj" />
-    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.STJ9.csproj" />
-  </Folder>
   <Folder Name="/~/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
@@ -25,6 +19,12 @@
     <File Path=".nuget/Logo512.png" />
     <File Path=".nuget/NuGet.config" />
     <File Path=".nuget/NuGet.xsd" />
+  </Folder>
+  <Folder Name="/Alba.Text.Json/">
+    <Project Path="Alba.Text.Json/Alba.Text.Json.csproj" />
+    <Project Path="Alba.Text.Json/Alba.Text.Json.STJ6.csproj" />
+    <Project Path="Alba.Text.Json/Alba.Text.Json.STJ8.csproj" />
+    <Project Path="Alba.Text.Json/Alba.Text.Json.STJ9.csproj" />
   </Folder>
   <Folder Name="/Alba.Text.Json.Dynamic/">
     <Project Path="Alba.Text.Json.Dynamic/Alba.Text.Json.Dynamic.csproj" />

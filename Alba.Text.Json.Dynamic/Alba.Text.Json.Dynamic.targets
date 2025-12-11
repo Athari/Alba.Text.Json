@@ -33,7 +33,7 @@
 
   <ItemGroup Label="References">
     <SolutionProjectReference Include="Alba.Text.Json"
-        Condition="'$(IsTextJsonVersionSpecific)' == 'false'" />
+        Condition="'$(IsTextJsonVersionSpecific)' != 'true'" />
     <SolutionProjectReference Include="Alba.Text.Json.STJ$(TargetTextJsonVersion)" Dir="Alba.Text.Json"
         Condition="'$(IsTextJsonVersionSpecific)' == 'true'" />
     <PackageReference Include="Microsoft.Bcl.Memory"
