@@ -119,7 +119,7 @@ public static class JsonElementExts
         /// <remarks>Uses built-in JsonElement.DeepEquals in deep equality comparison mode, if available.</remarks>
         public static bool Equals(object? v1, object? v2, Equality equality, JNodeOptions options) =>
             (v1, v2) switch {
-                (JsonNode or JNode, _) or (_, JsonNode or JNode) =>
+                (JsonNode or IJNode, _) or (_, JsonNode or IJNode) =>
                     throw new ArgumentException(InvalidEqualityComparandType),
                 (null, null) => true,
                 (JsonElement el1, JsonElement el2) =>

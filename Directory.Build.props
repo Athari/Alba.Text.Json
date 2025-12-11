@@ -64,7 +64,7 @@
   </PropertyGroup>
 
   <ItemDefinitionGroup>
-    <SolutionProjectReference Module="" Type="csproj" />
+    <SolutionProjectReference Module="" Dir="" Type="csproj" />
     <RemoveXmlDocPrefix />
   </ItemDefinitionGroup>
 

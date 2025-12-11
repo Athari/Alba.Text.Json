@@ -12,8 +12,9 @@
     <Using Include="System.Text.Json.JsonElement.ObjectEnumerator" Alias="ObjectEnumerator" />
     <Using Include="System.Text.Json.JsonElement.ArrayEnumerator" Alias="ArrayEnumerator" />
     <InternalsVisibleTo Include="$(RootNamespace).Tests" />
-    <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.ExpressionExts." />
-    <RemoveXmlDocPrefix Include=":Alba.Text.Json.Dynamic.RefImpl." />
+    <InternalsVisibleTo Include="$(RootNamespace).Dynamic" Condition="'$(IsTextJsonVersionSpecific)' == 'false'" />
+    <InternalsVisibleTo Include="$(RootNamespace).Dynamic.STJ$(TargetTextJsonVersion)" Condition="'$(IsTextJsonVersionSpecific)' == 'true'" />
+    <InternalsVisibleTo Include="$(RootNamespace).Dynamic.Tests" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTextJsonVersionSpecific)' == 'true'">
@@ -32,10 +33,6 @@
   </ItemGroup>
 
   <ItemGroup Label="References">
-    <SolutionProjectReference Include="Alba.Text.Json"
-        Condition="'$(IsTextJsonVersionSpecific)' == 'false'" />
-    <SolutionProjectReference Include="Alba.Text.Json.STJ$(TargetTextJsonVersion)" Dir="Alba.Text.Json"
-        Condition="'$(IsTextJsonVersionSpecific)' == 'true'" />
     <PackageReference Include="Microsoft.Bcl.Memory"
         Condition="'$(TfmId)' == '.NETFramework' or '$(Tfm)' == 'netstandard2.0'" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(TargetTextJsonVersion).0.0"
@@ -53,12 +50,12 @@
       Dynamic JsonNode: dynamic json = JNode.Parse("""{ "Hello": { "World": [ 1, 2, 3 ] } }"""); json.Hello.World[2]++.
     </DescriptionPackageShared>
     <DescriptionPackageSpecific Condition="'$(IsTextJsonVersionSpecific)' != 'true'">
-      Alba.Text.Json.Dynamic package supports a System.Text.Json version bundled with the .NET version (or latest compatible for .NET Standard and .NET Framework).
-      To support a specific System.Text.Json version, use Alba.Text.Json.Dynamic.STJ# package.
+      Alba.Text.Json package supports a System.Text.Json version bundled with the .NET version (or latest compatible for .NET Standard and .NET Framework).
+      To support a specific System.Text.Json version, use Alba.Text.Json.STJ# package.
     </DescriptionPackageSpecific>
     <DescriptionPackageSpecific Condition="'$(IsTextJsonVersionSpecific)' == 'true'">
-      Alba.Text.Json.Dynamic.STJ$(TargetTextJsonVersion) package supports System.Text.Json version $(TargetTextJsonVersion).
-      To support a System.Text.Json version based on .NET version, use Alba.Text.Json.Dynamic package.
+      Alba.Text.Json.STJ$(TargetTextJsonVersion) package supports System.Text.Json version $(TargetTextJsonVersion).
+      To support a System.Text.Json version based on .NET version, use Alba.Text.Json package.
     </DescriptionPackageSpecific>
   </PropertyGroup>
 

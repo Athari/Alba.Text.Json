@@ -2,8 +2,7 @@
 #nullable enable
 #pragma warning disable
 
-//#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NET5_0_OR_GREATER
-#if !NET6_0_OR_GREATER
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NET5_0_OR_GREATER
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -375,6 +374,23 @@ file static class BitOperations
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ulong RotateLeft(ulong value, int offset)
         => (value << offset) | (value >> (64 - offset));
+}
+
+#endif
+
+#if !NET6_0_OR_GREATER && (NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER)
+
+// Unoptimized .NET Standard 2.1-only solution (HashCode exists, but AddBytes doesn't)
+internal static class HashCodeExts
+{
+    extension(ref HashCode @this)
+    {
+        public void AddBytes(ReadOnlySpan<byte> value)
+        {
+            foreach (var b in value)
+                @this.Add(b);
+        }
+    }
 }
 
 #endif

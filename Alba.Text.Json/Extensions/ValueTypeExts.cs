@@ -21,7 +21,7 @@ public static class ValueTypeExts
         ///           <description><see langword="null"/></description></item>
         ///     <item><term>A primitive type †</term>
         ///           <description><see cref="JsonValue"/> wrapping the value</description></item>
-        ///     <item><term><see cref="JNode"/></term>
+        ///     <item><term><see cref="IJNode"/></term>
         ///           <description>Wrapped <see cref="JsonNode"/>; deep cloned if it has a parent and isolation is requested</description></item>
         ///     <item><term><see cref="JsonValue"/></term>
         ///           <description><see cref="JsonValue"/> itself</description></item>
@@ -44,7 +44,7 @@ public static class ValueTypeExts
                 ? valueNode
                 : @this switch {
                     // already JNode, clone if used within another tree
-                    JNode { NodeUntyped: var n } => n.ToJsonNode(options, isolated),
+                    IJNode { NodeUntyped: var n } => n.ToJsonNode(options, isolated),
                     // already JsonNode
                     JsonNode v => v.Parent == null ? v : v.DeepClone(),
                     // element is always stored as JsonValueOfElement
@@ -58,7 +58,7 @@ public static class ValueTypeExts
         ///   Converts an <see langword="object"/> value to a <see cref="JsonElement"/>. Attempts to reuse the existing value. The result depends on the type of the value:
         ///   <list type="table">
         ///     <listheader><term>Type</term><description>Result</description></listheader>
-        ///     <item><term><see cref="JNode"/></term>
+        ///     <item><term><see cref="IJNode"/></term>
         ///           <description><see cref="JsonElement"/> deserialization of the wrapped <see cref="JsonNode"/>.</description></item>
         ///     <item><term><see cref="JsonNode"/></term>
         ///           <description><see cref="JsonElement"/> deserialization of the node.</description></item>
@@ -76,7 +76,7 @@ public static class ValueTypeExts
         /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see langword="bool"/>, <see langword="int"/>, <see langword="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
         public JsonElement ToJsonElement() =>
             @this switch {
-                JNode { NodeUntyped: var n } => n.ToJsonElement(),
+                IJNode { NodeUntyped: var n } => n.ToJsonElement(),
                 JsonNode n => n.Deserialize<JsonDocument>().RootElement,
                 JsonElement el => el,
                 JsonDocument doc => doc.RootElement,

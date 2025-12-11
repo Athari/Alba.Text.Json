@@ -21,22 +21,6 @@ public static class JsonComparer
     public static JsonComparer<object> Deep => field ??= new(Equality.Deep, JNodeOptions.Default);
 }
 
-/// <summary>Container of predefined comparers of <see cref="JNode"/> using <see cref="JNodeOptions.Default"/> options.</summary>
-public static class JNodeComparer
-{
-    /// <inheritdoc cref="JsonComparer.Reference"/>
-    [field: MaybeNull]
-    public static JsonComparer<JNode> Reference => field ??= new(Equality.Reference, JNodeOptions.Default);
-
-    /// <inheritdoc cref="JsonComparer.Shallow"/>
-    [field: MaybeNull]
-    public static JsonComparer<JNode> Shallow => field ??= new(Equality.Shallow, JNodeOptions.Default);
-
-    /// <inheritdoc cref="JsonComparer.Deep"/>
-    [field: MaybeNull]
-    public static JsonComparer<JNode> Deep => field ??= new(Equality.Deep, JNodeOptions.Default);
-}
-
 /// <summary>Container of predefined comparers of <see cref="JsonNode"/> using <see cref="JNodeOptions.Default"/> options.</summary>
 public static class JsonNodeComparer
 {
@@ -54,7 +38,7 @@ public static class JsonNodeComparer
 }
 
 /// <summary>Comparer of JSON objects.</summary>
-/// <typeparam name="T">The type of objects to compare. The type can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</typeparam>
+/// <typeparam name="T">The type of objects to compare. The type can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</typeparam>
 public sealed class JsonComparer<T>(Equality equality, JNodeOptions options)
     : IEqualityComparer<T?>, IEqualityComparer
 {

@@ -5,7 +5,7 @@ namespace Alba.Text.Json.Dynamic;
 
 #pragma warning disable CS1633 // Unrecognized #pragma directive
 
-/// <summary>Options for controlling behavior of <see cref="JNode"/>.</summary>
+/// <summary>Options for controlling behavior of dynamic JSON nodes.</summary>
 public sealed class JNodeOptions
 {
     /// <summary>Default options set.</summary>
@@ -25,23 +25,23 @@ public sealed class JNodeOptions
 
 #pragma t4 copy begin
     /// <summary>
-    /// Gets or sets a value that indicates whether property names on <see cref="JObject"/> are case-sensitive.
+    /// Gets or sets a value that indicates whether property names of <see cref="JsonObject"/> are case-sensitive.
     /// </summary>
     public bool IsCaseSensitive { get; set; } = true;
 
-    /// <summary>Equality mode of <see cref="JNode.Equals(object?)"/>,
-    /// <see cref="JNode.GetHashCode"/> and other direct equality operations. Default: <see cref="Equality.Deep"/>.</summary>
+    /// <summary>Equality mode of <see cref="IJNode.Equals(object?)"/>,
+    /// <see cref="IJNode.GetHashCode"/> and other direct equality operations. Default: <see cref="Equality.Deep"/>.</summary>
     public Equality DirectEquality { get; set; } = Equality.Deep;
 
-    /// <summary>Equality mode of <see cref="JArray.IndexOf{T}"/>, <see cref="JArray.Contains{T}"/>,
-    /// <see cref="JArray.Remove{T}"/> and other search operations. Default: <see cref="Equality.Shallow"/>.</summary>
+    /// <summary>Equality mode of <see cref="JsonArray.IndexOf"/>, <see cref="JsonArray.Contains"/>,
+    /// <see cref="JsonArray.Remove"/> and other search operations. Default: <see cref="Equality.Shallow"/>.</summary>
     public Equality SearchEquality { get; set; } = Equality.Shallow;
 
-    /// <summary>Maximum number of values to include in the calculation of <see cref="JNode.GetHashCode"/>
+    /// <summary>Maximum number of values to include in the calculation of <see cref="IJNode.GetHashCode"/>
     /// when in <see cref="Equality.Deep"/> mode.</summary>
     public int MaxHashCodeValueCount { get; set; } = 32;
 
-    /// <summary>Maxmium depth of arrays and objects to include in the calculation of <see cref="JNode.GetHashCode"/>
+    /// <summary>Maxmium depth of arrays and objects to include in the calculation of <see cref="IJNode.GetHashCode"/>
     /// when in <see cref="Equality.Deep"/> mode.</summary>
     public int MaxHashCodeDepth { get; set; } = 4;
 

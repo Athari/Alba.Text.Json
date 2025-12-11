@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/Alba.Text.Json/">
+    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.csproj" />
+    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.STJ6.csproj" />
+    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.STJ8.csproj" />
+    <Project Path="C:/Docs/Projects/Json/Alba.Text.Json/Alba.Text.Json.STJ9.csproj" />
+  </Folder>
   <Folder Name="/~/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />

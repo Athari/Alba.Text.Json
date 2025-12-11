@@ -1,9 +1,9 @@
 ﻿<#@   template debug="true" hostspecific="true" language="C#"
 #><#@ output extension=".g.cs"
-#><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
+#><#@ include file="$(SolutionDir).build/CodeGen/Tpl.Usings.ttinclude"
 #><#  #nullable enable
 #><#
-var path = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), "JNodeOptions.cs");
+var path = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), "../../Alba.Text.Json/Json/JNodeOptions.cs");
 var text = File.ReadAllText(Host.ResolvePath(path), Encoding.UTF8);
 var props = text.ReMatchOne(@"(?s)#pragma t4 copy begin\s+(.*)\s+#pragma t4 copy end")!
     .Replace("\r", "").Split('\n')

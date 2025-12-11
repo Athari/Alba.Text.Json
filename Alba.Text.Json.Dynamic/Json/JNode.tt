@@ -3,7 +3,7 @@
 #><#@ output extension=".g.cs"
 #><#@ import namespace="System.Text.Json"
 #><#@ import namespace="System.Text.Json.Nodes"
-#><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
+#><#@ include file="$(SolutionDir).build/CodeGen/Tpl.Usings.ttinclude"
 #><#  #nullable enable
 #><#
 

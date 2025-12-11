@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="Alba.Text.Json.props" />
+  <PropertyGroup Label="Json">
+    <TargetFrameworks>net9.0;net8.0;netstandard2.1;netstandard2.0;net462</TargetFrameworks>
+    <TargetTextJsonVersion>9</TargetTextJsonVersion>
+    <IsTextJsonVersionSpecific>true</IsTextJsonVersionSpecific>
+  </PropertyGroup>
+  <Import Project="Alba.Text.Json.targets" />
+
+</Project>

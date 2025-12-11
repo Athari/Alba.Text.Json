@@ -57,11 +57,6 @@
     <PackageReference Include="Microsoft.CSharp" Condition="'$(TfmId)' == '.NETStandard'" />
   </ItemGroup>
 
-  <!-- DOC: UsePreReleaseCSharpCompiler property: reference compilers toolset from Roslyn on Azure -->
-  <ItemGroup Condition="'$(UsePreReleaseCSharpCompiler)' == 'true'">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-  </ItemGroup>
-
   <!-- DOC: UseT4 property: Enable T4 service, include T4 scripts and generated files -->
   <ItemGroup Condition="'$(UseT4)' == 'true'">
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
@@ -100,8 +95,9 @@
   <ItemGroup>
     <SolutionProjectReference Update="@(SolutionProjectReference)">
       <Module>$([MSBuild]::EnsureTrailingSlash('%(Module)'))</Module>
+      <Dir Condition="'%(Dir)' == ''">%(Identity)</Dir>
     </SolutionProjectReference>
-    <ProjectReference Include="@(SolutionProjectReference->'$(SolutionDir)%(Module)%(Identity)\%(Identity).%(Type)')" />
+    <ProjectReference Include="@(SolutionProjectReference->'$(SolutionDir)%(Module)%(Dir)\%(Identity).%(Type)')" />
   </ItemGroup>
 
   <!-- DOC: Display configuration items under the Properties project folder -->

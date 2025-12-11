@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup Label="References">
+    <SolutionProjectReference Include="Alba.Text.Json" />
     <SolutionProjectReference Include="Alba.Text.Json.Dynamic" />
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

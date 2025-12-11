@@ -5,7 +5,7 @@
 #><#@ assembly name="System.Linq.Expressions"
 #><#@ assembly name="System.Text.Json"
 #><#@ import namespace="System.Linq.Expressions"
-#><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
+#><#@ include file="$(SolutionDir).build/CodeGen/Tpl.Usings.ttinclude"
 #><#
 
 //Debugger.Launch();

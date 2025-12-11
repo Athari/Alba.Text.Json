@@ -63,8 +63,8 @@ public static class JsonNodeExts
         }
 
         /// <summary>Determines whether the specified <see cref="JsonNode"/> and <see langword="object"/> are considered equal.</summary>
-        /// <param name="v1">The first <see langword="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
-        /// <param name="v2">The second <see langword="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="v1">The first <see langword="object"/> to compare. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="v2">The second <see langword="object"/> to compare. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
         /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
@@ -77,9 +77,9 @@ public static class JsonNodeExts
                     JsonNode.EqualsValue(n1, v2, equality, options),
                 (_, JsonNode n2) =>
                     JsonNode.EqualsValue(n2, v1, equality, options),
-                (JNode j1, _) =>
+                (IJNode j1, _) =>
                     JsonNode.EqualsValue(j1.NodeUntyped, v2, equality, options),
-                (_, JNode j2) =>
+                (_, IJNode j2) =>
                     JsonNode.EqualsValue(j2.NodeUntyped, v1, equality, options),
                 (JsonElement or JsonDocument, _) or (_, JsonElement or JsonDocument) =>
                     JsonElement.Equals(v1, v2, equality, options),
@@ -96,7 +96,7 @@ public static class JsonNodeExts
             v2 switch {
                 JsonNode or null =>
                     JsonNode.Equals(n1, (JsonNode?)v2, equality, options),
-                JNode j2 =>
+                IJNode j2 =>
                     JsonNode.Equals(n1, j2.NodeUntyped, equality, options),
                 JsonElement el2 =>
                     JsonNode.EqualsJsonElement(n1, el2, equality, options),
@@ -222,14 +222,14 @@ public static class JsonNodeExts
         }
 
         /// <summary>Hash code function which correspeconds to the specified <paramref name="equality"/> kind.</summary>
-        /// <param name="v">The <see langword="object"/> whose hash code to calculate. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="v">The <see langword="object"/> whose hash code to calculate. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
         /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A hash code of the object.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="equality"/> value.</exception>
         public static int GetHashCode(object? v, Equality equality, JNodeOptions options) =>
             v switch {
-                JNode { NodeUntyped: var n } => n.GetHashCode(equality, options),
+                IJNode { NodeUntyped: var n } => n.GetHashCode(equality, options),
                 JsonNode n => n.GetHashCode(equality, options),
                 JsonElement el => el.GetHashCode(equality, options),
                 JsonDocument doc => doc.RootElement.GetHashCode(equality, options),
