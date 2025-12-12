@@ -71,7 +71,7 @@ jobs:
           ${{ env.sarif_dir }}
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
@@ -80,7 +80,7 @@ jobs:
         dependency-caching: true
 
     # - name: Autobuild
-    #   uses: github/codeql-action/autobuild@v3
+    #   uses: github/codeql-action/autobuild@v4
 
     - name: Build C#
       if: matrix.language == 'csharp'
@@ -90,7 +90,7 @@ jobs:
         --configuration Debug
 
     - name: Run CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{matrix.language}}"
 
@@ -137,6 +137,6 @@ jobs:
         output-path: ps-analysis.sarif
 
     - name: Upload SARIF report
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ps-analysis.sarif
