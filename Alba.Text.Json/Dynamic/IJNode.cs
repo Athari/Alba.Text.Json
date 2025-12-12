@@ -8,12 +8,4 @@ public interface IJNode
 {
     /// <summary>The wrapped <see cref="JsonNode"/>.</summary>
     JsonNode Node { get; }
-
-    // The following methods exist to make Visual Studio's parser of XML comments happy.
-
-    /// <inheritdoc cref="object.Equals(object?)"/>
-    bool Equals(object? obj);
-
-    /// <inheritdoc cref="object.GetHashCode"/>
-    int GetHashCode();
 }

@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Text.Json;
 
 #if NET7_0_OR_GREATER
 /// <summary>Numeric codes of <see cref="TypeCode"/> with support for <see cref="System.Half"/>, <see cref="System.Int128"/> and <see cref="System.UInt128"/>.</summary>

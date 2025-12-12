@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using Alba.Text.Json.Dynamic;
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Text.Json;
 
 #pragma warning disable CS1633 // Unrecognized #pragma directive
 
@@ -29,15 +30,15 @@ public sealed class JNodeOptions
     /// </summary>
     public bool IsCaseSensitive { get; set; } = true;
 
-    /// <summary>Equality mode of <see cref="IJNode.Equals(object?)"/>,
-    /// <see cref="IJNode.GetHashCode"/> and other direct equality operations. Default: <see cref="JEquality.Deep"/>.</summary>
+    /// <summary>Equality mode of <see cref="object.Equals(object?)"/>,
+    /// <see cref="object.GetHashCode"/> and other direct equality operations. Default: <see cref="JEquality.Deep"/>.</summary>
     public JEquality DirectEquality { get; set; } = JEquality.Deep;
 
     /// <summary>Equality mode of <see cref="JsonArray.IndexOf"/>, <see cref="JsonArray.Contains"/>,
     /// <see cref="JsonArray.Remove"/> and other search operations. Default: <see cref="JEquality.Shallow"/>.</summary>
     public JEquality SearchEquality { get; set; } = JEquality.Shallow;
 
-    /// <summary>Maximum number of values to include in the calculation of <see cref="IJNode.GetHashCode"/>
+    /// <summary>Maximum number of values to include in the calculation of <see cref="object.GetHashCode"/>
     /// when in <see cref="JEquality.Deep"/> mode.</summary>
     public int MaxHashCodeValueCount { get; set; } = 32;
 

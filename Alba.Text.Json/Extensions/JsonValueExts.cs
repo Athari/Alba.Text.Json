@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Alba.Text.Json.Dynamic.Extensions;
+namespace Alba.Text.Json.Extensions;
 
 /// <summary>Extension methods for <see cref="JsonValue"/>.</summary>
 public static class JsonValueExts
@@ -9,7 +9,7 @@ public static class JsonValueExts
     ///
     extension(JsonValue @this)
     {
-        /// <summary>Converts a <see cref="JsonValue"/> to a raw value: <see langword="null"/>, <see langword="string"/>, <see langword="bool"/> or a numeric type (<see langword="int"/>, <see langword="double"/>, <see langword="decimal"/> etc.). Conversion of numbers depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>. Conversion of <c>undefined</c> depends on <see cref="JNodeOptions.UndefinedValue"/> of <paramref name="options"/>.</summary>
+        /// <summary>Converts a <see cref="JsonValue"/> to a raw value: <see langword="null"/>, <see cref="string"/>, <see cref="bool"/> or a numeric type (<see cref="int"/>, <see cref="double"/>, <see cref="decimal"/> etc.). Conversion of numbers depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>. Conversion of <c>undefined</c> depends on <see cref="JNodeOptions.UndefinedValue"/> of <paramref name="options"/>.</summary>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A converted raw value.</returns>
         /// <exception cref="InvalidOperationException">Unsupported <see cref="JsonValueKind"/> value. Should never happen.</exception>

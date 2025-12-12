@@ -14,11 +14,6 @@ internal static class Exts
 
     extension<TKey, T>(Dictionary<TKey, T> @this) where TKey : notnull
     {
-        [SuppressMessage("ReSharper", "CanSimplifyDictionaryTryGetValueWithGetValueOrDefault")]
-        public T? GetOrDefault(TKey key) => @this.TryGetValue(key, out var value) ? value : default;
-
-        public T GetOrDefault(TKey key, T def) => @this.GetValueOrDefault(key, def);
-
       #if NET6_0_OR_GREATER
         public ref T? GetRefOrAdd(TKey key, [UnscopedRef] out bool exists) =>
             ref CollectionsMarshal.GetValueRefOrAddDefault(@this, key, out exists);

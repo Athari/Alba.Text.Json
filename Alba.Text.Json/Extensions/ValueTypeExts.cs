@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using Alba.Framework;
+using Alba.Text.Json.Dynamic;
 
-namespace Alba.Text.Json.Dynamic.Extensions;
+namespace Alba.Text.Json.Extensions;
 
-/// <summary>Extension methods for <see langword="object"/> related to <see cref="JsonNode"/>.</summary>
+/// <summary>Extension methods for <see cref="object"/> related to <see cref="JsonNode"/>.</summary>
 public static class ValueTypeExts
 {
     private static readonly JsonValue NoJsonValue = Ensure.NotNull(JsonValue.Create("<NOVALUE>"));
@@ -14,7 +15,7 @@ public static class ValueTypeExts
     {
         // TODO Support specifying JsonSerializerOptions/JsonTypeInfo when serializing objects to nodes
         /// <summary>
-        ///   Converts an <see langword="object"/> value to a <see cref="JsonNode"/>. Attempts to reuse the existing value. If isolation is requested (<paramref name="isolated"/> is <see langword="true"/> by default), it creates a new node or clones the existing node if necessary. The result depends on the type of the value:
+        ///   Converts an <see cref="object"/> value to a <see cref="JsonNode"/>. Attempts to reuse the existing value. If isolation is requested (<paramref name="isolated"/> is <see langword="true"/> by default), it creates a new node or clones the existing node if necessary. The result depends on the type of the value:
         ///   <list type="table">
         ///     <listheader><term>Type</term><description>Result</description></listheader>
         ///     <item><term><see langword="null"/></term>
@@ -38,7 +39,7 @@ public static class ValueTypeExts
         /// <param name="options">Options to control the behavior.</param>
         /// <param name="isolated">Isolate the node for reuse in a separate node hierarchy. Causes the node to be cloned if it has a parent.</param>
         /// <returns>An isolated <see cref="JsonNode"/></returns>
-        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see langword="bool"/>, <see langword="int"/>, <see langword="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
+        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see cref="bool"/>, <see cref="int"/>, <see cref="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
         public JsonNode? ToJsonNode(JsonNodeOptions? options = null, bool isolated = true) =>
             @this.ToJsonValue(out var valueNode, options)
                 ? valueNode
@@ -48,14 +49,14 @@ public static class ValueTypeExts
                     // already JsonNode
                     JsonNode v => v.Parent == null ? v : v.DeepClone(),
                     // element is always stored as JsonValueOfElement
-                    JsonElement v => JsonValue.Create(v, options),
+                    JsonElement el => JsonValue.Create(el, options),
                     // serialize everything else into node
-                    JsonDocument v => JsonSerializer.SerializeToNode(v),
+                    JsonDocument doc => JsonSerializer.SerializeToNode(doc),
                     _ => JsonSerializer.SerializeToNode(@this),
                 };
 
         /// <summary>
-        ///   Converts an <see langword="object"/> value to a <see cref="JsonElement"/>. Attempts to reuse the existing value. The result depends on the type of the value:
+        ///   Converts an <see cref="object"/> value to a <see cref="JsonElement"/>. Attempts to reuse the existing value. The result depends on the type of the value:
         ///   <list type="table">
         ///     <listheader><term>Type</term><description>Result</description></listheader>
         ///     <item><term><see cref="IJNode"/></term>
@@ -73,11 +74,21 @@ public static class ValueTypeExts
         ///   </list>
         /// </summary>
         /// <returns>An isolated <see cref="JsonNode"/></returns>
-        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see langword="bool"/>, <see langword="int"/>, <see langword="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
+        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see cref="bool"/>, <see cref="int"/>, <see cref="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
         public JsonElement ToJsonElement() =>
             @this switch {
                 IJNode { Node: var n } => n.ToJsonElement(),
                 JsonNode n => n.Deserialize<JsonDocument>().RootElement,
+                JsonElement el => el,
+                JsonDocument doc => doc.RootElement,
+                _ => JsonSerializer.SerializeToElement(@this),
+            };
+
+        public object? ToJsonElementOrNode() =>
+            @this switch {
+                null => null,
+                IJNode { Node: var n } => n,
+                JsonNode n => n,
                 JsonElement el => el,
                 JsonDocument doc => doc.RootElement,
                 _ => JsonSerializer.SerializeToElement(@this),
@@ -102,7 +113,7 @@ public static class ValueTypeExts
         /// <param name="valueNode">A converted <see cref="JsonValue"/>.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns><see langword="true"/> if the value was converted successfully; otherwise, <see langword="false"/>.</returns>
-        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see langword="bool"/>, <see langword="int"/>, <see langword="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
+        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see cref="bool"/>, <see cref="int"/>, <see cref="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
         public bool ToJsonValue([NotNullIfNotNull(nameof(@this))] out JsonValue? valueNode, JsonNodeOptions? options = null)
         {
             valueNode = @this switch {

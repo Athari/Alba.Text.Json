@@ -3,7 +3,7 @@
 #><#@ output extension=".g.cs"
 #><#@ import namespace="System.Text.Json"
 #><#@ import namespace="System.Text.Json.Nodes"
-#><#@ include file="$(ProjectDir)CodeGen/Tpl.Usings.ttinclude"
+#><#@ include file="$(SolutionDir).build/CodeGen/Tpl.Usings.ttinclude"
 #><#  #nullable enable
 #><#
 
@@ -27,7 +27,7 @@ var fields = typeof(TypeCode)
 #>
 #nullable enable
 
-namespace Alba.Text.Json.Dynamic;
+namespace Alba.Text.Json;
 
 #if NET7_0_OR_GREATER
 /// <summary>Numeric codes of <see cref="TypeCode"/> with support for <see cref="System.Half"/>, <see cref="System.Int128"/> and <see cref="System.UInt128"/>.</summary>

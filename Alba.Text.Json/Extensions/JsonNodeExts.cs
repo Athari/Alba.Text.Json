@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Alba.Text.Json.Dynamic;
 #if !JSON8_0_OR_GREATER
 using Alba.Framework;
 #endif
 using C = System.TypeCode;
 
-namespace Alba.Text.Json.Dynamic.Extensions;
+namespace Alba.Text.Json.Extensions;
 
 /// <summary>Extension methods for <see cref="JsonNode"/>.</summary>
 [SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug"), SuppressMessage("CodeQuality", "IDE0079")]
@@ -62,9 +63,9 @@ public static class JsonNodeExts
             }
         }
 
-        /// <summary>Determines whether the specified <see cref="JsonNode"/> and <see langword="object"/> are considered equal.</summary>
-        /// <param name="v1">The first <see langword="object"/> to compare. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
-        /// <param name="v2">The second <see langword="object"/> to compare. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <summary>Determines whether the specified <see cref="JsonNode"/> and <see cref="object"/> are considered equal.</summary>
+        /// <param name="v1">The first <see cref="object"/> to compare. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="v2">The second <see cref="object"/> to compare. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
         /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
@@ -222,7 +223,7 @@ public static class JsonNodeExts
         }
 
         /// <summary>Hash code function which correspeconds to the specified <paramref name="equality"/> kind.</summary>
-        /// <param name="v">The <see langword="object"/> whose hash code to calculate. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+        /// <param name="v">The <see cref="object"/> whose hash code to calculate. The object can be <see cref="IJNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
         /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A hash code of the object.</returns>

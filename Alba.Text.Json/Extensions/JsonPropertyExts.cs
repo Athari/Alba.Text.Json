@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Text.Json;
 
-namespace Alba.Text.Json.Dynamic.Extensions;
+namespace Alba.Text.Json.Extensions;
 
 /// <summary>Extension methods for <see cref="JsonProperty"/>.</summary>
 public static class JsonPropertyExts

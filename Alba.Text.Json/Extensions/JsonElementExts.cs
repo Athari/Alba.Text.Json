@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Alba.Framework;
+using Alba.Text.Json.Dynamic;
 #if NET5_0_OR_GREATER
 using System.Globalization;
 #endif
@@ -10,7 +11,7 @@ using System.Globalization;
 using System.Text.Encodings.Web;
 #endif
 
-namespace Alba.Text.Json.Dynamic.Extensions;
+namespace Alba.Text.Json.Extensions;
 
 /// <summary>Extension methods for <see cref="JsonElement"/>.</summary>
 [SuppressMessage("Naming", "CA1708: Identifiers should differ by more than case", Justification = "Compiler bug"), SuppressMessage("CodeQuality", "IDE0079")]
@@ -46,7 +47,7 @@ public static class JsonElementExts
             }
         }
 
-        /// <summary>Converts a <see cref="JsonElement"/> to a raw value: <see langword="null"/>, <see langword="string"/>, <see langword="bool"/> or a numeric type (<see langword="int"/>, <see langword="double"/>, <see langword="decimal"/> etc.). Conversion of numbers depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>. Conversion of <c>undefined</c> depends on <see cref="JNodeOptions.UndefinedValue"/> of <paramref name="options"/>.</summary>
+        /// <summary>Converts a <see cref="JsonElement"/> to a raw value: <see langword="null"/>, <see cref="string"/>, <see cref="bool"/> or a numeric type (<see cref="int"/>, <see cref="double"/>, <see cref="decimal"/> etc.). Conversion of numbers depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>. Conversion of <c>undefined</c> depends on <see cref="JNodeOptions.UndefinedValue"/> of <paramref name="options"/>.</summary>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A converted raw value.</returns>
         /// <exception cref="InvalidOperationException">Unsupported <see cref="JsonValueKind"/> value. Should never happen.</exception>
@@ -63,7 +64,7 @@ public static class JsonElementExts
                 _ => throw new InvalidOperationException($"Unexpected JsonValueKind of JsonElement: {@this.ValueKind}"),
             };
 
-        /// <summary>Converts a <see cref="JsonElement"/> to a number: <see langword="int"/>, <see langword="double"/>, <see langword="decimal"/> etc. Conversion depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>.</summary>
+        /// <summary>Converts a <see cref="JsonElement"/> to a number: <see cref="int"/>, <see cref="double"/>, <see cref="decimal"/> etc. Conversion depends on <see cref="JNodeOptions.IntegerTypes"/> and <see cref="JNodeOptions.FloatTypes"/> of <paramref name="options"/>.</summary>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns>A converted number.</returns>
         /// <exception cref="InvalidOperationException">The element cannot be converted to a number.</exception>
@@ -110,8 +111,8 @@ public static class JsonElementExts
             };
 
         /// <summary>Determines whether the specified JSON objects are considered equal. One of comparands must be <see cref="JsonElement"/> or <see cref="JsonDocument"/>. To compare arbitrary types, use <see cref="JsonNodeExts.Equals(object?,object?,JEquality,JNodeOptions)"/>.</summary>
-        /// <param name="v1">The first <see langword="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
-        /// <param name="v2">The second <see langword="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
+        /// <param name="v1">The first <see cref="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
+        /// <param name="v2">The second <see cref="object"/> to compare. The object can be <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonElement"/>.</param>
         /// <param name="equality">Kind of equality comparison.</param>
         /// <param name="options">Options to control the behavior.</param>
         /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
