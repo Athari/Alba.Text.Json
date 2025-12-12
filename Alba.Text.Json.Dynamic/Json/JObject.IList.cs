@@ -1,7 +1,7 @@
 ﻿#if JSON9_0_OR_GREATER
 
 using System.Text.Json.Nodes;
-using Alba.Text.Json.Dynamic.Extensions;
+using Alba.Text.Json.Extensions;
 
 namespace Alba.Text.Json.Dynamic;
 

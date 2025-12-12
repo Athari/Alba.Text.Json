@@ -4,12 +4,12 @@ using Alba.Text.Json.Extensions;
 
 namespace Alba.Text.Json.Converters;
 
-/// <summary>A <see cref="JsonConverter"/> chaining multiple <see cref="ValueConverterRef"/> to serialize a value <typeparamref name="T"/>.</summary>
+/// <summary>A <see cref="JsonConverter"/> chaining multiple <see cref="IValueJsonConverter"/> to serialize a value <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">Type of the value.</typeparam>
 public class ChainJsonConverter<T> : JsonConverter<T>
 {
     /// <summary>List of converters to call in sequence.</summary>
-    public IList<ValueConverterRef> Converters { get; } = [ ];
+    public IList<IValueJsonConverter> Converters { get; } = [ ];
 
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)

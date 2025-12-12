@@ -42,7 +42,7 @@ public sealed class JNodeOptions
     /// when in <see cref="JEquality.Deep"/> mode.</summary>
     public int MaxHashCodeValueCount { get; set; } = 32;
 
-    /// <summary>Maxmium depth of arrays and objects to include in the calculation of <see cref="IJNode.GetHashCode"/>
+    /// <summary>Maxmium depth of arrays and objects to include in the calculation of <see cref="object.GetHashCode"/>
     /// when in <see cref="JEquality.Deep"/> mode.</summary>
     public int MaxHashCodeDepth { get; set; } = 4;
 

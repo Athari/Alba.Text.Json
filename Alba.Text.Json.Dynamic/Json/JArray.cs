@@ -1,7 +1,7 @@
 ﻿using System.Dynamic;
 using System.Text.Json.Nodes;
 using Alba.Framework;
-using Alba.Text.Json.Dynamic.Extensions;
+using Alba.Text.Json.Extensions;
 
 namespace Alba.Text.Json.Dynamic;
 

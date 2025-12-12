@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Alba.Text.Json.Dynamic.Extensions;
+using Alba.Text.Json.Extensions;
 
 namespace Alba.Text.Json.Dynamic;
 
@@ -36,8 +36,8 @@ public abstract partial class JNode(JNodeOptions? options = null) : IJNode, IEqu
     public object Clone() =>
         NodeUntyped.DeepClone().ToJNodeOrValue(Options);
 
-    /// <summary>Determines whether the current <see cref="JNode"/> and the specified <see langword="object"/> are considered equal. It uses <see cref="JNodeOptions.DirectEquality"/> as comparison kind.</summary>
-    /// <param name="o">The <see langword="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
+    /// <summary>Determines whether the current <see cref="JNode"/> and the specified <see cref="object"/> are considered equal. It uses <see cref="JNodeOptions.DirectEquality"/> as comparison kind.</summary>
+    /// <param name="o">The <see cref="object"/> to compare. The object can be <see cref="JNode"/>, <see cref="JsonNode"/>, <see cref="JsonElement"/>, <see cref="JsonDocument"/>, or anything that can be serialized to <see cref="JsonNode"/>.</param>
     /// <returns><see langword="true"/> if the node and the object are considered equal; otherwise, <see langword="false"/>.</returns>
     public sealed override bool Equals(object? o) =>
         JsonNode.Equals(NodeUntyped, o, Options.DirectEquality, Options);

@@ -8,21 +8,28 @@ namespace Alba.Text.Json.Converters;
 /// <typeparam name="T">Type of the value.</typeparam>
 /// <typeparam name="TRepr">Type of the representation of the value.</typeparam>
 /// <typeparam name="TConverter">A <see cref="TypeConverter"/> performing conversion.</typeparam>
-public class TypeJsonConverter<T, TRepr, TConverter> : ValueJsonConverter<T>
+public class TypeJsonConverter<T, TRepr, TConverter> : ValueJsonConverter<T, TRepr>
     where TConverter : TypeConverter, new()
 {
     /// <summary>Create a new <see cref="TypeJsonConverter{T,TRepr,TConverter}"/> instance.</summary>
-    public TypeJsonConverter() =>
-        Converter = new TypeConverterRef<T, TRepr, TConverter>();
+    /// <param name="invert">Sets whether to perform forward or reverse conversion.</param>
+    /// <param name="canHandleNull">Sets whether to pass <see langword="null"/> to the converter or forward it as-is.</param>
+    /// <param name="culture">Set culture to use for conversion (<see cref="Culture"/>).</param>
+    public TypeJsonConverter(bool invert = false, bool canHandleNull = false, CultureInfo? culture = null)
+        : base(invert, canHandleNull) =>
+        Culture = culture ?? CultureInfo.InvariantCulture;
 
-    /// <summary>Create a new <see cref="TypeJsonConverter{T,TRepr,TConverter}"/> instance.</summary>
-    /// <param name="invert">Set whether to use reverse conversion (<see cref="ValueConverterRef.Invert"/>).</param>
-    /// <param name="convertNull">Set whether to pass <see langword="null"/> to the converter (<see cref="ValueConverterRef.ConvertNull"/>).</param>
-    /// <param name="culture">Set culture to use for conversion (<see cref="TypeConverterRef{T,TRepr,TConverter}.Culture"/>).</param>
-    public TypeJsonConverter(bool invert = false, bool convertNull = false, CultureInfo? culture = null) =>
-        Converter = new TypeConverterRef<T, TRepr, TConverter> {
-            Invert = invert,
-            ConvertNull = convertNull,
-            Culture = culture ?? CultureInfo.InvariantCulture,
-        };
+    /// <summary>A <see cref="CultureInfo"/> used for conversion. <see cref="CultureInfo.InvariantCulture"/> is used by default.</summary>
+    public CultureInfo Culture { get; set; }
+
+    /// <summary>An instance of <typeparamref name="TConverter"/>.</summary>
+    public TConverter Converter => field ??= new();
+
+    /// <inheritdoc/>
+    protected override object? ValueToReprOverride(object? o) =>
+        Converter.ConvertTo(null, Culture, o, ReprType);
+
+    /// <inheritdoc/>
+    protected override object? ReprToValueOverride(object? o) =>
+        Converter.ConvertFrom(null, Culture, o!);
 }

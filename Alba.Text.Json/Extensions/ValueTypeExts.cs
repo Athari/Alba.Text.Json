@@ -38,7 +38,7 @@ public static class ValueTypeExts
         /// </summary>
         /// <param name="options">Options to control the behavior.</param>
         /// <param name="isolated">Isolate the node for reuse in a separate node hierarchy. Causes the node to be cloned if it has a parent.</param>
-        /// <returns>An isolated <see cref="JsonNode"/></returns>
+        /// <returns>An optionally isolated <see cref="JsonNode"/>.</returns>
         /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see cref="bool"/>, <see cref="int"/>, <see cref="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
         public JsonNode? ToJsonNode(JsonNodeOptions? options = null, bool isolated = true) =>
             @this.ToJsonValue(out var valueNode, options)
@@ -63,18 +63,15 @@ public static class ValueTypeExts
         ///           <description><see cref="JsonElement"/> deserialization of the wrapped <see cref="JsonNode"/>.</description></item>
         ///     <item><term><see cref="JsonNode"/></term>
         ///           <description><see cref="JsonElement"/> deserialization of the node.</description></item>
-        ///     <item><term><see cref="JsonArray"/> or <see cref="JsonObject"/></term>
-        ///           <description><see cref="JsonElement"/> itself</description></item>
         ///     <item><term><see cref="JsonElement"/></term>
-        ///           <description><see cref="JsonElement"/> wrapping the <see cref="JsonElement"/></description></item>
+        ///           <description><see cref="JsonElement"/> itself.</description></item>
         ///     <item><term><see cref="JsonDocument"/></term>
-        ///           <description><see cref="JsonElement"/> serialization of the <see cref="JsonDocument"/></description></item>
+        ///           <description>Wrapped <see cref="JsonElement"/>.</description></item>
         ///     <item><term>Everything else</term>
-        ///           <description><see cref="JsonElement"/> serialization of the value</description></item>
+        ///           <description><see cref="JsonElement"/> serialization of the value.</description></item>
         ///   </list>
         /// </summary>
-        /// <returns>An isolated <see cref="JsonNode"/></returns>
-        /// <remarks>† The list of primitive types depends on .NET and System.Text.Json version, but in general it includes all built-in types (<see cref="bool"/>, <see cref="int"/>, <see cref="char"/> etc.), plus <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/>, <see cref="Uri"/>, <see cref="Version"/>, <see cref="Guid"/>.</remarks>
+        /// <returns>A <see cref="JsonElement"/>.</returns>
         public JsonElement ToJsonElement() =>
             @this switch {
                 IJNode { Node: var n } => n.ToJsonElement(),
@@ -84,6 +81,23 @@ public static class ValueTypeExts
                 _ => JsonSerializer.SerializeToElement(@this),
             };
 
+        /// <summary>
+        ///   Converts an <see cref="object"/> value to a <see cref="JsonElement"/> or a <see cref="JsonNode"/>. Attempts to reuse the existing value. The result depends on the type of the value:
+        ///   <list type="table">
+        ///     <listheader><term>Type</term><description>Result</description></listheader>
+        ///     <item><term><see cref="IJNode"/></term>
+        ///           <description>Wrapped <see cref="JsonNode"/>.</description></item>
+        ///     <item><term><see cref="JsonNode"/></term>
+        ///           <description><see cref="JsonNode"/> itself.</description></item>
+        ///     <item><term><see cref="JsonElement"/></term>
+        ///           <description><see cref="JsonElement"/> itself.</description></item>
+        ///     <item><term><see cref="JsonDocument"/></term>
+        ///           <description>Wrapped <see cref="JsonElement"/>.</description></item>
+        ///     <item><term>Everything else</term>
+        ///           <description><see cref="JsonElement"/> serialization of the value.</description></item>
+        ///   </list>
+        /// </summary>
+        /// <returns>A <see cref="JsonElement"/> or a <see cref="JsonNode"/>.</returns>
         public object? ToJsonElementOrNode() =>
             @this switch {
                 null => null,
@@ -101,11 +115,11 @@ public static class ValueTypeExts
         ///     <item><term><see langword="null"/></term>
         ///           <description><see langword="null"/></description></item>
         ///     <item><term>A primitive type †</term>
-        ///           <description><see cref="JsonValue"/> wrapping the value</description></item>
+        ///           <description><see cref="JsonValue"/> wrapping the value.</description></item>
         ///     <item><term><see cref="JsonValue"/></term>
-        ///           <description><see cref="JsonValue"/> itself</description></item>
+        ///           <description><see cref="JsonValue"/> itself.</description></item>
         ///     <item><term><see cref="JsonElement"/></term>
-        ///           <description><see cref="JsonValue"/> wrapping the <see cref="JsonElement"/>, unless an array or an object is wrapped</description></item>
+        ///           <description><see cref="JsonValue"/> wrapping the <see cref="JsonElement"/>, unless an array or an object is wrapped.</description></item>
         ///     <item><term>Everything else</term>
         ///           <description><see langword="null"/> (failure)</description></item>
         ///   </list>
